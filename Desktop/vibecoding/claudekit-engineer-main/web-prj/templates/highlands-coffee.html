@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Highlands Coffee – Đậm Chất Cà Phê Việt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+</head>
+<body>
+
+  <!-- ── TOP BAR ──────────────────────────────────────── -->
+  <div class="top-bar">
+    <div class="inner">
+      <span>📞 Hotline: <a href="#">1800 6006</a> <span class="divider">|</span> <a href="#" onclick="navigateTo('stores'); return false">Tìm cửa hàng</a> <span class="divider">|</span> <a href="#">Nhượng quyền</a></span>
+      <span id="topbar-auth"><a href="#" onclick="openAuthModal();return false">Đăng nhập</a> <span class="divider">|</span> <a href="#" onclick="openAuthModal();switchAuthTab('register');return false">Đăng ký</a> <span class="divider">|</span> 🌐 VI / EN</span>
+      <span id="topbar-user" style="display:none"><a href="#" onclick="openProfileModal();return false">👤 Tài khoản</a> <span class="divider">|</span> <a href="#" onclick="logout();return false">Đăng xuất</a></span>
+    </div>
+  </div>
+
+  <!-- ── NAVBAR ────────────────────────────────────────── -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="#" class="logo">
+        <div class="logo-mark">HC</div>
+        <div class="logo-text">
+          <strong>Highlands</strong>
+          <span>Coffee</span>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="#" class="nav-link active" onclick="navigateTo('home',this)">Trang Chủ</a>
+        <a href="#" class="nav-link"        onclick="navigateTo('menu',this)">Thực Đơn</a>
+        <a href="#" class="nav-link"        onclick="navigateTo('promotions',this)">Ưu Đãi</a>
+        <a href="#" class="nav-link"        onclick="navigateTo('stores',this)">Cửa Hàng</a>
+        <a href="#" class="nav-link">Highlands Rewards</a>
+        <a href="#" class="nav-link"        onclick="navigateTo('news',this)">Tin Tức</a>
+        <a href="/about" target="_blank" class="nav-link">Về Chúng Tôi</a>
+      </div>
+      <div class="nav-actions">
+        <button class="icon-btn" title="Tìm kiếm">🔍</button>
+        <button class="icon-btn" id="cart-btn" title="Giỏ hàng">🛒<span class="cart-badge" id="cart-count" style="display:none">0</span></button>
+        <button class="icon-btn" id="orders-btn" title="Đơn hàng" style="display:none">📋</button>
+        <button id="auth-nav-btn" onclick="openAuthModal()" class="btn-solid" style="background:transparent;border:2px solid #C8102E;color:#C8102E">Đăng Nhập</button>
+        <span id="user-nav" style="display:none;align-items:center;gap:8px">
+          <span id="user-greeting" style="font-size:.82rem;color:#5C3D2E;font-weight:600"></span>
+          <button onclick="openProfileModal()" style="background:none;border:1.5px solid #C8102E;color:#C8102E;border-radius:20px;padding:4px 12px;cursor:pointer;font-size:.78rem;font-weight:700">Tài khoản</button>
+          <button onclick="logout()" style="background:none;border:none;cursor:pointer;font-size:.8rem;color:#888;text-decoration:underline">Đăng xuất</button>
+        </span>
+        <a href="#" class="btn-solid" id="order-now-btn">Đặt Ngay</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══ PAGE: HOME ══════════════════════════════════════ -->
+  <div id="page-home">
+
+  <!-- ── HERO ─────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <div class="hero-text fade-up">
+        <div class="hero-badge">Đậm Chất Cà Phê Việt</div>
+        <h1 class="hero-title">
+          Từng Ngụm<br/>
+          <span class="line-red">Kể Chuyện</span><br/>
+          <span class="accent">Đất Việt</span>
+        </h1>
+        <p class="hero-desc">
+          Highlands Coffee – hơn 20 năm mang đến những ly cà phê đặc trưng từ vùng đất cao nguyên Tây Nguyên. Thưởng thức không gian, cảm nhận văn hóa.
+        </p>
+        <div class="hero-cta">
+          <a href="#" class="cta-primary" onclick="navigateTo('menu',document.querySelector('.nav-link[onclick*=menu]'));return false">Khám Phá Thực Đơn ☕</a>
+          <a href="#" class="cta-secondary" onclick="navigateTo('stores',document.querySelector('.nav-link[onclick*=stores]'));return false">Tìm Cửa Hàng</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-item"><div class="stat-num">600+</div><div class="stat-label">Cửa Hàng</div></div>
+          <div class="stat-item"><div class="stat-num">30+</div><div class="stat-label">Tỉnh Thành</div></div>
+          <div class="stat-item"><div class="stat-num">20+</div><div class="stat-label">Năm Thành Lập</div></div>
+          <div class="stat-item"><div class="stat-num">1M+</div><div class="stat-label">Khách Hàng</div></div>
+        </div>
+      </div>
+      <div class="hero-visual fade-up delay-2">
+        <div class="cup-wrapper">
+          <div class="glow-circle"></div>
+          <div class="cup-img">☕</div>
+          <div class="floating-tag tag-1">
+            <div class="tag-label">Bestseller</div>
+            <div class="tag-val">Cà Phê Sữa</div>
+            <div class="tag-sub">↑ 40% tháng này</div>
+          </div>
+          <div class="floating-tag tag-2">
+            <div class="tag-label">Mới Ra Mắt</div>
+            <div class="tag-val">Matcha Đặc Biệt</div>
+            <div class="tag-sub">⭐ 4.9 / 5.0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── LOYALTY STRIP ─────────────────────────────────── -->
+  <div class="loyalty-strip">
+    <div class="loyalty-strip-inner">
+      <div class="loyalty-item">
+        <div class="loyalty-icon">🎁</div>
+        <div class="loyalty-text">
+          <strong>Tích Điểm Mỗi Ngày</strong>
+          <span>Đổi quà hấp dẫn với Rewards</span>
+        </div>
+      </div>
+      <div class="loyalty-item">
+        <div class="loyalty-icon">🚀</div>
+        <div class="loyalty-text">
+          <strong>Giao Hàng Tận Nơi</strong>
+          <span>Miễn phí đơn trên 50.000đ</span>
+        </div>
+      </div>
+      <div class="loyalty-item">
+        <div class="loyalty-icon">📱</div>
+        <div class="loyalty-text">
+          <strong>Đặt Qua App</strong>
+          <span>Ưu đãi độc quyền mỗi ngày</span>
+        </div>
+      </div>
+      <div class="loyalty-item">
+        <div class="loyalty-icon">♻️</div>
+        <div class="loyalty-text">
+          <strong>Bền Vững & Xanh</strong>
+          <span>Cốc tái sử dụng – giảm 5.000đ</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CATEGORIES ────────────────────────────────────── -->
+  <section class="section categories-bg">
+    <div class="section-inner">
+      <div class="section-header">
+        <div class="section-eyebrow">Thực Đơn</div>
+        <h2 class="section-title">Khám Phá <span class="italic">Thế Giới</span> Đồ Uống</h2>
+        <p class="section-desc">Từ cà phê truyền thống đến trà thanh mát, bánh tươi thơm ngon – tất cả chờ đón bạn.</p>
+      </div>
+      <div class="categories-grid">
+        <div class="cat-card active">
+          <div class="cat-icon i1">☕</div>
+          <div class="cat-name">Cà Phê</div>
+          <div class="cat-count">18 loại</div>
+        </div>
+        <div class="cat-card" onclick="return false">
+          <div class="cat-icon i2">🧋</div>
+          <div class="cat-name">Trà Sữa</div>
+          <div class="cat-count">12 loại</div>
+        </div>
+        <div class="cat-card" onclick="return false">
+          <div class="cat-icon i3">🍵</div>
+          <div class="cat-name">Trà</div>
+          <div class="cat-count">8 loại</div>
+        </div>
+        <div class="cat-card" onclick="return false">
+          <div class="cat-icon i4">🥤</div>
+          <div class="cat-name">Freeze</div>
+          <div class="cat-count">15 loại</div>
+        </div>
+        <div class="cat-card" onclick="return false">
+          <div class="cat-icon i5">🧁</div>
+          <div class="cat-name">Bánh Ngọt</div>
+          <div class="cat-count">20 loại</div>
+        </div>
+        <div class="cat-card" onclick="return false">
+          <div class="cat-icon i6">🫙</div>
+          <div class="cat-name">Combo</div>
+          <div class="cat-count">6 combo</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FEATURED PRODUCTS ─────────────────────────────── -->
+  <section class="section products-bg">
+    <div class="section-inner">
+      <div class="section-header">
+        <div class="section-eyebrow">Nổi Bật</div>
+        <h2 class="section-title">Được Yêu Thích <span class="italic">Nhất</span></h2>
+      </div>
+      <div class="tabs-row">
+        <button class="tab-btn active" onclick="filterFeatured(this,'')">Tất Cả</button>
+        <button class="tab-btn" onclick="filterFeatured(this,'coffee')">Cà Phê</button>
+        <button class="tab-btn" onclick="filterFeatured(this,'tea')">Trà Sữa</button>
+        <button class="tab-btn" onclick="filterFeatured(this,'freeze')">Freeze</button>
+        <button class="tab-btn" onclick="filterFeatured(this,'food')">Bánh</button>
+      </div>
+      <div id="featured-grid" class="products-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa">⏳ Đang tải...</div>
+      </div>
+      <!-- hidden – needed only for legacy static cards below which we removed -->
+      <div style="display:none">
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <div class="product-thumb bg-cool">🧁</div>
+            <div class="product-badge badge-new">Mới</div>
+            <div class="product-fav">🤍</div>
+          </div>
+          <div class="product-info">
+            <div class="product-name">Croissant Bơ Pháp</div>
+            <div class="product-sub">Nướng mới mỗi sáng</div>
+            <div class="product-footer">
+              <div class="product-price">35.000đ</div>
+              <button class="add-btn">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <div class="product-thumb bg-warm">☕</div>
+            <div class="product-fav">🤍</div>
+          </div>
+          <div class="product-info">
+            <div class="product-name">Cà Phê Đen Đá</div>
+            <div class="product-sub">Robusta Tây Nguyên thuần khiết</div>
+            <div class="product-footer">
+              <div class="product-price">29.000đ</div>
+              <button class="add-btn">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <div class="product-thumb bg-green">🍵</div>
+            <div class="product-badge badge-hot">Top</div>
+            <div class="product-fav">🤍</div>
+          </div>
+          <div class="product-info">
+            <div class="product-name">Trà Xanh Latte</div>
+            <div class="product-sub">Vị thanh, sữa tươi Đà Lạt</div>
+            <div class="product-footer">
+              <div class="product-price">45.000đ</div>
+              <button class="add-btn">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PROMO BANNERS ─────────────────────────────────── -->
+  <section class="section promo-section">
+    <div class="section-inner">
+      <div class="section-header">
+        <div class="section-eyebrow">Ưu Đãi</div>
+        <h2 class="section-title">Khuyến Mãi <span class="italic">Hấp Dẫn</span></h2>
+      </div>
+      <div class="promo-grid">
+        <div class="promo-card promo-bg-1">
+          <div class="promo-deco">☕</div>
+          <div class="promo-content">
+            <div class="promo-label">Ưu Đãi Đặc Biệt</div>
+            <div class="promo-title">Mua 1 Tặng 1<br/>Cà Phê Mỗi Thứ 3</div>
+            <div class="promo-desc">Áp dụng cho tất cả sản phẩm cà phê. Đặt qua app nhận thêm 2X điểm.</div>
+            <a href="#" class="promo-link">Xem Chi Tiết →</a>
+          </div>
+        </div>
+        <div class="promo-stack">
+          <div class="promo-card promo-bg-2">
+            <div class="promo-deco" style="font-size:3rem">🎁</div>
+            <div class="promo-content">
+              <div class="promo-label">Rewards</div>
+              <div class="promo-title">Đổi 500 Điểm<br/>Nhận Quà Ngay</div>
+              <a href="#" class="promo-link">Tham Gia →</a>
+            </div>
+          </div>
+          <div class="promo-card promo-bg-3">
+            <div class="promo-deco" style="font-size:3rem">📱</div>
+            <div class="promo-content">
+              <div class="promo-label">App Exclusive</div>
+              <div class="promo-title">Giảm 20% Đơn<br/>Đầu Tiên Qua App</div>
+              <a href="#" class="promo-link">Tải Ngay →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── APP DOWNLOAD ───────────────────────────────────── -->
+  <section class="section app-section">
+    <div class="section-inner">
+      <div class="app-inner">
+        <div class="app-text">
+          <div class="app-eyebrow">Highlands Coffee App</div>
+          <h2 class="app-title">Mang Highlands<br/><span class="highlight">Trong Túi Bạn</span></h2>
+          <p class="app-desc">Đặt hàng, tích điểm, đổi quà và nhận ưu đãi độc quyền mỗi ngày. Tải app ngay để trải nghiệm dịch vụ đặc biệt.</p>
+          <div class="app-stores">
+            <a href="#" class="store-btn">
+              <span class="store-icon">🍎</span>
+              <div>
+                <div class="store-sub">Download on the</div>
+                <div class="store-name">App Store</div>
+              </div>
+            </a>
+            <a href="#" class="store-btn">
+              <span class="store-icon">🤖</span>
+              <div>
+                <div class="store-sub">Get it on</div>
+                <div class="store-name">Google Play</div>
+              </div>
+            </a>
+          </div>
+        </div>
+        <div class="app-visual">
+          <div class="phone-mockup tall">
+            <div class="phone-screen s1">
+              <span>☕</span>
+              <span style="font-size:.7rem;color:rgba(255,255,255,.7);font-family:'Nunito',sans-serif;letter-spacing:.06em">HIGHLANDS</span>
+            </div>
+          </div>
+          <div class="phone-mockup short">
+            <div class="phone-screen s2">
+              <span>🎁</span>
+              <span style="font-size:.7rem;color:rgba(255,255,255,.7);font-family:'Nunito',sans-serif;letter-spacing:.06em">REWARDS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── NEWS ──────────────────────────────────────────── -->
+  <section class="section news-bg">
+    <div class="section-inner">
+      <div class="section-header">
+        <div class="section-eyebrow">Tin Tức</div>
+        <h2 class="section-title">Câu Chuyện <span class="italic">Cà Phê</span></h2>
+      </div>
+      <div class="news-grid">
+        <div class="news-card">
+          <div class="news-img n1">☕</div>
+          <div class="news-body">
+            <span class="news-tag">Văn Hóa Cà Phê</span>
+            <div class="news-title">Hành Trình Hạt Cà Phê Từ Tây Nguyên Đến Ly Uống</div>
+            <div class="news-excerpt">Khám phá quy trình thu hoạch và chế biến cà phê đặc sản từ những nông trại cao nguyên trứ danh của Việt Nam...</div>
+            <div class="news-meta">
+              <span class="news-date">12 Tháng 3, 2026</span>
+              <span class="read-more">Đọc Tiếp →</span>
+            </div>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-img n2">🌿</div>
+          <div class="news-body">
+            <span class="news-tag">Bền Vững</span>
+            <div class="news-title">Highlands Coffee Cam Kết Giảm 50% Rác Thải Nhựa Năm 2026</div>
+            <div class="news-excerpt">Sáng kiến cốc tái sử dụng và ống hút giấy đang được triển khai rộng rãi trên toàn hệ thống chuỗi...</div>
+            <div class="news-meta">
+              <span class="news-date">5 Tháng 3, 2026</span>
+              <span class="read-more">Đọc Tiếp →</span>
+            </div>
+          </div>
+        </div>
+        <div class="news-card">
+          <div class="news-img n3">🎉</div>
+          <div class="news-body">
+            <span class="news-tag">Sự Kiện</span>
+            <div class="news-title">Kỷ Niệm 25 Năm – Tuần Lễ Tri Ân Khách Hàng Thân Thiết</div>
+            <div class="news-excerpt">Chuỗi sự kiện đặc biệt với nhiều ưu đãi hấp dẫn diễn ra từ 20–26/3/2026 tại tất cả cửa hàng...</div>
+            <div class="news-meta">
+              <span class="news-date">1 Tháng 3, 2026</span>
+              <span class="read-more">Đọc Tiếp →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── STORE LOCATOR STRIP ────────────────────────────── -->
+  <div class="store-strip">
+    <div class="store-strip-inner">
+      <div>
+        <h3>📍 Tìm Cửa Hàng Gần Bạn</h3>
+        <p>600+ cửa hàng trên 30+ tỉnh thành – luôn có Highlands gần bạn</p>
+      </div>
+      <button class="strip-btn">Tìm Ngay →</button>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ─────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div class="footer-logo-mark">HC</div>
+          <span class="footer-brand-name">Highlands Coffee</span>
+        </div>
+        <p class="footer-desc">Đậm chất cà phê Việt – mang đến trải nghiệm uống cà phê đặc sắc nhất từ hơn 20 năm qua trên khắp đất nước.</p>
+        <div class="social-row">
+          <a href="#" class="social-btn">📘</a>
+          <a href="#" class="social-btn">📸</a>
+          <a href="#" class="social-btn">🎵</a>
+          <a href="#" class="social-btn">▶️</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Sản Phẩm</h4>
+        <a href="#" onclick="navigateTo(\'menu\'); return false">Cà Phê</a>
+        <a href="#" onclick="navigateTo(\'menu\'); return false">Trà Sữa & Trà</a>
+        <a href="#" onclick="navigateTo(\'menu\'); return false">Freeze</a>
+        <a href="#" onclick="navigateTo(\'menu\'); return false">Bánh & Đồ Ăn</a>
+        <a href="#">Combo Ưu Đãi</a>
+      </div>
+      <div class="footer-col">
+        <h4>Công Ty</h4>
+        <a href="#">Về Highlands</a>
+        <a href="#">Tin Tức</a>
+        <a href="#">Tuyển Dụng</a>
+        <a href="#">Nhượng Quyền</a>
+        <a href="#">Liên Hệ</a>
+      </div>
+      <div class="footer-col">
+        <h4>Hỗ Trợ</h4>
+        <a href="#">Highlands Rewards</a>
+        <a href="#" onclick="navigateTo('stores'); return false">Tìm Cửa Hàng</a>
+        <a href="#">Câu Hỏi Thường Gặp</a>
+        <a href="#">Chính Sách Bảo Mật</a>
+        <a href="#">Điều Khoản Sử Dụng</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-bottom-copy">© 2026 Highlands Coffee. Bảo lưu mọi quyền.</span>
+      <div class="footer-bottom-links">
+        <a href="#">Chính Sách Bảo Mật</a>
+        <a href="#">Điều Khoản</a>
+        <a href="#">Cookie</a>
+      </div>
+    </div>
+  </footer>
+  </div><!-- /page-home -->
+
+  <!-- ══ PAGE: MENU ═══════════════════════════════════════ -->
+  <div id="page-menu" style="display:none;min-height:80vh;padding:40px 0 80px">
+    <div style="max-width:1280px;margin:0 auto;padding:0 24px">
+      <div style="text-align:center;margin-bottom:36px">
+        <div style="font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#C8102E;margin-bottom:8px">Thực Đơn</div>
+        <h2 style="font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:900;color:#2C1810">Khám Phá <em>Hương Vị</em></h2>
+      </div>
+      <!-- Category tabs -->
+      <div id="menu-tabs" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:36px">
+        <button class="menu-tab active" data-cat="" onclick="filterMenu(this,'')">Tất Cả</button>
+        <button class="menu-tab" data-cat="Ca phe" onclick="filterMenu(this,'Ca phe')">☕ Cà Phê</button>
+        <button class="menu-tab" data-cat="Tra" onclick="filterMenu(this,'Tra')">🧋 Trà & Trà Sữa</button>
+        <button class="menu-tab" data-cat="Sinh to" onclick="filterMenu(this,'Sinh to')">🥤 Sinh Tố</button>
+        <button class="menu-tab" data-cat="Do an" onclick="filterMenu(this,'Do an')">🥐 Bánh & Đồ Ăn</button>
+        <button class="menu-tab" data-cat="Combo" onclick="filterMenu(this,'Combo')">🎁 Combo</button>
+      </div>
+      <div id="menu-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:24px"></div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: PROMOTIONS ══════════════════════════════════ -->
+  <div id="page-promotions" style="display:none;min-height:80vh;padding:40px 0 80px">
+    <div style="max-width:1280px;margin:0 auto;padding:0 24px">
+      <div style="text-align:center;margin-bottom:36px">
+        <div style="font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#C8102E;margin-bottom:8px">Ưu Đãi</div>
+        <h2 style="font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:900;color:#2C1810">Khuyến Mãi <em>Hấp Dẫn</em></h2>
+      </div>
+      <div id="promo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px"></div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: STORES ══════════════════════════════════════ -->
+  <div id="page-stores" style="display:none;min-height:80vh;padding:40px 0 80px">
+    <div style="max-width:1280px;margin:0 auto;padding:0 24px">
+      <div style="text-align:center;margin-bottom:32px">
+        <div style="font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#C8102E;margin-bottom:8px">Chuỗi Cửa Hàng</div>
+        <h2 style="font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:900;color:#2C1810">Tìm <em>Cửa Hàng</em></h2>
+      </div>
+      <div style="display:flex;gap:12px;max-width:600px;margin:0 auto 32px;flex-wrap:wrap">
+        <input id="store-search" type="text" placeholder="🔍 Tìm theo tên, địa chỉ..." oninput="searchStores()" style="flex:1;padding:12px 16px;border:2px solid #e0d8d0;border-radius:12px;font-size:.9rem;outline:none;font-family:inherit;min-width:200px">
+        <select id="store-city" onchange="searchStores()" style="padding:12px 16px;border:2px solid #e0d8d0;border-radius:12px;font-size:.9rem;outline:none;font-family:inherit;background:#fff;cursor:pointer">
+          <option value="">Tất cả thành phố</option>
+        </select>
+      </div>
+      <div id="stores-count" style="text-align:center;font-size:.85rem;color:#888;margin-bottom:20px"></div>
+      <div id="stores-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px"></div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: NEWS ════════════════════════════════════════ -->
+  <div id="page-news" style="display:none;min-height:80vh;padding:40px 0 80px">
+    <div style="max-width:1280px;margin:0 auto;padding:0 24px">
+      <div style="text-align:center;margin-bottom:36px">
+        <div style="font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#C8102E;margin-bottom:8px">Tin Tức</div>
+        <h2 style="font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:900;color:#2C1810">Tin Tức & <em>Sự Kiện</em></h2>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:32px">
+        <button class="news-filter-btn active" data-tag="" onclick="filterNews(this,'')">Tất Cả</button>
+        <button class="news-filter-btn" data-tag="Tin Tuc" onclick="filterNews(this,'Tin Tuc')">📰 Tin Tức</button>
+        <button class="news-filter-btn" data-tag="Su Kien" onclick="filterNews(this,'Su Kien')">🎉 Sự Kiện</button>
+        <button class="news-filter-btn" data-tag="Khuyen Mai" onclick="filterNews(this,'Khuyen Mai')">🏷️ Khuyến Mãi</button>
+      </div>
+      <div id="news-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px"></div>
+    </div>
+  </div>
+
+  <!-- ── PRODUCT DETAIL MODAL ──────────────────────────── -->
+  <div id="pdp-overlay" onclick="closePDP()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000"></div>
+  <div id="pdp-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:24px;padding:0;width:500px;max-width:96vw;z-index:1001;box-shadow:0 20px 60px rgba(44,24,16,.25);overflow:hidden">
+    <div id="pdp-content"></div>
+  </div>
+
+  <!-- ── AUTH MODAL ───────────────────────────────────── -->
+  <div id="auth-modal-overlay" onclick="closeAuthModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center"></div>
+  <div id="auth-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:24px;padding:36px 32px;width:420px;max-width:95vw;z-index:1001;box-shadow:0 20px 60px rgba(44,24,16,.2)">
+    <button onclick="closeAuthModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#aaa">✕</button>
+    <!-- Tab switcher -->
+    <div style="display:flex;border-bottom:2px solid #f0f0f0;margin-bottom:24px">
+      <button id="tab-login" onclick="switchAuthTab('login')" style="flex:1;padding:10px;border:none;background:none;font-weight:700;font-size:.95rem;cursor:pointer;color:#C8102E;border-bottom:2.5px solid #C8102E;margin-bottom:-2px">Đăng Nhập</button>
+      <button id="tab-register" onclick="switchAuthTab('register')" style="flex:1;padding:10px;border:none;background:none;font-weight:700;font-size:.95rem;cursor:pointer;color:#aaa">Đăng Ký</button>
+    </div>
+    <!-- Login form -->
+    <div id="form-login">
+      <input id="login-email" type="email" placeholder="Email" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+      <input id="login-password" type="password" placeholder="Mật khẩu" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:16px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+      <button onclick="doLogin()" style="width:100%;padding:13px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit">Đăng Nhập</button>
+    </div>
+    <!-- Register form -->
+    <div id="form-register" style="display:none">
+      <input id="reg-name" type="text" placeholder="Họ tên *" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+      <input id="reg-email" type="email" placeholder="Email *" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+      <input id="reg-phone" type="tel" placeholder="Số điện thoại" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+      <input id="reg-address" type="text" placeholder="Địa chỉ giao hàng" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+      <input id="reg-password" type="password" placeholder="Mật khẩu *" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:16px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+      <button onclick="doRegister()" style="width:100%;padding:13px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit">Tạo Tài Khoản</button>
+    </div>
+  </div>
+
+  <!-- ── PROFILE MODAL ─────────────────────────────────── -->
+  <div id="profile-overlay" onclick="closeProfileModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000"></div>
+  <div id="profile-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:24px;padding:0;width:480px;max-width:96vw;z-index:1001;box-shadow:0 20px 60px rgba(44,24,16,.25);overflow:hidden">
+    <div style="background:linear-gradient(135deg,#C8102E,#9B0C22);padding:28px 28px 20px;color:#fff">
+      <div style="font-size:3rem;margin-bottom:8px">👤</div>
+      <div id="profile-modal-name" style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900"></div>
+      <div id="profile-modal-email" style="font-size:.82rem;opacity:.8;margin-top:2px"></div>
+      <button onclick="closeProfileModal()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem">✕</button>
+    </div>
+    <!-- Tab nav -->
+    <div style="display:flex;border-bottom:2px solid #f0f0f0">
+      <button id="ptab-info" onclick="switchProfileTab('info')" style="flex:1;padding:12px;border:none;background:none;font-weight:700;font-size:.88rem;cursor:pointer;color:#C8102E;border-bottom:2.5px solid #C8102E;margin-bottom:-2px">Thông Tin</button>
+      <button id="ptab-pwd" onclick="switchProfileTab('pwd')" style="flex:1;padding:12px;border:none;background:none;font-weight:700;font-size:.88rem;cursor:pointer;color:#aaa">Đổi Mật Khẩu</button>
+    </div>
+    <!-- Info tab -->
+    <div id="pform-info" style="padding:24px">
+      <div id="profile-info-msg" style="margin-bottom:10px;font-size:.85rem;text-align:center"></div>
+      <label style="font-size:.8rem;font-weight:700;color:#5C3D2E;display:block;margin-bottom:4px">Họ tên</label>
+      <input id="p-name" type="text" style="width:100%;padding:10px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:12px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+      <label style="font-size:.8rem;font-weight:700;color:#5C3D2E;display:block;margin-bottom:4px">Email <span style="color:#aaa;font-weight:400">(không thể thay đổi)</span></label>
+      <input id="p-email" type="email" disabled style="width:100%;padding:10px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:12px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box;background:#f8f8f8;color:#aaa">
+      <label style="font-size:.8rem;font-weight:700;color:#5C3D2E;display:block;margin-bottom:4px">Số điện thoại</label>
+      <input id="p-phone" type="tel" style="width:100%;padding:10px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:12px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+      <label style="font-size:.8rem;font-weight:700;color:#5C3D2E;display:block;margin-bottom:4px">Địa chỉ giao hàng</label>
+      <input id="p-address" type="text" placeholder="Số nhà, đường, phường, quận..." style="width:100%;padding:10px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:16px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+      <button onclick="saveProfile()" style="width:100%;padding:12px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit">Lưu Thông Tin</button>
+    </div>
+    <!-- Change password tab -->
+    <div id="pform-pwd" style="padding:24px;display:none">
+      <div id="profile-pwd-msg" style="margin-bottom:10px;font-size:.85rem;text-align:center"></div>
+      <label style="font-size:.8rem;font-weight:700;color:#5C3D2E;display:block;margin-bottom:4px">Mật khẩu hiện tại</label>
+      <input id="p-old-pwd" type="password" placeholder="••••••••" style="width:100%;padding:10px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:12px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+      <label style="font-size:.8rem;font-weight:700;color:#5C3D2E;display:block;margin-bottom:4px">Mật khẩu mới</label>
+      <input id="p-new-pwd" type="password" placeholder="Tối thiểu 6 ký tự" style="width:100%;padding:10px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:12px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+      <label style="font-size:.8rem;font-weight:700;color:#5C3D2E;display:block;margin-bottom:4px">Xác nhận mật khẩu mới</label>
+      <input id="p-confirm-pwd" type="password" placeholder="Nhập lại mật khẩu mới" style="width:100%;padding:10px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:16px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+      <button onclick="savePassword()" style="width:100%;padding:12px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit">Đổi Mật Khẩu</button>
+    </div>
+  </div>
+
+  <!-- ── ORDERS HISTORY DRAWER ─────────────────────────── -->
+  <div id="orders-overlay" onclick="closeOrders()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:900"></div>
+  <div id="orders-drawer" style="position:fixed;top:0;right:0;width:460px;max-width:100vw;height:100%;background:#fff;z-index:901;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-8px 0 40px rgba(0,0,0,.15)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #f0f0f0">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.3rem;color:#2C1810">📋 Đơn Hàng Của Tôi</h3>
+      <button onclick="closeOrders()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#888">✕</button>
+    </div>
+    <div id="orders-list" style="flex:1;overflow-y:auto;padding:16px 24px"></div>
+  </div>
+
+  <!-- ── CART DRAWER ──────────────────────────────────── -->
+  <div id="cart-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:900" onclick="closeCart()"></div>
+  <div id="cart-drawer" style="position:fixed;top:0;right:0;width:420px;max-width:100vw;height:100%;background:#fff;z-index:901;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-8px 0 40px rgba(0,0,0,.15)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #f0f0f0">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.3rem;color:#2C1810">🛒 Giỏ Hàng</h3>
+      <button onclick="closeCart()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#888;line-height:1">✕</button>
+    </div>
+    <div id="cart-items" style="flex:1;overflow-y:auto;padding:16px 24px"></div>
+    <div id="cart-footer" style="border-top:1px solid #f0f0f0;padding:20px 24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <span style="font-size:1rem;color:#5C3D2E;font-weight:600">Tổng cộng:</span>
+        <span id="cart-total" style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:#C8102E">0đ</span>
+      </div>
+      <!-- Order form -->
+      <div id="order-form" style="margin-bottom:14px">
+        <input id="f-name" type="text" placeholder="Họ tên *" style="width:100%;padding:10px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:8px;font-size:.9rem;outline:none;font-family:inherit">
+        <input id="f-phone" type="tel" placeholder="Số điện thoại *" style="width:100%;padding:10px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:8px;font-size:.9rem;outline:none;font-family:inherit">
+        <!-- Address field with saved-address option -->
+        <div id="f-address-group">
+          <div id="f-saved-address-row" style="display:none;background:#fff8f0;border:1.5px solid #f0ddd0;border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:.85rem;color:#5C3D2E">
+            <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+              <input type="checkbox" id="f-use-saved" onchange="toggleSavedAddress()" style="margin-top:2px;accent-color:#C8102E">
+              <span>Dùng địa chỉ của tôi: <strong id="f-saved-addr-text"></strong></span>
+            </label>
+          </div>
+          <input id="f-address" type="text" placeholder="Địa chỉ giao hàng *" style="width:100%;padding:10px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:8px;font-size:.9rem;outline:none;font-family:inherit">
+        </div>
+        <input id="f-note" type="text" placeholder="Ghi chú (không bắt buộc)" style="width:100%;padding:10px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:12px;font-size:.9rem;outline:none;font-family:inherit">
+        <button id="checkout-btn" onclick="submitOrder()" style="width:100%;padding:14px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s">Đặt Hàng Ngay 🎉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" style="position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(80px);background:#2C1810;color:#fff;padding:14px 28px;border-radius:50px;font-size:.95rem;font-weight:600;z-index:999;opacity:0;transition:all .35s;pointer-events:none;white-space:nowrap"></div>
+
+  <script>
+    // ── Tab switching ────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // ── Category cards ───────────────────────────────────
+    document.querySelectorAll('.cat-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+      });
+    });
+
+    // ── Favourite toggle ─────────────────────────────────
+    document.querySelectorAll('.product-fav').forEach(fav => {
+      fav.addEventListener('click', e => {
+        e.stopPropagation();
+        fav.textContent = fav.textContent === '🤍' ? '❤️' : '🤍';
+      });
+    });
+
+    // ── Nav highlight ────────────────────────────────────
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+      });
+    });
+
+    // ── Cart state ───────────────────────────────────────
+    // cart: { [productKey]: { name, price, qty, emoji } }
+    const cart = {};
+
+    function fmt(n) { return n.toLocaleString('vi-VN') + 'đ'; }
+
+    function toast(msg, ok = true) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.background = ok ? '#2C1810' : '#C8102E';
+      t.style.opacity = '1';
+      t.style.transform = 'translateX(-50%) translateY(0)';
+      setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(-50%) translateY(80px)'; }, 2800);
+    }
+
+    function updateBadge() {
+      const total = Object.values(cart).reduce((s, i) => s + i.qty, 0);
+      const badge = document.getElementById('cart-count');
+      badge.textContent = total;
+      badge.style.display = total ? 'inline-flex' : 'none';
+    }
+
+    function renderCart() {
+      const el = document.getElementById('cart-items');
+      const items = Object.entries(cart);
+      if (!items.length) {
+        el.innerHTML = '<div style="text-align:center;padding:48px 0;color:#aaa"><div style="font-size:3rem;margin-bottom:12px">🛒</div><p>Giỏ hàng trống</p></div>';
+        document.getElementById('cart-total').textContent = '0đ';
+        return;
+      }
+      el.innerHTML = items.map(([key, item]) => `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f5f0eb">
+          <div style="font-size:2rem;width:50px;height:50px;background:#fff8f0;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${item.emoji}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:.9rem;color:#2C1810;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name}</div>
+            <div style="color:#C8102E;font-weight:700;font-size:.85rem;margin-top:2px">${fmt(item.price)}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <button onclick="changeQty('${key}',-1)" style="width:28px;height:28px;border-radius:50%;border:1.5px solid #e0d8d0;background:#fff;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;color:#5C3D2E">−</button>
+            <span style="font-weight:700;min-width:20px;text-align:center">${item.qty}</span>
+            <button onclick="changeQty('${key}',1)" style="width:28px;height:28px;border-radius:50%;border:none;background:#C8102E;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;color:#fff">+</button>
+          </div>
+        </div>`).join('');
+      const total = items.reduce((s,[,i]) => s + i.price * i.qty, 0);
+      document.getElementById('cart-total').textContent = fmt(total);
+    }
+
+    function changeQty(key, delta) {
+      if (!cart[key]) return;
+      cart[key].qty += delta;
+      if (cart[key].qty <= 0) delete cart[key];
+      updateBadge();
+      renderCart();
+    }
+
+    // ── Add to cart from product cards ───────────────────
+    document.querySelectorAll('.product-card').forEach(card => {
+      const addBtn = card.querySelector('.add-btn');
+      if (!addBtn) return;
+      addBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        const name = card.querySelector('.product-name').textContent.trim();
+        const priceText = card.querySelector('.product-price').childNodes[0].textContent.trim();
+        const price = parseInt(priceText.replace(/\D/g, '')) || 0;
+        const emoji = card.querySelector('.product-thumb').textContent.trim() || '☕';
+        const key = name;
+        if (cart[key]) cart[key].qty++;
+        else cart[key] = { name, price, qty: 1, emoji };
+        updateBadge();
+        toast(`Đã thêm "${name}" vào giỏ 🛒`);
+        // bounce animation
+        addBtn.style.transform = 'scale(1.4)';
+        setTimeout(() => addBtn.style.transform = '', 200);
+      });
+    });
+
+    // ── Cart open / close ────────────────────────────────
+    function openCart() {
+      renderCart();
+      // Auto-fill user info and default address
+      if (authUser) {
+        const fn = document.getElementById('f-name');
+        const fp = document.getElementById('f-phone');
+        if (fn && !fn.value) fn.value = authUser.name || '';
+        if (fp && !fp.value) fp.value = authUser.phone || '';
+        const savedRow = document.getElementById('f-saved-address-row');
+        const savedTxt = document.getElementById('f-saved-addr-text');
+        const addrInput = document.getElementById('f-address');
+        const cb = document.getElementById('f-use-saved');
+        if (authUser.address && savedRow) {
+          savedTxt.textContent = authUser.address;
+          savedRow.style.display = '';
+          // Auto-check and auto-fill by default
+          cb.checked = true;
+          addrInput.value = authUser.address;
+          addrInput.disabled = true;
+          addrInput.style.background = '#f8f8f8';
+        }
+      }
+      document.getElementById('cart-drawer').style.transform = 'translateX(0)';
+      document.getElementById('cart-overlay').style.display = 'block';
+      document.body.style.overflow = 'hidden';
+    }
+    function closeCart() {
+      document.getElementById('cart-drawer').style.transform = 'translateX(100%)';
+      document.getElementById('cart-overlay').style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('cart-btn').addEventListener('click', openCart);
+
+    // ── Submit order to FastAPI ───────────────────────────
+    async function submitOrder() {
+      const name    = document.getElementById('f-name').value.trim();
+      const phone   = document.getElementById('f-phone').value.trim();
+      const address = document.getElementById('f-address').value.trim();
+      const note    = document.getElementById('f-note').value.trim();
+      const items   = Object.values(cart);
+
+      if (!name)  { toast('Vui lòng nhập họ tên!', false); document.getElementById('f-name').focus(); return; }
+      if (!phone) { toast('Vui lòng nhập số điện thoại!', false); document.getElementById('f-phone').focus(); return; }
+      if (!address){ toast('Vui lòng nhập địa chỉ giao hàng!', false); document.getElementById('f-address').focus(); return; }
+      if (!items.length) { toast('Giỏ hàng đang trống!', false); return; }
+
+      const btn = document.getElementById('checkout-btn');
+      btn.textContent = 'Đang xử lý...';
+      btn.disabled = true;
+
+      const orderItems = items
+        .filter(i => i.product_id)
+        .map(i => ({ product_id: i.product_id, quantity: i.qty }));
+      if (!orderItems.length) { toast('Lỗi: không xác định được sản phẩm!', false); return; }
+
+      const headers = { 'Content-Type': 'application/json' };
+      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+      try {
+        const res = await fetch('/api/orders', {
+          method: 'POST', headers,
+          body: JSON.stringify({ customer_name: name, phone, address, note, items: orderItems })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          Object.keys(cart).forEach(k => delete cart[k]);
+          updateBadge();
+          ['f-name','f-phone','f-address','f-note'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.value = ''; el.disabled = false; }
+          });
+          const cb = document.getElementById('f-use-saved');
+          if (cb) cb.checked = false;
+          closeCart();
+          toast(`✅ Đặt hàng thành công! Mã đơn #${data.order.id} – tổng ${fmt(data.order.total)}`);
+        } else {
+          toast('Có lỗi xảy ra. Vui lòng thử lại!', false);
+        }
+      } catch {
+        toast('Không kết nối được server!', false);
+      } finally {
+        btn.textContent = 'Đặt Hàng Ngay 🎉';
+        btn.disabled = false;
+      }
+    }
+
+    // "Đặt Ngay" / order-now-btn opens cart
+    document.getElementById('order-now-btn').addEventListener('click', e => { e.preventDefault(); openCart(); });
+
+    // ── Featured products (homepage) ─────────────────────
+    let featuredProducts = [], featuredCat = '';
+    const catBgMap = { coffee:'linear-gradient(145deg,#fff0e0,#ffd8b0)', tea:'linear-gradient(145deg,#e8f4ff,#c8e8ff)', freeze:'linear-gradient(145deg,#e8fdf0,#b8f0cc)', food:'linear-gradient(145deg,#fff8e0,#ffe8a0)', combo:'linear-gradient(145deg,#f4e8ff,#dcc8ff)' };
+
+    async function loadFeaturedProducts() {
+      const grid = document.getElementById('featured-grid');
+      if (!grid) return;
+      try {
+        const res = await fetch('/api/products');
+        featuredProducts = await res.json();
+        renderFeatured(featuredProducts);
+      } catch {
+        if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa">❌ Không tải được sản phẩm</div>';
+      }
+    }
+
+    function filterFeatured(btn, cat) {
+      featuredCat = cat;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderFeatured(cat ? featuredProducts.filter(p => p.category === cat) : featuredProducts);
+    }
+
+    function renderFeatured(products) {
+      const grid = document.getElementById('featured-grid');
+      if (!grid) return;
+      const shown = products.slice(0, 8);
+      grid.innerHTML = shown.map(p => `
+        <div class="product-card" onclick="openPDP(${p.id})" style="cursor:pointer">
+          <div class="product-img-wrap">
+            <div class="product-thumb" style="background:${catBgMap[p.category]||'#f5f0eb'};display:flex;align-items:center;justify-content:center;font-size:3.5rem;height:100%">${p.emoji||'☕'}</div>
+          </div>
+          <div class="product-info">
+            <div class="product-name">${p.name}</div>
+            <div class="product-sub" style="font-size:.78rem;color:#888;margin-bottom:8px;line-height:1.4">${p.description||''}</div>
+            <div class="product-footer">
+              <div class="product-price">${p.price.toLocaleString('vi-VN')}đ</div>
+              <button class="add-btn" onclick="event.stopPropagation();addToCartById(${p.id})">+</button>
+            </div>
+          </div>
+        </div>`).join('') || '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa">Không có sản phẩm</div>';
+    }
+
+    // Load featured products on page load
+    loadFeaturedProducts();
+
+    // ── SPA Router ───────────────────────────────────────
+    const API = '';  // same origin (FastAPI serves both frontend and API)
+    const PAGES = ['home','menu','promotions','stores','news'];
+
+    function navigateTo(page, linkEl) {
+      PAGES.forEach(p => {
+        const el = document.getElementById('page-' + p);
+        if (el) el.style.display = p === page ? '' : 'none';
+      });
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      if (linkEl) linkEl.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // lazy-load page data
+      if (page === 'menu')       loadMenuPage();
+      if (page === 'promotions') loadPromotionsPage();
+      if (page === 'stores')     loadStoresPage();
+      if (page === 'news')       loadNewsPage();
+    }
+
+    // ── Menu page ────────────────────────────────────────
+    let allProducts = [], currentCat = '';
+
+    async function loadMenuPage() {
+      if (allProducts.length) { renderMenuGrid(allProducts); return; }
+      document.getElementById('menu-grid').innerHTML = '<div class="page-loading">⏳ Đang tải...</div>';
+      try {
+        const res = await fetch(`${API}/api/products`);
+        allProducts = await res.json();
+        renderMenuGrid(allProducts);
+      } catch { document.getElementById('menu-grid').innerHTML = '<div class="page-loading">❌ Lỗi tải sản phẩm</div>'; }
+    }
+
+    function filterMenu(btn, cat) {
+      currentCat = cat;
+      document.querySelectorAll('.menu-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderMenuGrid(cat ? allProducts.filter(p => p.category === cat) : allProducts);
+    }
+
+    function renderMenuGrid(products) {
+      const catBg = { coffee:'linear-gradient(145deg,#fff0e0,#ffd8b0)', tea:'linear-gradient(145deg,#e8f4ff,#c8e8ff)', freeze:'linear-gradient(145deg,#e8fdf0,#b8f0cc)', food:'linear-gradient(145deg,#fff8e0,#ffe8a0)', combo:'linear-gradient(145deg,#f4e8ff,#dcc8ff)' };
+      document.getElementById('menu-grid').innerHTML = products.map(p => `
+        <div class="api-product-card" onclick="openPDP(${p.id})">
+          <div class="api-card-thumb" style="background:${catBg[p.category]||'#f5f0eb'}">${p.emoji||'☕'}</div>
+          <div style="padding:16px">
+            <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:1rem;color:#2C1810;margin-bottom:4px">${p.name}</div>
+            <div style="font-size:.78rem;color:#888;margin-bottom:12px;line-height:1.5">${p.description||''}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:#C8102E">${p.price.toLocaleString('vi-VN')}đ</span>
+              <button onclick="event.stopPropagation();addToCartById(${p.id})" style="width:32px;height:32px;border-radius:50%;background:#C8102E;color:#fff;border:none;font-size:1.1rem;cursor:pointer;transition:transform .2s" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform=''">+</button>
+            </div>
+          </div>
+        </div>`).join('') || '<div class="page-loading">Không có sản phẩm</div>';
+    }
+
+    function addToCartById(id) {
+      // Search in allProducts (menu page) OR featuredProducts (homepage)
+      const p = allProducts.find(x => x.id === id) || featuredProducts.find(x => x.id === id);
+      if (!p) return;
+      const key = p.name;
+      if (cart[key]) cart[key].qty++;
+      else cart[key] = { name: p.name, price: p.price, qty: 1, emoji: p.emoji || '☕', product_id: p.id };
+      updateBadge();
+      toast(`Đã thêm "${p.name}" 🛒`);
+    }
+
+    // ── Product detail modal ──────────────────────────────
+    async function openPDP(id) {
+      document.getElementById('pdp-overlay').style.display = 'block';
+      document.getElementById('pdp-modal').style.display   = 'block';
+      document.getElementById('pdp-content').innerHTML     = '<div style="padding:48px;text-align:center;color:#aaa">⏳ Đang tải...</div>';
+      try {
+        const p = allProducts.find(x => x.id === id) || await (await fetch(`${API}/api/products/${id}`)).json();
+        const catBg = { coffee:'linear-gradient(145deg,#fff0e0,#ffd8b0)', tea:'linear-gradient(145deg,#e8f4ff,#c8e8ff)', freeze:'linear-gradient(145deg,#e8fdf0,#b8f0cc)', food:'linear-gradient(145deg,#fff8e0,#ffe8a0)', combo:'linear-gradient(145deg,#f4e8ff,#dcc8ff)' };
+        document.getElementById('pdp-content').innerHTML = `
+          <div style="height:200px;display:flex;align-items:center;justify-content:center;font-size:6rem;background:${catBg[p.category]||'#f5f0eb'}">${p.emoji||'☕'}</div>
+          <div style="padding:28px 28px 24px">
+            <span style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#C8102E;background:rgba(200,16,46,.08);padding:3px 10px;border-radius:20px">${p.category}</span>
+            <h3 style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:#2C1810;margin:12px 0 8px">${p.name}</h3>
+            <p style="color:#888;font-size:.88rem;line-height:1.7;margin-bottom:20px">${p.description||'Thức uống thơm ngon đặc trưng của Highlands Coffee.'}</p>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;color:#C8102E">${p.price.toLocaleString('vi-VN')}đ</span>
+              <button onclick="addToCartById(${p.id});closePDP()" style="padding:12px 28px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit">🛒 Thêm vào giỏ</button>
+            </div>
+          </div>
+          <button onclick="closePDP()" style="position:absolute;top:14px;right:14px;background:rgba(0,0,0,.35);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem">✕</button>`;
+        document.getElementById('pdp-modal').style.position = 'fixed';
+      } catch { document.getElementById('pdp-content').innerHTML = '<div style="padding:32px;color:#C8102E">Lỗi tải sản phẩm</div>'; }
+    }
+    function closePDP() {
+      document.getElementById('pdp-overlay').style.display = 'none';
+      document.getElementById('pdp-modal').style.display   = 'none';
+    }
+
+    // ── Promotions page ───────────────────────────────────
+    async function loadPromotionsPage() {
+      const grid = document.getElementById('promo-grid');
+      if (grid.dataset.loaded) return;
+      grid.innerHTML = '<div class="page-loading" style="grid-column:1/-1">⏳ Đang tải...</div>';
+      try {
+        const res  = await fetch(`${API}/api/promotions`);
+        const data = await res.json();
+        grid.dataset.loaded = '1';
+        grid.innerHTML = data.map(p => `
+          <div class="promo-card">
+            <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px">
+              <span style="font-size:2.8rem">${p.emoji||'🎁'}</span>
+              <div>
+                <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#C8102E;background:rgba(200,16,46,.1);padding:2px 8px;border-radius:20px">${p.tag||'ƯU ĐÃI'}</span>
+                <h3 style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:900;color:#2C1810;margin:8px 0 4px">${p.title}</h3>
+              </div>
+            </div>
+            <p style="font-size:.85rem;color:#5C3D2E;line-height:1.65;margin-bottom:16px">${p.description||''}</p>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:#C8102E">${p.discount||''}</span>
+              ${p.valid_until ? `<span style="font-size:.72rem;color:#aaa">HSD: ${p.valid_until}</span>` : ''}
+            </div>
+          </div>`).join('') || '<div class="page-loading" style="grid-column:1/-1">Không có khuyến mãi</div>';
+      } catch { grid.innerHTML = '<div class="page-loading" style="grid-column:1/-1">❌ Lỗi tải</div>'; }
+    }
+
+    // ── Stores page ───────────────────────────────────────
+    let allStores = [];
+
+    async function loadStoresPage() {
+      if (allStores.length) { renderStores(allStores); return; }
+      document.getElementById('stores-grid').innerHTML = '<div class="page-loading" style="grid-column:1/-1">⏳ Đang tải...</div>';
+      try {
+        const res = await fetch(`${API}/api/stores`);
+        allStores = await res.json();
+        renderStores(allStores);
+
+        // Load cities and populate dropdown
+        try {
+          const citiesRes = await fetch(`${API}/api/stores/cities`);
+          const cities = await citiesRes.json();
+          const citySelect = document.getElementById('store-city');
+          cities.forEach(city => {
+            const option = document.createElement('option');
+            option.value = city;
+            option.textContent = city;
+            citySelect.appendChild(option);
+          });
+        } catch (e) { console.log('Could not load cities'); }
+      } catch { document.getElementById('stores-grid').innerHTML = '<div class="page-loading" style="grid-column:1/-1">❌ Lỗi tải</div>'; }
+    }
+
+    function searchStores() {
+      const q    = document.getElementById('store-search').value.toLowerCase();
+      const city = document.getElementById('store-city').value;
+      const filtered = allStores.filter(s =>
+        (!q    || s.name.toLowerCase().includes(q) || s.address.toLowerCase().includes(q)) &&
+        (!city || s.city === city)
+      );
+      renderStores(filtered);
+    }
+
+    function renderStores(stores) {
+      document.getElementById('stores-count').textContent = `Tìm thấy ${stores.length} cửa hàng`;
+      document.getElementById('stores-grid').innerHTML = stores.map(s => `
+        <div class="store-card">
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px">
+            <span style="font-size:1.8rem;flex-shrink:0">🏪</span>
+            <div>
+              <h4 style="font-family:'Playfair Display',serif;font-weight:700;color:#2C1810;margin-bottom:3px">${s.name}</h4>
+              <span style="font-size:.7rem;font-weight:700;color:#C8102E;background:rgba(200,16,46,.08);padding:2px 8px;border-radius:20px">${s.city}</span>
+            </div>
+          </div>
+          <div style="font-size:.82rem;color:#5C3D2E;margin-bottom:6px">📍 ${s.address}</div>
+          <div style="font-size:.82rem;color:#888;margin-bottom:4px">🕐 ${s.hours}</div>
+          ${s.phone ? `<div style="font-size:.82rem;color:#888">📞 ${s.phone}</div>` : ''}
+        </div>`).join('') || '<div class="page-loading" style="grid-column:1/-1">Không tìm thấy cửa hàng</div>';
+    }
+
+    // ── News page ─────────────────────────────────────────
+    let allNews = [];
+
+    async function loadNewsPage() {
+      if (allNews.length) { renderNews(allNews); return; }
+      document.getElementById('news-grid').innerHTML = '<div class="page-loading" style="grid-column:1/-1">⏳ Đang tải...</div>';
+      try {
+        const res = await fetch(`${API}/api/news`);
+        allNews   = await res.json();
+        renderNews(allNews);
+      } catch { document.getElementById('news-grid').innerHTML = '<div class="page-loading" style="grid-column:1/-1">❌ Lỗi tải</div>'; }
+    }
+
+    function filterNews(btn, tag) {
+      document.querySelectorAll('.news-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderNews(tag ? allNews.filter(n => n.tag === tag) : allNews);
+    }
+
+    function renderNews(newsList) {
+      const tagColor = { 'Tin Tức':'#3b82f6', 'Sự Kiện':'#10b981', 'Khuyến Mãi':'#C8102E' };
+      document.getElementById('news-grid').innerHTML = newsList.map(n => `
+        <div class="api-news-card" onclick="openNewsDetail(${n.id})">
+          <div style="height:160px;display:flex;align-items:center;justify-content:center;font-size:4.5rem;background:linear-gradient(135deg,#fff8f0,#ffe8d8)">${n.emoji||'📰'}</div>
+          <div style="padding:20px">
+            <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:${tagColor[n.tag]||'#888'};background:rgba(0,0,0,.05);padding:2px 8px;border-radius:20px">${n.tag||'Tin Tức'}</span>
+            <h4 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:#2C1810;margin:10px 0 8px;line-height:1.4">${n.title}</h4>
+            <p style="font-size:.78rem;color:#888;line-height:1.6;margin-bottom:12px">${n.excerpt||''}</p>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:.72rem;color:#aaa">${n.published_at||''}</span>
+              <span style="font-size:.75rem;color:#C8102E;font-weight:700">Đọc thêm →</span>
+            </div>
+          </div>
+        </div>`).join('') || '<div class="page-loading" style="grid-column:1/-1">Không có tin tức</div>';
+    }
+
+    function openNewsDetail(id) {
+      const n = allNews.find(x => x.id === id);
+      if (!n) return;
+      document.getElementById('pdp-content').innerHTML = `
+        <div style="height:180px;display:flex;align-items:center;justify-content:center;font-size:5rem;background:linear-gradient(135deg,#fff8f0,#ffe8d8)">${n.emoji||'📰'}</div>
+        <div style="padding:28px">
+          <span style="font-size:.7rem;font-weight:700;color:#C8102E;background:rgba(200,16,46,.08);padding:2px 8px;border-radius:20px">${n.tag||''}</span>
+          <h3 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:#2C1810;margin:12px 0 8px">${n.title}</h3>
+          <p style="font-size:.8rem;color:#aaa;margin-bottom:16px">${n.published_at||''}</p>
+          <p style="color:#5C3D2E;font-size:.9rem;line-height:1.75">${n.content||n.excerpt||''}</p>
+        </div>
+        <button onclick="closePDP()" style="position:absolute;top:14px;right:14px;background:rgba(0,0,0,.35);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem">✕</button>`;
+      document.getElementById('pdp-overlay').style.display = 'block';
+      document.getElementById('pdp-modal').style.display   = 'block';
+    }
+
+    // ── Auth state ───────────────────────────────────────
+    let authToken = localStorage.getItem('hc_token') || null;
+    let authUser  = JSON.parse(localStorage.getItem('hc_user') || 'null');
+
+    function applyAuthUI() {
+      const loggedIn = !!authToken;
+      document.getElementById('auth-nav-btn').style.display  = loggedIn ? 'none'         : '';
+      document.getElementById('user-nav').style.display      = loggedIn ? 'flex'         : 'none';
+      document.getElementById('orders-btn').style.display    = loggedIn ? 'inline-flex'  : 'none';
+      // top bar
+      const tbAuth = document.getElementById('topbar-auth');
+      const tbUser = document.getElementById('topbar-user');
+      if (tbAuth) tbAuth.style.display = loggedIn ? 'none' : '';
+      if (tbUser) tbUser.style.display = loggedIn ? '' : 'none';
+      if (loggedIn && authUser) {
+        document.getElementById('user-greeting').textContent = `👋 ${authUser.name.split(' ').pop()}`;
+        // pre-fill order form with user info
+        const fn = document.getElementById('f-name');
+        const fp = document.getElementById('f-phone');
+        if (fn && !fn.value) fn.value = authUser.name || '';
+        if (fp && !fp.value) fp.value = authUser.phone || '';
+        // show saved address option
+        const savedRow = document.getElementById('f-saved-address-row');
+        const savedTxt = document.getElementById('f-saved-addr-text');
+        if (savedRow && authUser.address) {
+          savedTxt.textContent = authUser.address;
+          savedRow.style.display = '';
+        } else if (savedRow) {
+          savedRow.style.display = 'none';
+        }
+      }
+    }
+    applyAuthUI();
+
+    function saveAuth(token, user) {
+      authToken = token;
+      authUser  = user;
+      localStorage.setItem('hc_token', token);
+      localStorage.setItem('hc_user', JSON.stringify(user));
+      applyAuthUI();
+    }
+
+    function logout() {
+      authToken = null; authUser = null;
+      localStorage.removeItem('hc_token');
+      localStorage.removeItem('hc_user');
+      applyAuthUI();
+      toast('Đã đăng xuất');
+    }
+
+    // ── Toggle saved address checkbox ─────────────────────
+    function toggleSavedAddress() {
+      const checked = document.getElementById('f-use-saved').checked;
+      const addrInput = document.getElementById('f-address');
+      if (checked && authUser && authUser.address) {
+        addrInput.value = authUser.address;
+        addrInput.disabled = true;
+        addrInput.style.background = '#f8f8f8';
+      } else {
+        addrInput.disabled = false;
+        addrInput.style.background = '';
+        addrInput.value = '';
+      }
+    }
+
+    // ── Profile modal ─────────────────────────────────────
+    function openProfileModal() {
+      if (!authUser) return;
+      document.getElementById('profile-modal-name').textContent = authUser.name || '';
+      document.getElementById('profile-modal-email').textContent = authUser.email || '';
+      document.getElementById('p-name').value = authUser.name || '';
+      document.getElementById('p-email').value = authUser.email || '';
+      document.getElementById('p-phone').value = authUser.phone || '';
+      document.getElementById('p-address').value = authUser.address || '';
+      document.getElementById('profile-info-msg').textContent = '';
+      document.getElementById('profile-pwd-msg').textContent = '';
+      ['p-old-pwd','p-new-pwd','p-confirm-pwd'].forEach(id => document.getElementById(id).value = '');
+      switchProfileTab('info');
+      document.getElementById('profile-overlay').style.display = 'block';
+      document.getElementById('profile-modal').style.display = 'block';
+    }
+    function closeProfileModal() {
+      document.getElementById('profile-overlay').style.display = 'none';
+      document.getElementById('profile-modal').style.display = 'none';
+    }
+    function switchProfileTab(tab) {
+      const isInfo = tab === 'info';
+      document.getElementById('pform-info').style.display = isInfo ? '' : 'none';
+      document.getElementById('pform-pwd').style.display  = isInfo ? 'none' : '';
+      document.getElementById('ptab-info').style.color = isInfo ? '#C8102E' : '#aaa';
+      document.getElementById('ptab-info').style.borderBottom = isInfo ? '2.5px solid #C8102E' : '2.5px solid transparent';
+      document.getElementById('ptab-pwd').style.color  = isInfo ? '#aaa' : '#C8102E';
+      document.getElementById('ptab-pwd').style.borderBottom = isInfo ? '2.5px solid transparent' : '2.5px solid #C8102E';
+    }
+    async function saveProfile() {
+      const name    = document.getElementById('p-name').value.trim();
+      const phone   = document.getElementById('p-phone').value.trim();
+      const address = document.getElementById('p-address').value.trim();
+      const msg     = document.getElementById('profile-info-msg');
+      if (!name) { msg.style.color = '#C8102E'; msg.textContent = 'Vui lòng nhập họ tên'; return; }
+      try {
+        const res  = await fetch('/api/auth/profile', {
+          method: 'PUT', headers: {'Content-Type':'application/json', Authorization:`Bearer ${authToken}`},
+          body: JSON.stringify({ name, phone: phone || null, address: address || null })
+        });
+        const data = await res.json();
+        if (!res.ok) { msg.style.color = '#C8102E'; msg.textContent = data.detail || 'Lỗi cập nhật'; return; }
+        // update local state
+        authUser = { ...authUser, name: data.name, phone: data.phone, address: data.address };
+        localStorage.setItem('hc_user', JSON.stringify(authUser));
+        applyAuthUI();
+        document.getElementById('profile-modal-name').textContent = data.name;
+        msg.style.color = '#2a9d5c'; msg.textContent = '✅ Đã lưu thông tin';
+        toast('✅ Cập nhật thông tin thành công');
+      } catch { msg.style.color = '#C8102E'; msg.textContent = 'Lỗi kết nối server'; }
+    }
+    async function savePassword() {
+      const oldPwd  = document.getElementById('p-old-pwd').value;
+      const newPwd  = document.getElementById('p-new-pwd').value;
+      const confirm = document.getElementById('p-confirm-pwd').value;
+      const msg     = document.getElementById('profile-pwd-msg');
+      if (!oldPwd || !newPwd) { msg.style.color = '#C8102E'; msg.textContent = 'Vui lòng điền đầy đủ'; return; }
+      if (newPwd.length < 6)  { msg.style.color = '#C8102E'; msg.textContent = 'Mật khẩu mới tối thiểu 6 ký tự'; return; }
+      if (newPwd !== confirm)  { msg.style.color = '#C8102E'; msg.textContent = 'Mật khẩu xác nhận không khớp'; return; }
+      try {
+        const res  = await fetch('/api/auth/change-password', {
+          method: 'PUT', headers: {'Content-Type':'application/json', Authorization:`Bearer ${authToken}`},
+          body: JSON.stringify({ old_password: oldPwd, new_password: newPwd })
+        });
+        const data = await res.json();
+        if (!res.ok) { msg.style.color = '#C8102E'; msg.textContent = data.detail || 'Lỗi đổi mật khẩu'; return; }
+        ['p-old-pwd','p-new-pwd','p-confirm-pwd'].forEach(id => document.getElementById(id).value = '');
+        msg.style.color = '#2a9d5c'; msg.textContent = '✅ Đổi mật khẩu thành công';
+        toast('✅ Đổi mật khẩu thành công');
+      } catch { msg.style.color = '#C8102E'; msg.textContent = 'Lỗi kết nối server'; }
+    }
+
+    // ── Auth modal ───────────────────────────────────────
+    function openAuthModal() {
+      document.getElementById('auth-modal-overlay').style.display = 'block';
+      document.getElementById('auth-modal').style.display = 'block';
+    }
+    function closeAuthModal() {
+      document.getElementById('auth-modal-overlay').style.display = 'none';
+      document.getElementById('auth-modal').style.display = 'none';
+    }
+    function switchAuthTab(tab) {
+      const isLogin = tab === 'login';
+      document.getElementById('form-login').style.display    = isLogin ? '' : 'none';
+      document.getElementById('form-register').style.display = isLogin ? 'none' : '';
+      document.getElementById('tab-login').style.color       = isLogin ? '#C8102E' : '#aaa';
+      document.getElementById('tab-login').style.borderBottom= isLogin ? '2.5px solid #C8102E' : '2.5px solid transparent';
+      document.getElementById('tab-register').style.color    = isLogin ? '#aaa' : '#C8102E';
+      document.getElementById('tab-register').style.borderBottom = isLogin ? '2.5px solid transparent' : '2.5px solid #C8102E';
+    }
+
+    async function doLogin() {
+      const email    = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      if (!email || !password) { toast('Vui lòng nhập email và mật khẩu', false); return; }
+      try {
+        const res  = await fetch('/api/auth/login', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { toast(data.detail || 'Đăng nhập thất bại', false); return; }
+        saveAuth(data.access_token, data.user);
+        closeAuthModal();
+        toast(`✅ Chào mừng ${data.user.name}!`);
+      } catch { toast('Lỗi kết nối server', false); }
+    }
+
+    async function doRegister() {
+      const name     = document.getElementById('reg-name').value.trim();
+      const email    = document.getElementById('reg-email').value.trim();
+      const phone    = document.getElementById('reg-phone').value.trim();
+      const address  = document.getElementById('reg-address').value.trim();
+      const password = document.getElementById('reg-password').value;
+      if (!name || !email || !password) { toast('Vui lòng điền đầy đủ thông tin', false); return; }
+      try {
+        const res  = await fetch('/api/auth/register', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ name, email, phone, address: address || null, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { toast(data.detail || 'Đăng ký thất bại', false); return; }
+        saveAuth(data.access_token, data.user);
+        closeAuthModal();
+        toast(`🎉 Tài khoản đã được tạo, chào ${data.user.name}!`);
+      } catch { toast('Lỗi kết nối server', false); }
+    }
+
+    // ── Orders history ───────────────────────────────────
+    document.getElementById('orders-btn').addEventListener('click', openOrders);
+
+    async function openOrders() {
+      document.getElementById('orders-drawer').style.transform = 'translateX(0)';
+      document.getElementById('orders-overlay').style.display  = 'block';
+      document.body.style.overflow = 'hidden';
+      const el = document.getElementById('orders-list');
+      el.innerHTML = '<div style="text-align:center;padding:32px;color:#aaa">Đang tải...</div>';
+      try {
+        const res  = await fetch('/api/orders/mine', {
+          headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}
+        });
+        const data = await res.json();
+        if (!res.ok) { el.innerHTML = `<div style="padding:32px;color:#C8102E">${data.detail}</div>`; return; }
+        if (!data.length) {
+          el.innerHTML = '<div style="text-align:center;padding:48px 0;color:#aaa"><div style="font-size:3rem;margin-bottom:12px">📋</div><p>Chưa có đơn hàng nào</p></div>';
+          return;
+        }
+        el.innerHTML = data.map(o => `
+          <div id="order-card-${o.id}" style="border:1.5px solid #f0e8e0;border-radius:16px;padding:16px;margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+              <div>
+                <span style="font-family:'Playfair Display',serif;font-weight:700;color:#2C1810">Đơn #${o.id}</span>
+                <div style="font-size:.75rem;color:#aaa;margin-top:2px">${o.created_at}</div>
+              </div>
+              <span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:700;background:${o.status==='done'?'#e8fdf0':o.status==='cancelled'?'#f0f0f0':o.status==='confirmed'?'#fff8e0':'#ffeaea'};color:${o.status==='done'?'#2a9d5c':o.status==='cancelled'?'#aaa':o.status==='confirmed'?'#b07d00':'#C8102E'}">${{done:'Hoàn thành',cancelled:'Đã huỷ',confirmed:'Xác nhận',pending:'Chờ xử lý'}[o.status]||o.status}</span>
+            </div>
+            <div style="font-size:.82rem;color:#5C3D2E;margin-bottom:8px">${o.items.map(i=>`${i.name} x${i.quantity}`).join(' • ')}</div>
+            ${o.note ? `<div style="font-size:.78rem;color:#aaa;margin-bottom:6px">Ghi chú: ${o.note}</div>` : ''}
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+              <span style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:900;color:#C8102E">${o.total.toLocaleString('vi-VN')}đ</span>
+              ${o.status==='pending' ? `<button onclick="cancelOrder(${o.id})" style="padding:6px 14px;background:#fff;border:1.5px solid #C8102E;color:#C8102E;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit">Huỷ đơn</button>` : ''}
+            </div>
+          </div>`).join('');
+      } catch { el.innerHTML = '<div style="padding:32px;color:#C8102E">Lỗi tải đơn hàng</div>'; }
+    }
+
+    function closeOrders() {
+      document.getElementById('orders-drawer').style.transform = 'translateX(100%)';
+      document.getElementById('orders-overlay').style.display  = 'none';
+      document.body.style.overflow = '';
+    }
+
+    // ── Cancel order ─────────────────────────────────────
+    async function cancelOrder(orderId) {
+      if (!confirm(`Huỷ đơn hàng #${orderId}?`)) return;
+      try {
+        const res  = await fetch(`${API}/api/orders/${orderId}/cancel`, {
+          method: 'PATCH',
+          headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}
+        });
+        const data = await res.json();
+        if (res.ok) {
+          toast(`✅ Đã huỷ đơn hàng #${orderId}`);
+          // update card status in-place
+          const card = document.getElementById(`order-card-${orderId}`);
+          if (card) {
+            card.querySelector('span[style*="border-radius:20px"]').textContent = 'Đã huỷ';
+            card.querySelector('span[style*="border-radius:20px"]').style.color = '#aaa';
+            card.querySelector('span[style*="border-radius:20px"]').style.background = '#f0f0f0';
+            const cancelBtn = card.querySelector('button[onclick*="cancelOrder"]');
+            if (cancelBtn) cancelBtn.remove();
+          }
+        } else { toast(data.detail || 'Không thể huỷ đơn', false); }
+      } catch { toast('Lỗi kết nối', false); }
+    }
+
+  </script>
+</body>
+</html>
