@@ -7,7 +7,7 @@
 ## Tính năng
 
 ### Giao diện khách hàng (`/`)
-
+[![Xem video](https://img.youtube.com/vi/Iw8Dd8FMvbE/0.jpg)](https://youtu.be/Iw8Dd8FMvbE)
 **Tài khoản & Xác thực**
 - Đăng ký tài khoản khách hàng
 - Đăng nhập / đăng xuất bằng JWT
@@ -29,7 +29,7 @@
 ---
 
 ### Giao diện quản trị (`/admin`)
-
+[![Xem video](https://img.youtube.com/vi/H9Vw_seuFYQ/0.jpg)](https://youtu.be/H9Vw_seuFYQ)
 **Tổng quan**
 - Dashboard thống kê: tổng số sản phẩm, đơn hàng, khách hàng, doanh thu
 
