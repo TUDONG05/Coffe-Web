@@ -18,6 +18,7 @@ class CustomerCreate(BaseModel):
     name: str
     email: EmailStr
     phone: str | None = None
+    address: str | None = None
     password: str
 
 
@@ -25,6 +26,7 @@ class CustomerUpdate(BaseModel):
     name: str | None = None
     email: EmailStr | None = None
     phone: str | None = None
+    address: str | None = None
 
 
 class CustomerOut(BaseModel):
@@ -32,6 +34,7 @@ class CustomerOut(BaseModel):
     name: str
     email: str
     phone: str | None
+    address: str | None
     is_active: int
     created_at: str
 
@@ -80,6 +83,7 @@ def list_customers(
             "name": item.name,
             "email": item.email,
             "phone": item.phone,
+            "address": item.address,
             "is_active": item.is_active,
             "created_at": item.created_at.strftime("%Y-%m-%d %H:%M:%S"),
         })
@@ -108,6 +112,7 @@ def get_customer(
         "name": customer.name,
         "email": customer.email,
         "phone": customer.phone,
+        "address": customer.address,
         "is_active": customer.is_active,
         "created_at": customer.created_at.strftime("%Y-%m-%d %H:%M:%S"),
     }
@@ -133,6 +138,7 @@ def update_customer_status(
         "name": customer.name,
         "email": customer.email,
         "phone": customer.phone,
+        "address": customer.address,
         "is_active": customer.is_active,
         "created_at": customer.created_at.strftime("%Y-%m-%d %H:%M:%S"),
     }
@@ -168,6 +174,7 @@ def create_customer(
         name=body.name,
         email=body.email,
         phone=body.phone,
+        address=body.address,
         hashed_pwd=hash_password(body.password),
         role="customer",
         is_active=1,
@@ -181,6 +188,7 @@ def create_customer(
         "name": customer.name,
         "email": customer.email,
         "phone": customer.phone,
+        "address": customer.address,
         "is_active": customer.is_active,
         "created_at": customer.created_at.strftime("%Y-%m-%d %H:%M:%S"),
     }
@@ -209,8 +217,10 @@ def update_customer(
 
     if body.name:
         customer.name = body.name
-    if body.phone:
+    if body.phone is not None:
         customer.phone = body.phone
+    if body.address is not None:
+        customer.address = body.address
 
     db.commit()
     db.refresh(customer)
@@ -220,6 +230,7 @@ def update_customer(
         "name": customer.name,
         "email": customer.email,
         "phone": customer.phone,
+        "address": customer.address,
         "is_active": customer.is_active,
         "created_at": customer.created_at.strftime("%Y-%m-%d %H:%M:%S"),
     }

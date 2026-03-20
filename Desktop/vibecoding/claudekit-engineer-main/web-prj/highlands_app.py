@@ -6,6 +6,7 @@ import os
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 # Load .env if present (dev convenience)
 try:
@@ -28,6 +29,8 @@ from highlands.routers import (
 )
 
 app = FastAPI(title="Highlands Coffee", version="2.0.0", docs_url="/docs")
+
+app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
 
 app.add_middleware(
     CORSMiddleware,
@@ -56,19 +59,28 @@ app.include_router(admin_users_router.router)
 app.include_router(admin_dashboard_router.router)
 
 
+TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
+
+
+def render(filename: str) -> HTMLResponse:
+    with open(os.path.join(TEMPLATES_DIR, filename), encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
+
+
 # ── Frontend ──────────────────────────────────────────────
 @app.get("/", response_class=HTMLResponse)
 async def index():
-    html_path = os.path.join(os.path.dirname(__file__), "highlands-coffee.html")
-    with open(html_path, encoding="utf-8") as f:
-        return HTMLResponse(content=f.read())
+    return render("highlands-coffee.html")
 
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin():
-    html_path = os.path.join(os.path.dirname(__file__), "admin-panel.html")
-    with open(html_path, encoding="utf-8") as f:
-        return HTMLResponse(content=f.read())
+    return render("admin-panel.html")
+
+
+@app.get("/about", response_class=HTMLResponse)
+async def about():
+    return render("about.html")
 
 
 @app.get("/health")

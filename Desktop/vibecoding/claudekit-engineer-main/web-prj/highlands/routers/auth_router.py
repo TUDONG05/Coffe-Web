@@ -17,17 +17,28 @@ class RegisterIn(BaseModel):
     name: str
     email: EmailStr
     phone: str = ""
+    address: str | None = None
     password: str
 
 class LoginIn(BaseModel):
     email: EmailStr
     password: str
 
+class ProfileUpdate(BaseModel):
+    name: str | None = None
+    phone: str | None = None
+    address: str | None = None
+
+class ChangePasswordIn(BaseModel):
+    old_password: str
+    new_password: str
+
 class UserOut(BaseModel):
     id: int
     name: str
     email: str
     phone: str | None
+    address: str | None = None
     role: str = "customer"
 
     class Config:
@@ -44,6 +55,7 @@ def register(body: RegisterIn, db: Session = Depends(get_db)):
         name=body.name,
         email=body.email,
         phone=body.phone,
+        address=body.address,
         hashed_pwd=hash_password(body.password),
     )
     db.add(user)
@@ -67,3 +79,35 @@ def login(body: LoginIn, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserOut)
 def me(current_user: models.User = Depends(require_login)):
     return current_user
+
+
+@router.put("/profile", response_model=UserOut)
+def update_profile(
+    body: ProfileUpdate,
+    current_user: models.User = Depends(require_login),
+    db: Session = Depends(get_db),
+):
+    if body.name is not None:
+        current_user.name = body.name
+    if body.phone is not None:
+        current_user.phone = body.phone
+    if body.address is not None:
+        current_user.address = body.address
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+@router.put("/change-password")
+def change_password(
+    body: ChangePasswordIn,
+    current_user: models.User = Depends(require_login),
+    db: Session = Depends(get_db),
+):
+    if not verify_password(body.old_password, current_user.hashed_pwd):
+        raise HTTPException(status_code=400, detail="Mật khẩu hiện tại không đúng")
+    if len(body.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Mật khẩu mới phải tối thiểu 6 ký tự")
+    current_user.hashed_pwd = hash_password(body.new_password)
+    db.commit()
+    return {"success": True, "message": "Đổi mật khẩu thành công"}

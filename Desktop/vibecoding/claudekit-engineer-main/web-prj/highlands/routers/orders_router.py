@@ -24,6 +24,7 @@ class OrderItemIn(BaseModel):
 class OrderIn(BaseModel):
     customer_name: str
     phone: str
+    address: Optional[str] = ""
     items: list[OrderItemIn]
     note: Optional[str] = ""
 
@@ -79,6 +80,7 @@ def create_order(
         user_id=current_user.id if current_user else None,
         customer_name=body.customer_name,
         phone=body.phone,
+        address=body.address,
         total=total,
         note=body.note,
     )

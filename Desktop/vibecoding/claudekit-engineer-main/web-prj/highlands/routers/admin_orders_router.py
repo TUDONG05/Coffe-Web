@@ -25,6 +25,7 @@ class OrderOut(BaseModel):
     id: int
     customer_name: str
     phone: str
+    address: str | None
     total: int
     note: str | None
     status: str
@@ -48,6 +49,7 @@ class OrderItemCreate(BaseModel):
 class OrderCreate(BaseModel):
     customer_name: str
     phone: str
+    address: str | None = None
     note: str | None = None
     items: list[OrderItemCreate]
 
@@ -115,6 +117,7 @@ def list_orders(
             "id": order.id,
             "customer_name": order.customer_name,
             "phone": order.phone,
+            "address": order.address,
             "total": order.total,
             "note": order.note,
             "status": order.status,
@@ -249,6 +252,7 @@ def create_order(
     order = models.Order(
         customer_name=body.customer_name,
         phone=body.phone,
+        address=body.address,
         total=total,
         note=body.note,
         status="pending",

@@ -15,6 +15,7 @@ class User(Base):
     phone      = Column(String(20), nullable=True)
     hashed_pwd = Column(String(255), nullable=False)
     role       = Column(String(20), default="customer", nullable=False)  # admin, staff, customer
+    address    = Column(String(300), nullable=True)
     is_active  = Column(Integer, default=1)  # for block/unblock
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -47,6 +48,7 @@ class Order(Base):
     customer_name = Column(String(100), nullable=False)
     phone         = Column(String(20), nullable=False)
     total         = Column(Integer, nullable=False)
+    address       = Column(String(300), nullable=True)
     note          = Column(Text, nullable=True)
     status        = Column(String(30), default="pending")  # pending/confirmed/done
     is_active     = Column(Integer, default=1)  # soft delete
