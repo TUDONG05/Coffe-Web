@@ -29,7 +29,7 @@ class OrderOut(BaseModel):
     total: int
     note: str | None
     status: str
-    created_at: str
+    created_at: str | None
     user_id: int | None
     items: list[OrderItemOut]
 
@@ -159,6 +159,7 @@ def get_order(
         "id": order.id,
         "customer_name": order.customer_name,
         "phone": order.phone,
+        "address": order.address,
         "total": order.total,
         "note": order.note,
         "status": order.status,
@@ -201,6 +202,7 @@ def update_order_status(
         "id": order.id,
         "customer_name": order.customer_name,
         "phone": order.phone,
+        "address": order.address,
         "total": order.total,
         "note": order.note,
         "status": order.status,
