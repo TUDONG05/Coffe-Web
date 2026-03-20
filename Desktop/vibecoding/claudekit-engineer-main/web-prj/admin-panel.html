@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Highlands Coffee - Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #C8102E;
+            --primary-dark: #A00A24;
+            --bg-cream: #FFF8F0;
+            --text-dark: #2C1810;
+            --text-light: #5C3D2E;
+            --border: #E8DDD0;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-cream);
+            color: var(--text-dark);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            height: 100vh;
+        }
+
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px 0;
+            overflow-y: auto;
+            position: fixed;
+            width: 260px;
+            height: 100vh;
+            box-shadow: 2px 0 12px rgba(0,0,0,0.15);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .nav-item.active {
+            background: rgba(255,255,255,0.2);
+            border-left-color: #C8942A;
+            font-weight: 600;
+        }
+
+        .main {
+            margin-left: 260px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .topbar {
+            background: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+        }
+
+        .topbar h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .btn-logout {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-logout:hover {
+            background: var(--primary-dark);
+        }
+
+        .content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 16px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(200,16,46,0.1);
+        }
+
+        select {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #FAF6F1 0%, var(--bg-cream) 100%);
+            border-bottom: 2px solid var(--border);
+        }
+
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #FAF6F1;
+        }
+
+        td {
+            padding: 14px 16px;
+            font-size: 13px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: rgba(16,185,129,0.1);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245,158,11,0.1);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(239,68,68,0.1);
+            color: var(--danger);
+        }
+
+        .badge-pending {
+            background: rgba(200,16,46,0.1);
+            color: var(--primary);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .error-msg {
+            background: #FEE2E2;
+            color: #991B1B;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--danger);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+        }
+
+        section {
+            display: none;
+        }
+
+        section.active {
+            display: block;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>☕ Highlands</h2>
+                <p style="font-size: 11px; opacity: 0.8;">Admin Panel</p>
+            </div>
+
+            <div class="nav-item active" onclick="switchPage('dashboard', this)">
+                <span>📊</span> Dashboard
+            </div>
+            <div class="nav-item" onclick="switchPage('news', this)">
+                <span>📰</span> Tin Tức
+            </div>
+            <div class="nav-item" onclick="switchPage('customers', this)">
+                <span>👥</span> Khách Hàng
+            </div>
+            <div class="nav-item" onclick="switchPage('orders', this)">
+                <span>📦</span> Đơn Hàng
+            </div>
+            <div class="nav-item" onclick="logout()">
+                <span>🚪</span> Đăng Xuất
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main">
+            <!-- TOPBAR -->
+            <div class="topbar">
+                <h1>Highlands Coffee Admin</h1>
+                <button class="btn-logout" onclick="logout()">Đăng Xuất</button>
+            </div>
+
+            <!-- CONTENT -->
+            <div class="content">
+                <!-- DASHBOARD -->
+                <section id="dashboard" class="active">
+                    <div class="page-title">Dashboard</div>
+                    <div id="dashboardContent"></div>
+                </section>
+
+                <!-- NEWS -->
+                <section id="news">
+                    <div class="page-title">Quản Lý Tin Tức</div>
+                    <div class="toolbar">
+                        <input type="text" class="search-box" id="newsSearch" placeholder="🔍 Tìm kiếm...">
+                        <select id="newsFilter">
+                            <option value="">Tất cả danh mục</option>
+                            <option value="Tin Tuc">Tin Tức</option>
+                            <option value="Su Kien">Sự Kiện</option>
+                            <option value="Khuyen Mai">Khuyến Mãi</option>
+                        </select>
+                    </div>
+                    <div id="newsContent"></div>
+                </section>
+
+                <!-- CUSTOMERS -->
+                <section id="customers">
+                    <div class="page-title">Quản Lý Khách Hàng</div>
+                    <div class="toolbar">
+                        <input type="text" class="search-box" id="customersSearch" placeholder="🔍 Tìm kiếm...">
+                        <select id="customersFilter">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="active">Hoạt động</option>
+                            <option value="blocked">Bị khóa</option>
+                        </select>
+                    </div>
+                    <div id="customersContent"></div>
+                </section>
+
+                <!-- ORDERS -->
+                <section id="orders">
+                    <div class="page-title">Quản Lý Đơn Hàng</div>
+                    <div class="toolbar">
+                        <input type="text" class="search-box" id="ordersSearch" placeholder="🔍 Tìm kiếm...">
+                        <select id="ordersFilter">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="pending">Đang chờ</option>
+                            <option value="confirmed">Đã xác nhận</option>
+                            <option value="done">Hoàn thành</option>
+                        </select>
+                    </div>
+                    <div id="ordersContent"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="font-size: 40px; margin-bottom: 12px;">☕</div>
+                <div class="modal-header" style="margin: 0; text-align: center;">Highlands Coffee Admin</div>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" value="admin@highlands.com">
+            </div>
+            <div class="form-group">
+                <label>Mật Khẩu</label>
+                <input type="password" id="loginPassword" value="admin123">
+            </div>
+            <div id="loginError" style="color: var(--danger); font-size: 12px; margin-bottom: 12px;"></div>
+            <button class="btn" style="width: 100%;" onclick="performLogin()">Đăng Nhập</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:8000";
+        let authToken = localStorage.getItem('hc_token');
+
+        // ========== NAVIGATION ==========
+        function switchPage(page, element) {
+            document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            document.getElementById(page).classList.add('active');
+            if (element) element.classList.add('active');
+
+            // Load data
+            if (page === 'dashboard') loadDashboard();
+            else if (page === 'news') loadNews();
+            else if (page === 'customers') loadCustomers();
+            else if (page === 'orders') loadOrders();
+        }
+
+        // ========== LOGIN ==========
+        async function performLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.access_token) {
+                    authToken = data.access_token;
+                    localStorage.setItem('hc_token', authToken);
+                    document.getElementById('loginModal').classList.remove('active');
+                    loadDashboard();
+                } else {
+                    errorDiv.textContent = data.detail || 'Đăng nhập thất bại';
+                }
+            } catch (e) {
+                errorDiv.textContent = 'Lỗi: ' + e.message;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('hc_token');
+            authToken = null;
+            document.getElementById('loginModal').classList.add('active');
+        }
+
+        // ========== DASHBOARD ==========
+        async function loadDashboard() {
+            try {
+                const headers = { "Authorization": `Bearer ${authToken}` };
+
+                const [ordersRes, customersRes, productsRes] = await Promise.all([
+                    fetch(`${API_BASE}/api/admin/orders?skip=0&limit=100`, { headers }),
+                    fetch(`${API_BASE}/api/admin/customers?skip=0&limit=100`, { headers }),
+                    fetch(`${API_BASE}/api/admin/products?skip=0&limit=100`, { headers })
+                ]);
+
+                const orders = await ordersRes.json();
+                const customers = await customersRes.json();
+                const products = await productsRes.json();
+
+                const totalRevenue = orders.items?.reduce((sum, o) => sum + (o.total || 0), 0) || 0;
+
+                let html = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 24px;">
+                        <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="color: var(--text-light); font-size: 12px; font-weight: 600; text-transform: uppercase;">Tổng Đơn Hàng</div>
+                            <div style="font-size: 32px; font-weight: 700; color: var(--primary); margin-top: 8px;">${orders.total || 0}</div>
+                        </div>
+                        <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="color: var(--text-light); font-size: 12px; font-weight: 600; text-transform: uppercase;">Doanh Thu</div>
+                            <div style="font-size: 32px; font-weight: 700; color: var(--primary); margin-top: 8px;">${totalRevenue.toLocaleString('vi-VN')}đ</div>
+                        </div>
+                        <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="color: var(--text-light); font-size: 12px; font-weight: 600; text-transform: uppercase;">Khách Hàng</div>
+                            <div style="font-size: 32px; font-weight: 700; color: var(--primary); margin-top: 8px;">${customers.total || 0}</div>
+                        </div>
+                        <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+                            <div style="color: var(--text-light); font-size: 12px; font-weight: 600; text-transform: uppercase;">Sản Phẩm</div>
+                            <div style="font-size: 32px; font-weight: 700; color: var(--primary); margin-top: 8px;">${products.total || 0}</div>
+                        </div>
+                    </div>
+
+                    <div style="background: white; border-radius: 8px; border: 1px solid var(--border); padding: 20px;">
+                        <h3 style="margin-bottom: 16px;">Đơn Hàng Gần Đây</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Khách Hàng</th>
+                                        <th>Số Điện Thoại</th>
+                                        <th>Tổng Tiền</th>
+                                        <th>Trạng Thái</th>
+                                        <th>Ngày Tạo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${(orders.items || []).slice(0, 5).map(o => `
+                                        <tr>
+                                            <td>#${o.id}</td>
+                                            <td>${o.customer_name}</td>
+                                            <td>${o.phone}</td>
+                                            <td>${o.total?.toLocaleString('vi-VN')}đ</td>
+                                            <td><span class="badge badge-${o.status === 'pending' ? 'pending' : o.status === 'confirmed' ? 'warning' : 'success'}">${o.status}</span></td>
+                                            <td>${o.created_at}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('dashboardContent').innerHTML = html;
+            } catch (e) {
+                console.error('Dashboard error:', e);
+                document.getElementById('dashboardContent').innerHTML = `<div class="error-msg">Lỗi: ${e.message}</div>`;
+            }
+        }
+
+        // ========== NEWS ==========
+        async function loadNews() {
+            try {
+                const search = document.getElementById('newsSearch')?.value || '';
+                const filter = document.getElementById('newsFilter')?.value || '';
+
+                const params = new URLSearchParams();
+                if (search) params.append('search', search);
+                if (filter) params.append('tag', filter);
+                params.append('skip', 0);
+                params.append('limit', 20);
+
+                const response = await fetch(`${API_BASE}/api/admin/news?${params}`, {
+                    headers: { "Authorization": `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+
+                let html = `
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tiêu Đề</th>
+                                    <th>Danh Mục</th>
+                                    <th>Ngày Đăng</th>
+                                    <th>Trạng Thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(data.items || []).map(n => `
+                                    <tr>
+                                        <td>#${n.id}</td>
+                                        <td>${n.title}</td>
+                                        <td><span class="badge badge-warning">${n.tag}</span></td>
+                                        <td>${n.published_at || 'N/A'}</td>
+                                        <td><span class="badge badge-success">Hoạt động</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <p style="margin-top: 16px; font-size: 13px; color: var(--text-light);">Tổng: ${data.total || 0} tin tức</p>
+                `;
+
+                document.getElementById('newsContent').innerHTML = html;
+            } catch (e) {
+                console.error('News error:', e);
+                document.getElementById('newsContent').innerHTML = `<div class="error-msg">Lỗi: ${e.message}</div>`;
+            }
+        }
+
+        // ========== CUSTOMERS ==========
+        async function loadCustomers() {
+            try {
+                const search = document.getElementById('customersSearch')?.value || '';
+                const filter = document.getElementById('customersFilter')?.value || '';
+
+                const params = new URLSearchParams();
+                if (search) params.append('search', search);
+                if (filter) params.append('status', filter);
+                params.append('skip', 0);
+                params.append('limit', 20);
+
+                const response = await fetch(`${API_BASE}/api/admin/customers?${params}`, {
+                    headers: { "Authorization": `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+
+                let html = `
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên</th>
+                                    <th>Email</th>
+                                    <th>Số Điện Thoại</th>
+                                    <th>Trạng Thái</th>
+                                    <th>Ngày Tạo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(data.items || []).map(c => `
+                                    <tr>
+                                        <td>#${c.id}</td>
+                                        <td>${c.name}</td>
+                                        <td>${c.email}</td>
+                                        <td>${c.phone || '-'}</td>
+                                        <td><span class="badge badge-${c.is_active ? 'success' : 'danger'}">${c.is_active ? 'Hoạt động' : 'Bị khóa'}</span></td>
+                                        <td>${c.created_at}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <p style="margin-top: 16px; font-size: 13px; color: var(--text-light);">Tổng: ${data.total || 0} khách hàng</p>
+                `;
+
+                document.getElementById('customersContent').innerHTML = html;
+            } catch (e) {
+                console.error('Customers error:', e);
+                document.getElementById('customersContent').innerHTML = `<div class="error-msg">Lỗi: ${e.message}</div>`;
+            }
+        }
+
+        // ========== ORDERS ==========
+        async function loadOrders() {
+            try {
+                const search = document.getElementById('ordersSearch')?.value || '';
+                const filter = document.getElementById('ordersFilter')?.value || '';
+
+                const params = new URLSearchParams();
+                if (search) params.append('search', search);
+                if (filter) params.append('status', filter);
+                params.append('skip', 0);
+                params.append('limit', 20);
+
+                const response = await fetch(`${API_BASE}/api/admin/orders?${params}`, {
+                    headers: { "Authorization": `Bearer ${authToken}` }
+                });
+
+                const data = await response.json();
+
+                let html = `
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Khách Hàng</th>
+                                    <th>Số Điện Thoại</th>
+                                    <th>Tổng Tiền</th>
+                                    <th>Trạng Thái</th>
+                                    <th>Ngày Tạo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(data.items || []).map(o => `
+                                    <tr>
+                                        <td>#${o.id}</td>
+                                        <td>${o.customer_name}</td>
+                                        <td>${o.phone}</td>
+                                        <td>${o.total?.toLocaleString('vi-VN')}đ</td>
+                                        <td><span class="badge badge-${o.status === 'pending' ? 'pending' : o.status === 'confirmed' ? 'warning' : 'success'}">${o.status}</span></td>
+                                        <td>${o.created_at}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <p style="margin-top: 16px; font-size: 13px; color: var(--text-light);">Tổng: ${data.total || 0} đơn hàng</p>
+                `;
+
+                document.getElementById('ordersContent').innerHTML = html;
+            } catch (e) {
+                console.error('Orders error:', e);
+                document.getElementById('ordersContent').innerHTML = `<div class="error-msg">Lỗi: ${e.message}</div>`;
+            }
+        }
+
+        // ========== SEARCH & FILTER ==========
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!authToken) {
+                document.getElementById('loginModal').classList.add('active');
+            } else {
+                loadDashboard();
+            }
+
+            // Search listeners
+            document.getElementById('newsSearch')?.addEventListener('input', loadNews);
+            document.getElementById('newsFilter')?.addEventListener('change', loadNews);
+            document.getElementById('customersSearch')?.addEventListener('input', loadCustomers);
+            document.getElementById('customersFilter')?.addEventListener('change', loadCustomers);
+            document.getElementById('ordersSearch')?.addEventListener('input', loadOrders);
+            document.getElementById('ordersFilter')?.addEventListener('change', loadOrders);
+        });
+    </script>
+</body>
+</html>
