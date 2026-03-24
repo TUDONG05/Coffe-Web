@@ -1,52 +1,61 @@
 """
-Create all tables and seed initial data: products, stores, news, promotions.
+Create all tables and seed initial data: categories, products, stores, news, promotions.
 Run once: python -m highlands.seed_db
 """
 from highlands.database import engine, SessionLocal
-from highlands.models import Base, Product, Store, News, Promotion
+from highlands.models import Base, Category, Product, Store, News, Promotion
+
+# ── Categories (must match Product.category values exactly) ─
+CATEGORIES = [
+    Category(id=1, name="Cà Phê",  emoji="☕"),
+    Category(id=2, name="Trà",     emoji="🧋"),
+    Category(id=3, name="Đá Xay",  emoji="🥤"),
+    Category(id=4, name="Đồ Ăn",  emoji="🥐"),
+    Category(id=5, name="Combo",   emoji="🎁"),
+]
 
 # ── 30 Products ────────────────────────────────────────────
 
 PRODUCTS = [
     # Coffee (10)
-    Product(id=1,  name="Cà Phê Sữa Đá",            category="coffee",  price=39000, emoji="☕", description="Cà phê Arabica hảo hạng pha phin, ngọt ngào với sữa đặc"),
-    Product(id=2,  name="Cà Phê Đen Đá",             category="coffee",  price=29000, emoji="☕", description="Robusta Tây Nguyên nguyên chất, đậm vị mạnh mẽ"),
-    Product(id=3,  name="Cà Phê Trứng",              category="coffee",  price=45000, emoji="☕", description="Cà phê phủ lớp kem trứng béo mịn đặc trưng Hà Nội"),
-    Product(id=4,  name="Cappuccino",                 category="coffee",  price=55000, emoji="☕", description="Espresso Ý kết hợp sữa nóng tạo bọt mịn hoàn hảo"),
-    Product(id=5,  name="Latte",                      category="coffee",  price=55000, emoji="☕", description="Espresso nhẹ nhàng với sữa nóng mịn, ít đắng"),
-    Product(id=6,  name="Americano",                  category="coffee",  price=49000, emoji="☕", description="Espresso đậm pha loãng với nước nóng, thanh sạch"),
-    Product(id=7,  name="Mocha",                      category="coffee",  price=59000, emoji="☕", description="Cà phê sô-cô-la hòa quyện sữa tươi và kem Chantilly"),
-    Product(id=8,  name="Cold Brew Đá Muối",          category="coffee",  price=65000, emoji="☕", description="Ngâm lạnh 18 giờ, phủ muối hồng Himalaya"),
-    Product(id=9,  name="Espresso Tonic",             category="coffee",  price=59000, emoji="☕", description="Espresso đổ lên nước tonic vị chanh sảng khoái"),
-    Product(id=10, name="Cà Phê Dừa",                category="coffee",  price=55000, emoji="☕", description="Cà phê sữa đặc kết hợp nước cốt dừa béo ngậy"),
+    Product(id=1,  name="Cà Phê Sữa Đá",            category="Cà Phê",  price=39000, emoji="☕", description="Cà phê Arabica hảo hạng pha phin, ngọt ngào với sữa đặc"),
+    Product(id=2,  name="Cà Phê Đen Đá",             category="Cà Phê",  price=29000, emoji="☕", description="Robusta Tây Nguyên nguyên chất, đậm vị mạnh mẽ"),
+    Product(id=3,  name="Cà Phê Trứng",              category="Cà Phê",  price=45000, emoji="☕", description="Cà phê phủ lớp kem trứng béo mịn đặc trưng Hà Nội"),
+    Product(id=4,  name="Cappuccino",                 category="Cà Phê",  price=55000, emoji="☕", description="Espresso Ý kết hợp sữa nóng tạo bọt mịn hoàn hảo"),
+    Product(id=5,  name="Latte",                      category="Cà Phê",  price=55000, emoji="☕", description="Espresso nhẹ nhàng với sữa nóng mịn, ít đắng"),
+    Product(id=6,  name="Americano",                  category="Cà Phê",  price=49000, emoji="☕", description="Espresso đậm pha loãng với nước nóng, thanh sạch"),
+    Product(id=7,  name="Mocha",                      category="Cà Phê",  price=59000, emoji="☕", description="Cà phê sô-cô-la hòa quyện sữa tươi và kem Chantilly"),
+    Product(id=8,  name="Cold Brew Đá Muối",          category="Cà Phê",  price=65000, emoji="☕", description="Ngâm lạnh 18 giờ, phủ muối hồng Himalaya"),
+    Product(id=9,  name="Espresso Tonic",             category="Cà Phê",  price=59000, emoji="☕", description="Espresso đổ lên nước tonic vị chanh sảng khoái"),
+    Product(id=10, name="Cà Phê Dừa",                category="Cà Phê",  price=55000, emoji="☕", description="Cà phê sữa đặc kết hợp nước cốt dừa béo ngậy"),
 
     # Tea (8)
-    Product(id=11, name="Trà Sữa Taro",              category="tea",     price=45000, emoji="🧋", description="Khoai môn tươi xay nhuyễn, trà ô long thơm ngát"),
-    Product(id=12, name="Matcha Latte Đặc Biệt",     category="tea",     price=49000, emoji="🍵", description="Matcha Nhật hạng A, sữa tươi Đà Lạt tươi mát"),
-    Product(id=13, name="Trà Đào Cam Sả",            category="tea",     price=42000, emoji="🍑", description="Đào tươi, cam ngọt, sả thơm, đá viên mát lạnh"),
-    Product(id=14, name="Trà Xanh Latte",            category="tea",     price=45000, emoji="🍵", description="Trà xanh Thái Nguyên, sữa tươi Đà Lạt béo nhẹ"),
-    Product(id=15, name="Trà Ô Long Sữa",            category="tea",     price=45000, emoji="🧋", description="Trà ô long đậm vị, sữa tươi thơm mượt mà"),
-    Product(id=16, name="Trà Dâu Tây",               category="tea",     price=48000, emoji="🍓", description="Dâu tây tươi xay nhuyễn, trà trắng thanh nhẹ"),
-    Product(id=17, name="Trà Hoa Cúc Mật Ong",       category="tea",     price=39000, emoji="🌼", description="Hoa cúc tươi ngâm với mật ong thiên nhiên"),
-    Product(id=18, name="Trà Bạc Hà Chanh Leo",      category="tea",     price=42000, emoji="🌿", description="Bạc hà tươi, chanh leo mát lạnh, giải nhiệt tuyệt vời"),
+    Product(id=11, name="Trà Sữa Taro",              category="Trà",     price=45000, emoji="🧋", description="Khoai môn tươi xay nhuyễn, trà ô long thơm ngát"),
+    Product(id=12, name="Matcha Latte Đặc Biệt",     category="Trà",     price=49000, emoji="🍵", description="Matcha Nhật hạng A, sữa tươi Đà Lạt tươi mát"),
+    Product(id=13, name="Trà Đào Cam Sả",            category="Trà",     price=42000, emoji="🍑", description="Đào tươi, cam ngọt, sả thơm, đá viên mát lạnh"),
+    Product(id=14, name="Trà Xanh Latte",            category="Trà",     price=45000, emoji="🍵", description="Trà xanh Thái Nguyên, sữa tươi Đà Lạt béo nhẹ"),
+    Product(id=15, name="Trà Ô Long Sữa",            category="Trà",     price=45000, emoji="🧋", description="Trà ô long đậm vị, sữa tươi thơm mượt mà"),
+    Product(id=16, name="Trà Dâu Tây",               category="Trà",     price=48000, emoji="🍓", description="Dâu tây tươi xay nhuyễn, trà trắng thanh nhẹ"),
+    Product(id=17, name="Trà Hoa Cúc Mật Ong",       category="Trà",     price=39000, emoji="🌼", description="Hoa cúc tươi ngâm với mật ong thiên nhiên"),
+    Product(id=18, name="Trà Bạc Hà Chanh Leo",      category="Trà",     price=42000, emoji="🌿", description="Bạc hà tươi, chanh leo mát lạnh, giải nhiệt tuyệt vời"),
 
     # Freeze (5)
-    Product(id=19, name="Freeze Cà Phê",             category="freeze",  price=55000, emoji="🥤", description="Đá xay cà phê Arabica, kem tươi phủ trên mặt"),
-    Product(id=20, name="Freeze Matcha",             category="freeze",  price=59000, emoji="🥤", description="Đá xay matcha Nhật, sữa tươi, kem tươi mịn"),
-    Product(id=21, name="Freeze Taro",               category="freeze",  price=59000, emoji="🥤", description="Đá xay khoai môn tím, thơm béo ngây ngất"),
-    Product(id=22, name="Freeze Dâu Tây",            category="freeze",  price=59000, emoji="🥤", description="Dâu tây tươi xay đá, kem tươi phủ ngọt ngào"),
-    Product(id=23, name="Freeze Chocolate",          category="freeze",  price=59000, emoji="🥤", description="Sô-cô-la đậm đà xay đá, kem tươi mịn màng"),
+    Product(id=19, name="Freeze Cà Phê",             category="Đá Xay",  price=55000, emoji="🥤", description="Đá xay cà phê Arabica, kem tươi phủ trên mặt"),
+    Product(id=20, name="Freeze Matcha",             category="Đá Xay",  price=59000, emoji="🥤", description="Đá xay matcha Nhật, sữa tươi, kem tươi mịn"),
+    Product(id=21, name="Freeze Taro",               category="Đá Xay",  price=59000, emoji="🥤", description="Đá xay khoai môn tím, thơm béo ngây ngất"),
+    Product(id=22, name="Freeze Dâu Tây",            category="Đá Xay",  price=59000, emoji="🥤", description="Dâu tây tươi xay đá, kem tươi phủ ngọt ngào"),
+    Product(id=23, name="Freeze Chocolate",          category="Đá Xay",  price=59000, emoji="🥤", description="Sô-cô-la đậm đà xay đá, kem tươi mịn màng"),
 
     # Food (5)
-    Product(id=24, name="Croissant Bơ Pháp",         category="food",    price=35000, emoji="🥐", description="Nướng mới mỗi sáng, vỏ giòn tan, thơm bơ nhẹ"),
-    Product(id=25, name="Bánh Mì Sandwich Gà",       category="food",    price=45000, emoji="🥪", description="Gà nướng mật ong, rau tươi, sốt mayonnaise Nhật"),
-    Product(id=26, name="Bánh Tiramisu",             category="food",    price=55000, emoji="🍰", description="Bánh Ý truyền thống, cà phê espresso thấm đều"),
-    Product(id=27, name="Bánh Madeleine",            category="food",    price=29000, emoji="🧁", description="Bánh bông lan Pháp nhỏ xinh, thơm bơ vani"),
-    Product(id=28, name="Sandwich Cá Ngừ",           category="food",    price=45000, emoji="🥙", description="Cá ngừ tươi, dưa leo giòn, sốt kem phô mai"),
+    Product(id=24, name="Croissant Bơ Pháp",         category="Đồ Ăn",    price=35000, emoji="🥐", description="Nướng mới mỗi sáng, vỏ giòn tan, thơm bơ nhẹ"),
+    Product(id=25, name="Bánh Mì Sandwich Gà",       category="Đồ Ăn",    price=45000, emoji="🥪", description="Gà nướng mật ong, rau tươi, sốt mayonnaise Nhật"),
+    Product(id=26, name="Bánh Tiramisu",             category="Đồ Ăn",    price=55000, emoji="🍰", description="Bánh Ý truyền thống, cà phê espresso thấm đều"),
+    Product(id=27, name="Bánh Madeleine",            category="Đồ Ăn",    price=29000, emoji="🧁", description="Bánh bông lan Pháp nhỏ xinh, thơm bơ vani"),
+    Product(id=28, name="Sandwich Cá Ngừ",           category="Đồ Ăn",    price=45000, emoji="🥙", description="Cá ngừ tươi, dưa leo giòn, sốt kem phô mai"),
 
     # Combo (2)
-    Product(id=29, name="Combo Sáng — Cà Phê & Croissant", category="combo", price=65000, emoji="🎁", description="1 Cà phê sữa đá + 1 Croissant bơ Pháp, tiết kiệm 9.000đ"),
-    Product(id=30, name="Combo Chiều — Trà & Bánh",        category="combo", price=75000, emoji="🎁", description="1 Trà đào cam sả + 1 Bánh tiramisu, tiết kiệm 22.000đ"),
+    Product(id=29, name="Combo Sáng — Cà Phê & Croissant", category="Combo", price=65000, emoji="🎁", description="1 Cà phê sữa đá + 1 Croissant bơ Pháp, tiết kiệm 9.000đ"),
+    Product(id=30, name="Combo Chiều — Trà & Bánh",        category="Combo", price=75000, emoji="🎁", description="1 Trà đào cam sả + 1 Bánh tiramisu, tiết kiệm 22.000đ"),
 ]
 
 
@@ -121,6 +130,14 @@ def seed():
 
     db = SessionLocal()
     try:
+        # Categories — must be seeded before products
+        if db.query(Category).count() == 0:
+            db.add_all(CATEGORIES)
+            db.commit()
+            print(f"Seeded {len(CATEGORIES)} categories.")
+        else:
+            print("Categories already seeded, skipping.")
+
         # Products
         if db.query(Product).count() == 0:
             db.add_all(PRODUCTS)
