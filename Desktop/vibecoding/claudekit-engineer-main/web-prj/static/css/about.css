@@ -66,6 +66,13 @@ a { text-decoration: none; color: inherit; }
   height: 2px; background: var(--red); border-radius: 2px;
 }
 .nav-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.icon-btn {
+  width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+  background: rgba(44,24,16,.05); border-radius: 50%; cursor: pointer;
+  transition: background 200ms, transform 200ms; font-size: 1rem;
+  border: none; text-decoration: none;
+}
+.icon-btn:hover { background: #f0ddd4; transform: translateY(-2px); }
 .btn-solid {
   padding: 8px 20px; background: var(--red); color: #fff; border-radius: 30px;
   font-size: .82rem; font-weight: 700; border: 2px solid var(--red);
@@ -206,12 +213,86 @@ footer {
 }
 footer strong { color: var(--gold-light); }
 
-/* ── RESPONSIVE ── */
+/* ── TIMELINE GRID (moved from inline) ── */
+.timeline-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+
+/* ── HAMBURGER BUTTON ── */
+.nav-toggle {
+  display: none;
+  flex-direction: column; justify-content: center; align-items: center;
+  gap: 5px; width: 40px; height: 40px;
+  background: none; border: none; cursor: pointer;
+  margin-left: 12px; flex-shrink: 0;
+}
+.nav-toggle span {
+  display: block; width: 24px; height: 2px;
+  background: var(--brown); border-radius: 2px;
+  transition: transform .25s, opacity .25s;
+}
+.nav-toggle.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-toggle.active span:nth-child(2) { opacity: 0; }
+.nav-toggle.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── RESPONSIVE – tablet (≤ 960px) ── */
+@media (max-width: 960px) {
+  .timeline-grid { grid-template-columns: 1fr; gap: 0; }
+  .timeline { margin-top: 32px; }
+  .team-grid { grid-template-columns: repeat(2, 1fr); }
+  .mission-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── RESPONSIVE – mobile (≤ 768px) ── */
 @media (max-width: 768px) {
+  /* top bar */
+  .top-bar .inner { flex-direction: column; gap: 4px; text-align: center; }
+
+  /* navbar */
+  .nav-toggle { display: flex; }
+  .nav-actions { display: none; }          /* ẩn nút "Đặt Ngay" khi menu đóng */
+  .nav-links {
+    display: none; flex-direction: column;
+    position: absolute; top: 72px; left: 0; right: 0;
+    background: var(--white);
+    box-shadow: 0 8px 24px rgba(44,24,16,.12);
+    padding: 12px 0 20px; z-index: 99;
+  }
+  .nav-links.open { display: flex; }
+  .nav-links.open ~ .nav-actions { display: flex; }   /* hiện nút khi menu mở (không dùng) */
+  .nav-links a {
+    padding: 12px 24px; border-radius: 0;
+    font-size: 1rem; border-bottom: 1px solid rgba(44,24,16,.06);
+  }
+  .nav-links a.active::after { display: none; }
+
+  /* hero */
+  .hero { padding: 64px 20px 56px; }
+
+  /* stats */
   .stats { grid-template-columns: repeat(2, 1fr); }
-  .story-grid { grid-template-columns: 1fr; gap: 36px; }
-  .story-visual { height: 260px; }
+  .stat { padding: 24px 12px; }
+  .stat-num { font-size: 1.9rem; }
+
+  /* sections */
+  .section { padding: 56px 20px; }
+  .story-grid { grid-template-columns: 1fr; gap: 32px; }
+  .story-visual { height: 220px; }
   .mission-grid { grid-template-columns: 1fr; }
   .values-grid { grid-template-columns: 1fr; }
   .team-grid { grid-template-columns: 1fr; }
+  .timeline-grid { grid-template-columns: 1fr; gap: 0; }
+
+  /* cta */
+  .cta-section { padding: 56px 20px; }
+  .cta-section h2 { font-size: 1.6rem; }
+}
+
+/* ── RESPONSIVE – small mobile (≤ 480px) ── */
+@media (max-width: 480px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stat-num { font-size: 1.6rem; }
+  .hero h1 { font-size: 2rem; }
+  .section-title { font-size: 1.6rem; }
+  .cta-section h2 { font-size: 1.35rem; }
+  .value-card { flex-direction: column; gap: 12px; }
+  .team-card { max-width: 340px; margin: 0 auto; }
 }
