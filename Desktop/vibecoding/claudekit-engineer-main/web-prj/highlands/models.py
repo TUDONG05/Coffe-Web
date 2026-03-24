@@ -14,8 +14,9 @@ class User(Base):
     email      = Column(String(150), unique=True, index=True, nullable=False)
     phone      = Column(String(20), nullable=True)
     hashed_pwd = Column(String(255), nullable=False)
-    role       = Column(String(20), default="customer", nullable=False)  # admin, staff, customer
+    role       = Column(String(20), default="user", nullable=False)  # admin, user
     address    = Column(String(300), nullable=True)
+    points     = Column(Integer, default=0, nullable=False)
     is_active  = Column(Integer, default=1)  # for block/unblock
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -50,8 +51,10 @@ class Order(Base):
     total         = Column(Integer, nullable=False)
     address       = Column(String(300), nullable=True)
     note          = Column(Text, nullable=True)
-    status        = Column(String(30), default="pending")  # pending/confirmed/done
-    is_active     = Column(Integer, default=1)  # soft delete
+    status         = Column(String(30), default="pending")  # pending/confirmed/done
+    payment_method = Column(String(20), default="cash")      # cash / qr_transfer
+    payment_status = Column(String(20), default="unpaid")    # unpaid / paid
+    is_active      = Column(Integer, default=1)  # soft delete
     created_at    = Column(DateTime, default=datetime.utcnow)
 
     user  = relationship("User", back_populates="orders")

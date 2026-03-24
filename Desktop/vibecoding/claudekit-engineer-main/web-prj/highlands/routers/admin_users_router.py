@@ -60,9 +60,9 @@ def list_users(
     admin: models.User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """List admin and staff accounts."""
+    """List admin accounts."""
     query = db.query(models.User).filter(
-        models.User.role.in_(["admin", "staff"])
+        models.User.role == "admin"
     )
 
     if role:
@@ -129,9 +129,9 @@ def create_user(
     admin: models.User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """Create a new admin or staff account."""
-    if body.role not in ["admin", "staff"]:
-        raise HTTPException(status_code=400, detail="Invalid role. Must be 'admin' or 'staff'")
+    """Create a new admin account."""
+    if body.role not in ["admin", "user"]:
+        raise HTTPException(status_code=400, detail="Invalid role. Must be 'admin' or 'user'")
 
     existing = db.query(models.User).filter(models.User.email == body.email).first()
     if existing:
@@ -186,7 +186,7 @@ def update_user(
     if body.phone:
         user.phone = body.phone
     if body.role:
-        if body.role not in ["admin", "staff"]:
+        if body.role not in ["admin", "user"]:
             raise HTTPException(status_code=400, detail="Invalid role")
         user.role = body.role
 

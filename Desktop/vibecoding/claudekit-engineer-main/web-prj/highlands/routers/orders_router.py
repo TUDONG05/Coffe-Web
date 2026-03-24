@@ -27,6 +27,7 @@ class OrderIn(BaseModel):
     address: Optional[str] = ""
     items: list[OrderItemIn]
     note: Optional[str] = ""
+    payment_method: Optional[str] = "cash"  # cash | qr_transfer
 
 class OrderItemOut(BaseModel):
     product_id: int
@@ -76,6 +77,7 @@ def create_order(
             subtotal=subtotal,
         ))
 
+    pay_method = body.payment_method or "cash"
     order = models.Order(
         user_id=current_user.id if current_user else None,
         customer_name=body.customer_name,
@@ -83,6 +85,8 @@ def create_order(
         address=body.address,
         total=total,
         note=body.note,
+        payment_method=pay_method,
+        payment_status="paid" if pay_method == "qr_transfer" else "unpaid",
     )
     db.add(order)
     db.flush()  # get order.id before committing
@@ -91,15 +95,25 @@ def create_order(
         row.order_id = order.id
         db.add(row)
 
+    # Cộng điểm cho user đăng nhập: 10.000đ = 1 điểm
+    earned_points = 0
+    if current_user:
+        earned_points = total // 10000
+        if earned_points > 0:
+            current_user.points = (current_user.points or 0) + earned_points
+
     db.commit()
     db.refresh(order)
     return {
         "message": "Đặt hàng thành công!",
+        "earned_points": earned_points,
         "order": {
             "id": order.id,
             "customer_name": order.customer_name,
             "total": order.total,
             "status": order.status,
+            "payment_method": order.payment_method,
+            "payment_status": order.payment_status,
             "items": [{"name": r.name, "price": r.price, "quantity": r.quantity, "subtotal": r.subtotal} for r in order.items],
         }
     }
@@ -125,6 +139,8 @@ def my_orders(
             "customer_name": o.customer_name,
             "total": o.total,
             "status": o.status,
+            "payment_method": o.payment_method or "cash",
+            "payment_status": o.payment_status or "unpaid",
             "note": o.note,
             "created_at": o.created_at.strftime("%d/%m/%Y %H:%M"),
             "items": [{"name": i.name, "price": i.price, "quantity": i.quantity, "subtotal": i.subtotal} for i in o.items],

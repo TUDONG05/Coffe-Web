@@ -25,5 +25,8 @@ def add_column_if_missing(table, column, col_type):
 
 add_column_if_missing("users",  "address", "VARCHAR(300) NULL")
 add_column_if_missing("orders", "address", "VARCHAR(300) NULL")
+add_column_if_missing("users",  "points",  "INT NOT NULL DEFAULT 0")
+add_column_if_missing("orders", "payment_method", "VARCHAR(20) NOT NULL DEFAULT 'cash'")
+add_column_if_missing("orders", "payment_status", "VARCHAR(20) NOT NULL DEFAULT 'unpaid'")
 
 print("[OK] Migration complete")

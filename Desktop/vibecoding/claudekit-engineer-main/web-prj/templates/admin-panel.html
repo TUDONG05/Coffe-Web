@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Highlands Coffee - Admin Panel</title>
+    <title>Tu's Coffee - Admin Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/admin.css" />
 </head>
@@ -12,7 +12,7 @@
         <!-- SIDEBAR -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <h2>☕ Highlands</h2>
+                <h2>☕ Tu's Coffee</h2>
                 <p>Admin Panel</p>
             </div>
 
@@ -28,7 +28,7 @@
                 </div>
                 <div class="nav-item" onclick="switchPage('customers', this)">
                     <span class="nav-icon">👥</span>
-                    <span>Khách Hàng</span>
+                    <span>Tài Khoản</span>
                 </div>
                 <div class="nav-item" onclick="switchPage('orders', this)">
                     <span class="nav-icon">📦</span>
@@ -142,12 +142,17 @@
 
                 <!-- CUSTOMERS -->
                 <section id="customers">
-                    <div class="page-title">Quản Lý Khách Hàng</div>
+                    <div class="page-title">Quản Lý Tài Khoản</div>
 
                     <div class="toolbar">
                         <button class="btn btn-primary" onclick="openCustomerModal('create')">+ Tạo Mới</button>
-                        <input type="text" class="search-box" id="customersSearch" placeholder="🔍 Tìm kiếm khách hàng...">
-                        <select id="customersFilter">
+                        <input type="text" class="search-box" id="customersSearch" placeholder="🔍 Tìm kiếm tài khoản...">
+                        <select id="customersRoleFilter" onchange="loadCustomers()">
+                            <option value="">Tất Cả Role</option>
+                            <option value="admin">👑 Admin</option>
+                            <option value="user">👤 User</option>
+                        </select>
+                        <select id="customersFilter" onchange="loadCustomers()">
                             <option value="">Tất Cả Trạng Thái</option>
                             <option value="active">Hoạt Động</option>
                             <option value="blocked">Bị Khóa</option>
@@ -162,7 +167,8 @@
                                     <th>Tên</th>
                                     <th>Email</th>
                                     <th>Số Điện Thoại</th>
-                                    <th>Địa Chỉ</th>
+                                    <th>Role</th>
+                                    <th>Điểm</th>
                                     <th>Trạng Thái</th>
                                     <th>Ngày Tạo</th>
                                     <th>Thao Tác</th>
@@ -170,7 +176,7 @@
                             </thead>
                             <tbody id="customersTable">
                                 <tr>
-                                    <td colspan="8" style="text-align: center; color: var(--text-muted);">Đang tải...</td>
+                                    <td colspan="9" style="text-align: center; color: var(--text-muted);">Đang tải...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -202,13 +208,14 @@
                                     <th>Địa Chỉ Giao</th>
                                     <th>Tổng Tiền</th>
                                     <th>Trạng Thái</th>
+                                    <th>Thanh Toán</th>
                                     <th>Ngày Tạo</th>
                                     <th>Thao Tác</th>
                                 </tr>
                             </thead>
                             <tbody id="ordersTable">
                                 <tr>
-                                    <td colspan="8" style="text-align: center; color: var(--text-muted);">Đang tải...</td>
+                                    <td colspan="9" style="text-align: center; color: var(--text-muted);">Đang tải...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -253,7 +260,7 @@
         <div class="modal-content">
             <div style="text-align: center; margin-bottom: 28px;">
                 <div style="font-size: 40px; margin-bottom: 12px;">☕</div>
-                <div class="modal-header" style="margin: 0; text-align: center;">Highlands Coffee Admin</div>
+                <div class="modal-header" style="margin: 0; text-align: center;">Tu's Coffee Admin</div>
             </div>
             <div class="form-group">
                 <label>Email</label>
@@ -469,7 +476,7 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(page).classList.add('active');
             if (element) element.classList.add('active');
-            const titles = { dashboard:'Dashboard', news:'Quản Lý Tin Tức', customers:'Quản Lý Khách Hàng', orders:'Quản Lý Đơn Hàng', products:'Quản Lý Sản Phẩm' };
+            const titles = { dashboard:'Dashboard', news:'Quản Lý Tin Tức', customers:'Quản Lý Tài Khoản', orders:'Quản Lý Đơn Hàng', products:'Quản Lý Sản Phẩm' };
             document.getElementById('pageTitle').textContent = titles[page] || 'Dashboard';
             if (page === 'dashboard') loadDashboard();
             else if (page === 'news') loadNews();
@@ -826,21 +833,29 @@
         }
 
         // ========== CUSTOMERS ==========
+        const ROLE_LABELS = { admin: '👑 Admin', user: '👤 User' };
+        const ROLE_COLORS = { admin: '#7c3aed', user: '#059669' };
+
         async function loadCustomers() {
             const search = document.getElementById('customersSearch')?.value || '';
             const filter = document.getElementById('customersFilter')?.value || '';
+            const role = document.getElementById('customersRoleFilter')?.value || '';
             const params = new URLSearchParams({ skip:0, limit:50 });
             if (search) params.append('search', search);
             if (filter) params.append('status', filter);
+            if (role) params.append('role', role);
             try {
                 const data = await apiGet('/api/admin/customers?' + params);
-                document.getElementById('customersTable').innerHTML = (data.items || []).map(c => `
-                    <tr>
+                document.getElementById('customersTable').innerHTML = (data.items || []).map(c => {
+                    const roleLabel = ROLE_LABELS[c.role] || c.role;
+                    const roleColor = ROLE_COLORS[c.role] || '#888';
+                    return `<tr>
                         <td>#${c.id}</td>
                         <td><strong>${esc(c.name)}</strong></td>
                         <td style="font-size:13px;color:var(--text-muted);">${esc(c.email)}</td>
                         <td>${esc(c.phone||'-')}</td>
-                        <td style="font-size:12px;">${esc(c.address||'-')}</td>
+                        <td><span style="font-size:11px;padding:2px 8px;border-radius:12px;font-weight:700;background:${roleColor}22;color:${roleColor}">${roleLabel}</span></td>
+                        <td style="text-align:center;font-weight:600;color:#b45309;">⭐ ${c.points||0}</td>
                         <td><span class="badge ${c.is_active ? 'badge-active' : 'badge-inactive'}">${c.is_active ? '✅ Hoạt Động' : '🔒 Bị Khóa'}</span></td>
                         <td style="font-size:12px;">${c.created_at||''}</td>
                         <td>
@@ -850,9 +865,10 @@
                                 <button class="btn ${c.is_active ? 'btn-success' : 'btn-secondary'} btn-sm btn-icon" title="${c.is_active ? 'Khóa' : 'Mở khóa'}" onclick="toggleCustomer(${c.id}, ${c.is_active ? 0 : 1}, '${esc(c.name)}')">${c.is_active ? '✓' : '○'}</button>
                             </div>
                         </td>
-                    </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);">Không có dữ liệu</td></tr>';
+                    </tr>`;
+                }).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--text-muted);">Không có dữ liệu</td></tr>';
             } catch(e) {
-                document.getElementById('customersTable').innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--danger);">Lỗi: ${esc(e.message)}</td></tr>`;
+                document.getElementById('customersTable').innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--danger);">Lỗi: ${esc(e.message)}</td></tr>`;
             }
         }
 
@@ -971,6 +987,12 @@
                         </td>
                         <td><strong>${(o.total||0).toLocaleString('vi-VN')}đ</strong></td>
                         <td><span class="badge ${statusBadge[o.status]||'badge-pending'}">${statusLabel[o.status]||o.status}</span></td>
+                        <td>
+                          <span style="font-size:11px;padding:2px 8px;border-radius:12px;font-weight:700;background:${o.payment_status==='paid'?'#e8fdf0':'#fff8e0'};color:${o.payment_status==='paid'?'#2a9d5c':'#b07d00'}">
+                            ${o.payment_status==='paid'?'✅ Đã TT':'⏳ Chưa TT'}
+                          </span>
+                          <div style="font-size:10px;color:#aaa;margin-top:2px">${o.payment_method==='qr_transfer'?'📱 QR':'💵 Tiền mặt'}</div>
+                        </td>
                         <td style="font-size:12px;">${o.created_at||''}</td>
                         <td>
                             <div class="action-buttons">
@@ -978,9 +1000,9 @@
                                 <button class="btn btn-danger btn-sm btn-icon" title="Xóa" onclick="deleteOrder(${o.id})">🗑️</button>
                             </div>
                         </td>
-                    </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);">Không có dữ liệu</td></tr>';
+                    </tr>`).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--text-muted);">Không có dữ liệu</td></tr>';
             } catch(e) {
-                document.getElementById('ordersTable').innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--danger);">Lỗi: ${esc(e.message)}</td></tr>`;
+                document.getElementById('ordersTable').innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--danger);">Lỗi: ${esc(e.message)}</td></tr>`;
             }
         }
 

@@ -39,7 +39,8 @@ class UserOut(BaseModel):
     email: str
     phone: str | None
     address: str | None = None
-    role: str = "customer"
+    role: str = "user"
+    points: int = 0
 
     class Config:
         from_attributes = True
@@ -57,6 +58,7 @@ def register(body: RegisterIn, db: Session = Depends(get_db)):
         phone=body.phone,
         address=body.address,
         hashed_pwd=hash_password(body.password),
+        points=50,  # welcome bonus
     )
     db.add(user)
     db.commit()

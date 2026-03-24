@@ -3,6 +3,7 @@ Products endpoints: GET /api/products, GET /api/products/{id}
 """
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from pydantic import BaseModel
 from typing import Optional
 from highlands.database import get_db
@@ -24,11 +25,20 @@ class ProductOut(BaseModel):
 
 
 @router.get("", response_model=list[ProductOut])
-def list_products(category: Optional[str] = None, db: Session = Depends(get_db)):
-    q = db.query(models.Product).filter(models.Product.is_active == 1)
+def list_products(
+    category: Optional[str] = None,
+    q: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    query = db.query(models.Product).filter(models.Product.is_active == 1)
     if category:
-        q = q.filter(models.Product.category == category)
-    return q.all()
+        query = query.filter(models.Product.category == category)
+    if q:
+        keyword = f"%{q}%"
+        query = query.filter(
+            or_(models.Product.name.ilike(keyword), models.Product.category.ilike(keyword))
+        )
+    return query.all()
 
 
 @router.get("/{product_id}", response_model=ProductOut)

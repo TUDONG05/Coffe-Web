@@ -1,6 +1,6 @@
-# Highlands Coffee — Web Application
+# Tu's Coffee — Web Application
 
-Ứng dụng web thương mại điện tử cho chuỗi cà phê **Highlands Coffee**, xây dựng bằng **FastAPI** (backend) và **HTML/CSS/Vanilla JavaScript** (frontend). Hệ thống gồm hai giao diện riêng biệt: trang dành cho khách hàng và trang quản trị dành cho admin.
+Ứng dụng web thương mại điện tử cho chuỗi cà phê **Tu's Coffee**, xây dựng bằng **FastAPI** (backend) và **HTML/CSS/Vanilla JavaScript** (frontend SPA). Hệ thống gồm hai giao diện riêng biệt: trang khách hàng và trang quản trị.
 
 ---
 
@@ -8,52 +8,62 @@
 
 ### Giao diện khách hàng (`/`)
 
-
 [![Xem video](https://img.youtube.com/vi/Iw8Dd8FMvbE/0.jpg)](https://youtu.be/Iw8Dd8FMvbE)
 
-
 **Tài khoản & Xác thực**
-- Đăng ký tài khoản khách hàng
+- Đăng ký tài khoản (mặc định role `user`, tặng 50 điểm Rewards)
 - Đăng nhập / đăng xuất bằng JWT
 - Xem & cập nhật hồ sơ cá nhân (tên, số điện thoại, địa chỉ)
 - Đổi mật khẩu
 
-**Menu & Đặt hàng**
+**Menu & Tìm kiếm**
 - Duyệt 30+ sản phẩm, lọc theo danh mục (Cà phê, Trà, Freeze, Thức ăn, Combo)
+- Tìm kiếm sản phẩm theo tên hoặc danh mục (thanh tìm kiếm menu & nút 🔍 navbar)
+
+**Giỏ hàng & Đặt hàng**
 - Thêm sản phẩm vào giỏ hàng, điều chỉnh số lượng
 - Đặt hàng online (hỗ trợ cả khách vãng lai và tài khoản đăng nhập)
-- Xem lịch sử đơn hàng
+- Chọn phương thức thanh toán: **Tiền mặt** hoặc **Chuyển khoản QR** (VietQR)
+- Quét mã QR thanh toán ngay sau khi đặt (MB Bank — 010320058686 DONG VAN TU)
+- Đơn QR tự động chuyển trạng thái `payment_status = paid`
+- Xem lịch sử đơn hàng (trạng thái, phương thức thanh toán, chi tiết items)
 - Huỷ đơn hàng đang chờ xử lý
+
+**Tu's Coffee Rewards**
+- Trang Rewards riêng biệt với 3 tầng: Bronze / Silver / Gold
+- Tích điểm khi đặt hàng: 10.000đ = 1 điểm
+- Hiển thị điểm hiện tại, toast thông báo điểm tích sau mỗi đơn
+- Catalog đổi thưởng (đồ uống miễn phí, voucher, quà tặng)
 
 **Nội dung**
 - Xem khuyến mãi đang áp dụng
 - Đọc tin tức & bài viết mới nhất
 - Tìm kiếm cửa hàng theo thành phố, lọc theo từ khóa
+- Trang Giới thiệu (About) — ban lãnh đạo, câu chuyện thương hiệu
 
 ---
 
 ### Giao diện quản trị (`/admin`)
 
-
 [![Xem video](https://img.youtube.com/vi/H9Vw_seuFYQ/0.jpg)](https://youtu.be/H9Vw_seuFYQ)
 
-
-**Tổng quan**
-- Dashboard thống kê: tổng số sản phẩm, đơn hàng, khách hàng, doanh thu
+**Dashboard**
+- Thống kê tổng quan: tổng sản phẩm, đơn hàng, tài khoản, doanh thu
+- Bảng đơn hàng gần đây
 
 **Quản lý nội dung (CRUD đầy đủ)**
-- **Sản phẩm** — tìm kiếm, lọc theo danh mục/giá, phân trang
-- **Đơn hàng** — cập nhật trạng thái, lọc theo ngày/trạng thái/giá
-- **Khách hàng** — tìm kiếm, lọc theo trạng thái kích hoạt
+- **Sản phẩm** — tìm kiếm, lọc theo danh mục/giá, phân trang, toggle kích hoạt
+- **Đơn hàng** — cập nhật trạng thái, xem chi tiết items, cột Thanh Toán (paid/unpaid + phương thức)
+- **Tài khoản** — hiển thị role, điểm Rewards; lọc theo role (`admin` / `user`) và trạng thái
 - **Tin tức** — tìm kiếm, lọc theo thẻ
 - **Cửa hàng** — quản lý địa điểm toàn hệ thống
 - **Danh mục** — quản lý danh mục sản phẩm
-- **Tài khoản Admin/Staff** — phân quyền, quản lý người dùng nội bộ
+- **Tài khoản Admin** — tạo, phân quyền, khóa/mở tài khoản nội bộ
 
 **Tính năng chung**
-- Xác thực JWT bảo mật, phân quyền theo role
-- Kích hoạt / vô hiệu hoá bản ghi (soft delete, không xoá vật lý)
-- Thông báo toast sau mỗi thao tác
+- Xác thực JWT, phân quyền role `admin`
+- Soft delete — không xoá vật lý
+- Toast thông báo sau mỗi thao tác
 - Phân trang cho danh sách lớn
 
 ---
@@ -62,9 +72,9 @@
 
 | Trang | URL | Mô tả |
 |-------|-----|-------|
-| Trang khách hàng | `http://localhost:8000/` | SPA nhiều trang: menu, giỏ hàng, tài khoản, tin tức, cửa hàng |
-| Trang quản trị | `http://localhost:8000/admin` | Dashboard admin với bảng dữ liệu CRUD |
-| Giới thiệu | `http://localhost:8000/about` | Trang thông tin tĩnh về công ty |
+| Khách hàng | `http://localhost:8000/` | SPA: menu, giỏ hàng, rewards, tin tức, cửa hàng |
+| Quản trị | `http://localhost:8000/admin` | Dashboard CRUD đầy đủ |
+| Giới thiệu | `http://localhost:8000/about` | Thông tin thương hiệu Tu's Coffee |
 | Swagger UI | `http://localhost:8000/docs` | Tài liệu API tương tác |
 | Health check | `http://localhost:8000/health` | Kiểm tra trạng thái server |
 
@@ -83,7 +93,10 @@
 | Xác thực | JWT (HS256) + Bcrypt | python-jose 3.3.0 / bcrypt 4.1.1 |
 | Config | python-dotenv | 1.0.0 |
 | File tĩnh | aiofiles | ≥23.0.0 |
-| Frontend | HTML5, CSS3, Vanilla JavaScript | — |
+| AI / Chatbot | scikit-learn | ≥1.3.0 |
+| HTTP client | httpx | ≥0.27.0 |
+| Frontend | HTML5, CSS3, Vanilla JavaScript (SPA) | — |
+| Thanh toán QR | VietQR free API | — |
 | Runtime | Python | 3.10+ |
 
 ---
@@ -94,8 +107,8 @@
 web-prj/
 │
 ├── highlands_app.py          # Entry point — khởi tạo FastAPI, mount routers, serve HTML
-├── requirements.txt          # Danh sách thư viện Python (11 packages)
-├── migrate_db.py             # Tạo / cập nhật bảng an toàn (không mất dữ liệu)
+├── requirements.txt          # Danh sách thư viện Python
+├── migrate_db.py             # Migration an toàn (ALTER TABLE, không mất dữ liệu)
 ├── create_admin.py           # Tạo tài khoản admin mặc định lần đầu
 ├── setup.sh                  # Script cài đặt tự động (Linux/macOS)
 ├── setup.bat                 # Script cài đặt tự động (Windows)
@@ -105,55 +118,59 @@ web-prj/
 ├── highlands/                # Package backend chính
 │   ├── config.py             # Cấu hình: DATABASE_URL, SECRET_KEY, JWT expiry
 │   ├── database.py           # SQLAlchemy engine + SessionLocal + get_db()
-│   ├── models.py             # 8 ORM models: User, Category, Product, Order, OrderItem,
-│   │                         #               Store, News, Promotion
-│   ├── auth_utils.py         # Hash mật khẩu, tạo/xác minh JWT, dependency require_admin
-│   ├── seed_db.py            # Seed dữ liệu mẫu (30 sản phẩm, 12 cửa hàng, ...)
+│   ├── models.py             # ORM models: User, Category, Product, Order, OrderItem,
+│   │                         #             Store, News, Promotion
+│   ├── auth_utils.py         # Hash mật khẩu, tạo/xác minh JWT, require_admin
+│   ├── seed_db.py            # Seed dữ liệu mẫu
 │   │
-│   └── routers/
-│       │
-│       ├── ── Public API (không cần xác thực) ──
-│       ├── auth_router.py          # /api/auth — đăng ký, đăng nhập, hồ sơ
-│       ├── products_router.py      # /api/products
-│       ├── orders_router.py        # /api/orders
-│       ├── stores_router.py        # /api/stores
-│       ├── news_router.py          # /api/news
-│       ├── promotions_router.py    # /api/promotions
-│       │
-│       └── ── Admin API (yêu cầu JWT role=admin) ──
-│           ├── admin_dashboard_router.py   # /api/admin/dashboard
-│           ├── admin_products_router.py    # /api/admin/products
-│           ├── admin_orders_router.py      # /api/admin/orders
-│           ├── admin_customers_router.py   # /api/admin/customers
-│           ├── admin_news_router.py        # /api/admin/news
-│           ├── admin_stores_router.py      # /api/admin/stores
-│           ├── admin_categories_router.py  # /api/admin/categories
-│           └── admin_users_router.py       # /api/admin/users
+│   ├── routers/
+│   │   │
+│   │   ├── ── Public API (không cần xác thực) ──
+│   │   ├── auth_router.py          # /api/auth — đăng ký, đăng nhập, hồ sơ
+│   │   ├── products_router.py      # /api/products — danh sách, tìm kiếm
+│   │   ├── orders_router.py        # /api/orders — tạo đơn, lịch sử, huỷ
+│   │   ├── stores_router.py        # /api/stores
+│   │   ├── news_router.py          # /api/news
+│   │   ├── promotions_router.py    # /api/promotions
+│   │   ├── chatbot_router.py       # /api/chatbot — AI tư vấn menu
+│   │   │
+│   │   └── ── Admin API (yêu cầu JWT role=admin) ──
+│   │       ├── admin_dashboard_router.py   # /api/admin/dashboard
+│   │       ├── admin_products_router.py    # /api/admin/products
+│   │       ├── admin_orders_router.py      # /api/admin/orders
+│   │       ├── admin_customers_router.py   # /api/admin/customers
+│   │       ├── admin_news_router.py        # /api/admin/news
+│   │       ├── admin_stores_router.py      # /api/admin/stores
+│   │       ├── admin_categories_router.py  # /api/admin/categories
+│   │       └── admin_users_router.py       # /api/admin/users
+│   │
+│   └── services/
+│       └── menu_rag_service.py     # RAG service cho chatbot gợi ý menu
 │
-├── templates/                # Giao diện HTML (SPA)
-│   ├── highlands-coffee.html # Trang khách hàng (~1360 dòng)
-│   ├── admin-panel.html      # Trang quản trị (~1118 dòng)
-│   └── about.html            # Trang giới thiệu (~257 dòng)
+├── templates/
+│   ├── highlands-coffee.html # Trang khách hàng (SPA)
+│   ├── admin-panel.html      # Trang quản trị
+│   └── about.html            # Trang giới thiệu
 │
 └── static/
     └── css/
-        ├── main.css          # Style trang khách hàng (801 dòng)
-        ├── admin.css         # Style trang quản trị (600 dòng)
-        └── about.css         # Style trang giới thiệu (217 dòng)
+        ├── main.css          # Style trang khách hàng (responsive)
+        ├── admin.css         # Style trang quản trị
+        └── about.css         # Style trang giới thiệu (responsive)
 ```
 
 ---
 
 ## Schema Database
 
-### Tổng quan các bảng
+### Các bảng
 
 | Bảng | Mô tả |
 |------|-------|
-| `users` | Tài khoản khách hàng, staff và admin |
+| `users` | Tài khoản người dùng (role: admin / user) |
 | `categories` | Danh mục sản phẩm |
 | `products` | Sản phẩm (tên, danh mục, giá, mô tả, emoji) |
-| `orders` | Đơn hàng (tên khách, SĐT, địa chỉ, tổng tiền, trạng thái) |
+| `orders` | Đơn hàng (tên khách, SĐT, địa chỉ, tổng tiền, trạng thái, thanh toán) |
 | `order_items` | Chi tiết từng sản phẩm trong đơn hàng |
 | `stores` | Cửa hàng (địa chỉ, quận, thành phố, giờ mở cửa) |
 | `news` | Tin tức & bài viết |
@@ -163,76 +180,132 @@ web-prj/
 
 **`users`**
 ```
-id, name, email (unique), phone, hashed_password,
-role (admin | staff | customer), address,
-is_active (bool), created_at
+id            INT          PK, auto-increment
+name          VARCHAR(100) NOT NULL
+email         VARCHAR(150) UNIQUE, NOT NULL
+phone         VARCHAR(20)
+hashed_pwd    VARCHAR(255) NOT NULL
+role          VARCHAR(20)  DEFAULT 'user'   -- admin | user
+address       VARCHAR(300)
+points        INT          DEFAULT 0        -- điểm Rewards
+is_active     INT          DEFAULT 1        -- 1=hoạt động, 0=bị khóa
+created_at    DATETIME     DEFAULT now()
 ```
 
 **`categories`**
 ```
-id, name (unique), emoji, is_active
+id        INT          PK
+name      VARCHAR(100) UNIQUE, NOT NULL
+emoji     VARCHAR(10)  DEFAULT '☕'
+is_active INT          DEFAULT 1
 ```
 
 **`products`**
 ```
-id, name, category, price (VND), description, emoji, is_active
+id          INT          PK
+name        VARCHAR(150) NOT NULL
+category    VARCHAR(50)  NOT NULL
+price       INT          NOT NULL   -- VND
+description TEXT
+emoji       VARCHAR(10)  DEFAULT '☕'
+is_active   INT          DEFAULT 1
 ```
 
 **`orders`**
 ```
-id, user_id (FK → users), customer_name, phone, total,
-address, note, status (pending | confirmed | done | cancelled),
-is_active, created_at
+id             INT          PK
+user_id        INT          FK → users.id (NULL cho khách vãng lai)
+customer_name  VARCHAR(100) NOT NULL
+phone          VARCHAR(20)  NOT NULL
+address        VARCHAR(300)
+total          INT          NOT NULL   -- VND
+note           TEXT
+status         VARCHAR(30)  DEFAULT 'pending'
+               -- pending | confirmed | done | cancelled
+payment_method VARCHAR(20)  DEFAULT 'cash'
+               -- cash | qr_transfer
+payment_status VARCHAR(20)  DEFAULT 'unpaid'
+               -- unpaid | paid
+is_active      INT          DEFAULT 1
+created_at     DATETIME     DEFAULT now()
 ```
 
 **`order_items`**
 ```
-id, order_id (FK → orders), product_id (FK → products),
-name (snapshot tên SP lúc đặt), price, quantity, subtotal
+id         INT          PK
+order_id   INT          FK → orders.id
+product_id INT          FK → products.id
+name       VARCHAR(150) NOT NULL   -- snapshot tên sản phẩm lúc đặt
+price      INT          NOT NULL
+quantity   INT          NOT NULL
+subtotal   INT          NOT NULL
 ```
 
 **`stores`**
 ```
-id, name, address, district, city, phone, hours, is_active
+id        INT          PK
+name      VARCHAR(200) NOT NULL
+address   VARCHAR(300) NOT NULL
+district  VARCHAR(100) NOT NULL
+city      VARCHAR(100) DEFAULT 'Hà Nội'
+phone     VARCHAR(30)
+hours     VARCHAR(100) DEFAULT '06:00 – 23:00'
+is_active INT          DEFAULT 1
 ```
 
 **`news`**
 ```
-id, title, excerpt, content, tag, emoji, published_at, is_active
+id           INT          PK
+title        VARCHAR(300) NOT NULL
+excerpt      TEXT
+content      TEXT
+tag          VARCHAR(50)   -- 'Tin Tức' | 'Sự Kiện' | 'Khuyến Mãi'
+emoji        VARCHAR(10)  DEFAULT '📰'
+published_at VARCHAR(50)
+is_active    INT          DEFAULT 1
 ```
 
 **`promotions`**
 ```
-id, title, description, discount, emoji,
-tag (HOT | NEW | SALE), valid_until, is_active
+id          INT          PK
+title       VARCHAR(200) NOT NULL
+description TEXT
+discount    VARCHAR(50)  -- '20%', 'Mua 1 tặng 1'
+emoji       VARCHAR(10)  DEFAULT '🎁'
+tag         VARCHAR(50)  -- 'HOT' | 'NEW' | 'SALE'
+valid_until VARCHAR(50)
+is_active   INT          DEFAULT 1
 ```
 
-**Quan hệ:**
-- `users` → `orders` (1:nhiều)
-- `orders` → `order_items` (1:nhiều)
-- `order_items` → `products` (nhiều:1)
-- Xoá mềm (soft delete) qua cờ `is_active` — không xoá vật lý
+### Quan hệ
+
+```
+users ──────────────────── orders          (1 : nhiều)
+orders ─────────────────── order_items     (1 : nhiều)
+order_items ────────────── products        (nhiều : 1)
+```
+
+> Soft delete qua cờ `is_active` — không xoá vật lý dữ liệu.
 
 ---
 
 ## Cài đặt
 
-### Yêu cầu môi trường
+### Yêu cầu
 
 - Python **3.10+**
 - MySQL **5.7+** (hoặc 8.x)
 - pip
 
-### Bước 1 — Clone & tạo môi trường ảo
+### Bước 1 — Tạo môi trường ảo
 
 ```bash
-# Tạo virtual environment
 python -m venv venv
 
-# Kích hoạt (Windows)
+# Windows
 venv\Scripts\activate
 
-# Kích hoạt (Linux/macOS)
+# Linux/macOS
 source venv/bin/activate
 ```
 
@@ -255,9 +328,11 @@ setup.bat
 ### Bước 3 — Cấu hình môi trường
 
 ```bash
-# Sao chép file mẫu
-cp .env.example .env   # Linux/macOS
-copy .env.example .env # Windows
+# Linux/macOS
+cp .env.example .env
+
+# Windows
+copy .env.example .env
 ```
 
 Chỉnh sửa `.env`:
@@ -271,11 +346,9 @@ MYSQL_DB=highlands_coffee
 SECRET_KEY=your-random-secret-key-min-32-chars
 ```
 
-> **Lưu ý:** Bắt buộc đổi `SECRET_KEY` thành chuỗi ngẫu nhiên khi chạy production.
+> Bắt buộc đổi `SECRET_KEY` thành chuỗi ngẫu nhiên trước khi deploy production.
 
-### Bước 4 — Tạo database
-
-Tạo database MySQL:
+### Bước 4 — Tạo database MySQL
 
 ```sql
 CREATE DATABASE highlands_coffee
@@ -283,35 +356,36 @@ CREATE DATABASE highlands_coffee
   COLLATE utf8mb4_unicode_ci;
 ```
 
-Chạy migrate để tạo bảng:
+### Bước 5 — Tạo bảng & migrate
 
 ```bash
 python migrate_db.py
 ```
 
-### Bước 5 — Seed dữ liệu mẫu
+Lệnh này tạo tất cả bảng và thêm các cột còn thiếu mà không làm mất dữ liệu hiện có.
+
+### Bước 6 — Seed dữ liệu mẫu
 
 ```bash
 python highlands/seed_db.py
 ```
 
-Tạo dữ liệu mẫu:
+Tạo:
 - 30 sản phẩm (10 cà phê, 8 trà, 5 freeze, 5 thức ăn, 2 combo)
 - 12 cửa hàng (5 Hà Nội, 4 TP.HCM, 3 Đà Nẵng)
-- 6 khuyến mãi
-- 6 bài viết tin tức
+- 6 khuyến mãi, 6 bài viết tin tức
 
-### Bước 6 — Tạo tài khoản admin
+### Bước 7 — Tạo tài khoản admin
 
 ```bash
 python create_admin.py
 ```
 
-Tài khoản mặc định được tạo:
+Tài khoản mặc định:
 - Email: `admin@highlands.com`
 - Mật khẩu: `admin123`
 
-> **Lưu ý:** Đổi mật khẩu ngay sau khi đăng nhập lần đầu.
+> Đổi mật khẩu ngay sau khi đăng nhập lần đầu.
 
 ---
 
@@ -329,15 +403,104 @@ uvicorn highlands_app:app --host 0.0.0.0 --port 8000 --reload
 uvicorn highlands_app:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
-Sau khi khởi động, truy cập:
+### Truy cập
 
 | Địa chỉ | Mô tả |
 |---------|-------|
 | `http://localhost:8000` | Giao diện khách hàng |
 | `http://localhost:8000/admin` | Giao diện quản trị |
 | `http://localhost:8000/about` | Trang giới thiệu |
-| `http://localhost:8000/docs` | Swagger UI — tài liệu API tương tác |
+| `http://localhost:8000/docs` | Swagger UI — tài liệu API |
 | `http://localhost:8000/health` | Kiểm tra trạng thái server |
+
+---
+
+## Dừng ứng dụng
+
+### Nếu chạy foreground (Ctrl+C)
+
+```bash
+# Nhấn Ctrl+C trong terminal đang chạy uvicorn
+```
+
+### Nếu chạy background
+
+```bash
+# Windows — dừng toàn bộ process Python
+taskkill /F /IM python.exe
+
+# Linux/macOS — tìm và kill process uvicorn
+pkill -f "uvicorn highlands_app"
+
+# Hoặc tìm PID rồi kill
+lsof -i :8000
+kill -9 <PID>
+```
+
+---
+
+## AI Chatbot
+
+Tu's Coffee tích hợp chatbot AI tư vấn thực đơn trực tiếp trên giao diện khách hàng.
+
+### Kiến trúc
+
+```
+Người dùng
+   │  nhập câu hỏi
+   ▼
+Frontend (SSE stream)
+   │  POST /api/chat/stream
+   ▼
+ChatbotRouter
+   │  1. Tìm món liên quan (RAG)
+   │  2. Build system prompt với context
+   ▼
+MenuRAGService (TF-IDF)          ←── DB sản phẩm
+   │  trả top-4 món phù hợp
+   ▼
+Ollama (local LLM)               ←── model qwen2.5:3b
+   │  stream token
+   ▼
+Frontend render từng token (streaming)
+```
+
+### Cách hoạt động
+
+1. **RAG (Retrieval-Augmented Generation)**: Mỗi câu hỏi được vector hoá bằng **TF-IDF** (char n-gram 2–4, tốt với tiếng Việt), tìm top-4 sản phẩm liên quan nhất qua cosine similarity
+2. **System prompt**: Inject context sản phẩm vào prompt → LLM chỉ tư vấn đúng menu thực tế
+3. **Streaming**: Dùng **SSE (Server-Sent Events)** — response hiển thị từng token ngay khi Ollama trả về
+4. **History**: Giữ 6 lượt hội thoại gần nhất để chatbot nhớ ngữ cảnh
+
+### Yêu cầu để chạy chatbot
+
+Cần cài **Ollama** và pull model:
+
+```bash
+# Cài Ollama (ollama.com)
+# Sau đó pull model
+ollama pull qwen2.5:3b
+
+# Chạy Ollama
+ollama serve
+```
+
+Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override qua `.env`:
+
+```env
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=qwen2.5:3b
+```
+
+> Nếu không cài Ollama, các tính năng khác vẫn hoạt động bình thường. Chatbot sẽ hiển thị lỗi "Không kết nối được Ollama".
+
+### API chatbot
+
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| POST | `/api/chat/stream` | Chat, trả về SSE token stream |
+| POST | `/api/chat/reload-menu` | Reload TF-IDF index sau khi admin sửa sản phẩm |
+| GET | `/api/chat/status` | Kiểm tra trạng thái (số món đã index, model đang dùng) |
 
 ---
 
@@ -347,111 +510,54 @@ Sau khi khởi động, truy cập:
 
 #### Xác thực (`/api/auth`)
 
-| Method | Endpoint | Mô tả | Body |
-|--------|----------|-------|------|
-| POST | `/api/auth/register` | Đăng ký tài khoản | `name, email, password` |
-| POST | `/api/auth/login` | Đăng nhập, nhận JWT | `email, password` |
-| GET | `/api/auth/me` | Lấy thông tin tài khoản hiện tại | — |
-| PUT | `/api/auth/profile` | Cập nhật hồ sơ | `name, phone, address` |
-| PUT | `/api/auth/change-password` | Đổi mật khẩu | `old_password, new_password` |
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| POST | `/api/auth/register` | Đăng ký — tặng 50 điểm Rewards, role mặc định `user` |
+| POST | `/api/auth/login` | Đăng nhập, trả JWT |
+| GET | `/api/auth/me` | Thông tin tài khoản hiện tại |
+| PUT | `/api/auth/profile` | Cập nhật hồ sơ |
+| PUT | `/api/auth/change-password` | Đổi mật khẩu |
 
 #### Sản phẩm (`/api/products`)
 
-| Method | Endpoint | Mô tả | Query Params |
-|--------|----------|-------|--------------|
-| GET | `/api/products` | Danh sách sản phẩm | `category` |
-| GET | `/api/products/{id}` | Chi tiết sản phẩm | — |
+| Method | Endpoint | Query Params |
+|--------|----------|--------------|
+| GET | `/api/products` | `category`, `q` (tìm theo tên / danh mục) |
+| GET | `/api/products/{id}` | — |
 
 #### Đơn hàng (`/api/orders`)
 
-| Method | Endpoint | Mô tả | Ghi chú |
-|--------|----------|-------|---------|
-| POST | `/api/orders` | Tạo đơn hàng | `customer_name, phone, address, items[]` |
-| GET | `/api/orders/mine` | Lịch sử đơn của tôi | Cần đăng nhập |
-| PATCH | `/api/orders/{id}/cancel` | Huỷ đơn hàng | Chỉ huỷ được đơn `pending` |
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| POST | `/api/orders` | Tạo đơn — hỗ trợ `payment_method: cash | qr_transfer` |
+| GET | `/api/orders/mine` | Lịch sử đơn (cần đăng nhập) |
+| PATCH | `/api/orders/{id}/cancel` | Huỷ đơn `pending` |
 
-#### Cửa hàng (`/api/stores`)
+#### Nội dung
 
-| Method | Endpoint | Mô tả | Query Params |
-|--------|----------|-------|--------------|
-| GET | `/api/stores` | Danh sách cửa hàng | `city, q` (tìm kiếm) |
-| GET | `/api/stores/cities` | Danh sách thành phố | — |
-| GET | `/api/stores/{id}` | Chi tiết cửa hàng | — |
-
-#### Tin tức & Khuyến mãi
-
-| Method | Endpoint | Mô tả | Query Params |
-|--------|----------|-------|--------------|
-| GET | `/api/news` | Danh sách tin tức | `tag` |
-| GET | `/api/news/{id}` | Chi tiết bài viết | — |
-| GET | `/api/promotions` | Khuyến mãi đang áp dụng | — |
+| Method | Endpoint | Query Params |
+|--------|----------|--------------|
+| GET | `/api/stores` | `city`, `q` |
+| GET | `/api/stores/cities` | — |
+| GET | `/api/news` | `tag` |
+| GET | `/api/promotions` | — |
 
 ---
 
 ### Admin API
 
-> Tất cả yêu cầu header: `Authorization: Bearer <jwt_token>`
-> Role bắt buộc: `admin`
+> Header bắt buộc: `Authorization: Bearer <jwt_token>` — role `admin`
 
-#### Dashboard
-
-| Method | Endpoint | Mô tả |
-|--------|----------|-------|
-| GET | `/api/admin/dashboard` | Thống kê tổng quan |
-
-#### Sản phẩm (`/api/admin/products`)
-
-| Method | Endpoint | Mô tả | Query Params |
-|--------|----------|-------|--------------|
-| GET | `/api/admin/products` | Danh sách có phân trang | `skip, limit, category, search, min_price, max_price, is_active` |
-| POST | `/api/admin/products` | Tạo sản phẩm mới | — |
-| GET | `/api/admin/products/{id}` | Chi tiết sản phẩm | — |
-| PUT | `/api/admin/products/{id}` | Cập nhật sản phẩm | — |
-| PATCH | `/api/admin/products/{id}` | Toggle kích hoạt | — |
-| DELETE | `/api/admin/products/{id}` | Xoá mềm | — |
-
-#### Đơn hàng (`/api/admin/orders`)
-
-| Method | Endpoint | Mô tả | Query Params |
-|--------|----------|-------|--------------|
-| GET | `/api/admin/orders` | Danh sách có phân trang | `status, search, date_from, date_to, min_price, max_price` |
-| POST | `/api/admin/orders` | Tạo đơn hàng thủ công | — |
-| GET | `/api/admin/orders/{id}` | Chi tiết đơn + items | — |
-| PATCH | `/api/admin/orders/{id}` | Cập nhật trạng thái | — |
-| DELETE | `/api/admin/orders/{id}` | Xoá mềm | — |
-
-#### Khách hàng (`/api/admin/customers`)
-
-| Method | Endpoint | Mô tả | Query Params |
-|--------|----------|-------|--------------|
-| GET | `/api/admin/customers` | Danh sách có phân trang | `search, is_active` |
-| POST | `/api/admin/customers` | Tạo khách hàng | — |
-| GET | `/api/admin/customers/{id}` | Chi tiết khách hàng | — |
-| PUT | `/api/admin/customers/{id}` | Cập nhật thông tin | — |
-| PATCH | `/api/admin/customers/{id}` | Toggle kích hoạt | — |
-| DELETE | `/api/admin/customers/{id}` | Xoá mềm | — |
-
-#### Tin tức (`/api/admin/news`)
-
-| Method | Endpoint | Mô tả | Query Params |
-|--------|----------|-------|--------------|
-| GET | `/api/admin/news` | Danh sách có phân trang | `search, tag, is_active` |
-| POST | `/api/admin/news` | Tạo bài viết | — |
-| GET | `/api/admin/news/{id}` | Chi tiết bài viết | — |
-| PUT | `/api/admin/news/{id}` | Cập nhật bài viết | — |
-| PATCH | `/api/admin/news/{id}` | Toggle kích hoạt | — |
-| DELETE | `/api/admin/news/{id}` | Xoá mềm | — |
-
-#### Cửa hàng, Danh mục, Tài khoản Admin
-
-| Method | Endpoint | Mô tả |
-|--------|----------|-------|
-| GET/POST | `/api/admin/stores` | Danh sách / tạo cửa hàng |
-| GET/PUT/DELETE | `/api/admin/stores/{id}` | Chi tiết / sửa / xoá |
-| GET/POST | `/api/admin/categories` | Danh sách / tạo danh mục |
-| GET/PUT/DELETE | `/api/admin/categories/{id}` | Chi tiết / sửa / xoá |
-| GET/POST | `/api/admin/users` | Danh sách / tạo tài khoản admin/staff |
-| GET/PUT/DELETE | `/api/admin/users/{id}` | Chi tiết / sửa / xoá |
+| Resource | Endpoints | Thao tác |
+|----------|-----------|---------|
+| Dashboard | `/api/admin/dashboard` | GET |
+| Sản phẩm | `/api/admin/products` | GET (filter: category, search, price), POST, PUT, PATCH, DELETE |
+| Đơn hàng | `/api/admin/orders` | GET (filter: status, date, price), POST, GET/{id}, PATCH, DELETE |
+| Tài khoản | `/api/admin/customers` | GET (filter: `role`, `status`, `search`), POST, PUT, PATCH, DELETE |
+| Tin tức | `/api/admin/news` | GET (filter: tag), POST, PUT, PATCH, DELETE |
+| Cửa hàng | `/api/admin/stores` | GET, POST, PUT, DELETE |
+| Danh mục | `/api/admin/categories` | GET, POST, PUT, DELETE |
+| Admin users | `/api/admin/users` | GET, POST, PUT, PATCH, DELETE |
 
 ---
 
@@ -460,23 +566,22 @@ Sau khi khởi động, truy cập:
 **Đã triển khai:**
 - Bcrypt hashing cho mật khẩu
 - JWT HS256 với thời hạn 24 giờ
-- Phân quyền theo role: `admin`, `staff`, `customer`
+- Phân quyền theo role: `admin` / `user`
 - Soft delete — không xoá dữ liệu vật lý
 - Kiểm tra email duy nhất khi đăng ký
 - Mật khẩu tối thiểu 6 ký tự
 
 **Cần cấu hình trước khi deploy production:**
 
-- [ ] Đổi `SECRET_KEY` thành chuỗi ngẫu nhiên an toàn (≥32 ký tự)
+- [ ] Đổi `SECRET_KEY` thành chuỗi ngẫu nhiên (≥32 ký tự)
 - [ ] Đặt mật khẩu MySQL mạnh
 - [ ] Giới hạn `allow_origins` trong CORS (thay `"*"` bằng domain thực)
 - [ ] Bật HTTPS (Nginx + Let's Encrypt hoặc Cloudflare)
 - [ ] Đổi mật khẩu tài khoản admin mặc định
 - [ ] Sao lưu database định kỳ
-- [ ] Bật logging và giám sát lỗi
 
 ---
 
 ## License
 
-Proprietary — Highlands Coffee
+Proprietary — Tu's Coffee © 2026

@@ -26,9 +26,24 @@ from highlands.routers import (
     admin_dashboard_router,
     admin_news_router,
     admin_users_router,
+    chatbot_router,
 )
+from highlands.database import SessionLocal
+from highlands import models
+from highlands.services.menu_rag_service import menu_rag
 
 app = FastAPI(title="Highlands Coffee", version="2.0.0", docs_url="/docs")
+
+
+@app.on_event("startup")
+def load_menu_index():
+    """Build TF-IDF chatbot index từ DB khi app khởi động."""
+    db = SessionLocal()
+    try:
+        products = db.query(models.Product).filter(models.Product.is_active == 1).all()
+        menu_rag.build_index(products)
+    finally:
+        db.close()
 
 app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
 
@@ -57,6 +72,9 @@ app.include_router(admin_customers_router.router)
 app.include_router(admin_news_router.router)
 app.include_router(admin_users_router.router)
 app.include_router(admin_dashboard_router.router)
+
+# Chatbot API
+app.include_router(chatbot_router.router)
 
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")

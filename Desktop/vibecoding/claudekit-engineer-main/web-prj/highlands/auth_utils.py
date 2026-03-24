@@ -68,10 +68,10 @@ def require_admin(user: models.User | None = Depends(require_login)):
 
 
 def require_staff(user: models.User | None = Depends(require_login)):
-    """Dependency that enforces admin or staff role."""
-    if not user or user.role not in ("admin", "staff"):
+    """Dependency that enforces admin role (staff role removed)."""
+    if not user or user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Chỉ nhân viên và quản trị viên có quyền truy cập",
+            detail="Chỉ quản trị viên có quyền truy cập",
         )
     return user

@@ -35,6 +35,8 @@ class CustomerOut(BaseModel):
     email: str
     phone: str | None
     address: str | None
+    role: str
+    points: int
     is_active: int
     created_at: str
 
@@ -56,10 +58,14 @@ def list_customers(
     limit: int = Query(20, ge=1, le=100),
     search: Optional[str] = None,
     status: Optional[str] = None,
+    role: Optional[str] = None,
     admin: models.User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    query = db.query(models.User).filter(models.User.role == "customer")
+    query = db.query(models.User)
+
+    if role:
+        query = query.filter(models.User.role == role)
 
     if status == "active":
         query = query.filter(models.User.is_active == 1)
@@ -84,6 +90,8 @@ def list_customers(
             "email": item.email,
             "phone": item.phone,
             "address": item.address,
+            "role": item.role,
+            "points": item.points or 0,
             "is_active": item.is_active,
             "created_at": item.created_at.strftime("%Y-%m-%d %H:%M:%S"),
         })
@@ -113,6 +121,8 @@ def get_customer(
         "email": customer.email,
         "phone": customer.phone,
         "address": customer.address,
+        "role": customer.role,
+        "points": customer.points or 0,
         "is_active": customer.is_active,
         "created_at": customer.created_at.strftime("%Y-%m-%d %H:%M:%S"),
     }
@@ -139,6 +149,8 @@ def update_customer_status(
         "email": customer.email,
         "phone": customer.phone,
         "address": customer.address,
+        "role": customer.role,
+        "points": customer.points or 0,
         "is_active": customer.is_active,
         "created_at": customer.created_at.strftime("%Y-%m-%d %H:%M:%S"),
     }
@@ -176,7 +188,7 @@ def create_customer(
         phone=body.phone,
         address=body.address,
         hashed_pwd=hash_password(body.password),
-        role="customer",
+        role="user",
         is_active=1,
     )
     db.add(customer)
@@ -189,6 +201,8 @@ def create_customer(
         "email": customer.email,
         "phone": customer.phone,
         "address": customer.address,
+        "role": customer.role,
+        "points": customer.points or 0,
         "is_active": customer.is_active,
         "created_at": customer.created_at.strftime("%Y-%m-%d %H:%M:%S"),
     }
@@ -231,6 +245,8 @@ def update_customer(
         "email": customer.email,
         "phone": customer.phone,
         "address": customer.address,
+        "role": customer.role,
+        "points": customer.points or 0,
         "is_active": customer.is_active,
         "created_at": customer.created_at.strftime("%Y-%m-%d %H:%M:%S"),
     }
