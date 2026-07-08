@@ -28,5 +28,26 @@ add_column_if_missing("orders", "address", "VARCHAR(300) NULL")
 add_column_if_missing("users",  "points",  "INT NOT NULL DEFAULT 0")
 add_column_if_missing("orders", "payment_method", "VARCHAR(20) NOT NULL DEFAULT 'cash'")
 add_column_if_missing("orders", "payment_status", "VARCHAR(20) NOT NULL DEFAULT 'unpaid'")
+add_column_if_missing("users",  "google_id", "VARCHAR(255) NULL")
+
+# Make hashed_pwd nullable for Google-only users
+print("Ensuring hashed_pwd is nullable...")
+with engine.connect() as conn:
+    conn.execute(text("ALTER TABLE users MODIFY COLUMN hashed_pwd VARCHAR(255) NULL"))
+    conn.commit()
+print("[OK] hashed_pwd is now nullable")
+
+# Add unique index on google_id if not already there
+print("Ensuring unique index on users.google_id...")
+with engine.connect() as conn:
+    # row[2] = Key_name (index name), row[4] = Column_name
+    index_rows = conn.execute(text("SHOW INDEX FROM users")).fetchall()
+    indexed_columns = {row[4] for row in index_rows}  # check by column name
+    if "google_id" not in indexed_columns:
+        conn.execute(text("ALTER TABLE users ADD UNIQUE INDEX ix_users_google_id (google_id)"))
+        conn.commit()
+        print("[OK] Unique index on google_id created")
+    else:
+        print("[OK] Index on google_id already exists, skipping")
 
 print("[OK] Migration complete")

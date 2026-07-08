@@ -27,3 +27,6 @@ DATABASE_URL = (
 SECRET_KEY      = os.getenv("SECRET_KEY", "highlands-secret-change-in-prod-2026")
 ALGORITHM       = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day
+
+# ── Google OAuth ─────────────────────────────────────────
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")

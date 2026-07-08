@@ -85,6 +85,13 @@ def render(filename: str) -> HTMLResponse:
         return HTMLResponse(content=f.read())
 
 
+# ── Public config ─────────────────────────────────────────
+@app.get("/api/config")
+def get_config():
+    from highlands.config import GOOGLE_CLIENT_ID
+    return {"google_client_id": GOOGLE_CLIENT_ID}
+
+
 # ── Frontend ──────────────────────────────────────────────
 @app.get("/", response_class=HTMLResponse)
 async def index():
