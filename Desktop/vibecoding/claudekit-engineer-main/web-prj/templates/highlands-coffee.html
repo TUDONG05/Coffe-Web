@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/css/main.css" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -672,6 +673,15 @@
       <input id="login-email" type="email" placeholder="Email" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
       <input id="login-password" type="password" placeholder="Mật khẩu" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:16px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
       <button onclick="doLogin()" style="width:100%;padding:13px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit">Đăng Nhập</button>
+      <div style="display:flex;align-items:center;gap:10px;margin:16px 0">
+        <div style="flex:1;height:1px;background:#e0d8d0"></div>
+        <span style="color:#aaa;font-size:.82rem;white-space:nowrap">hoặc</span>
+        <div style="flex:1;height:1px;background:#e0d8d0"></div>
+      </div>
+      <button onclick="loginWithGoogle()" style="width:100%;padding:11px;background:#fff;color:#444;border:1.5px solid #ddd;border-radius:12px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;transition:border-color .2s" onmouseover="this.style.borderColor='#C8102E'" onmouseout="this.style.borderColor='#ddd'">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Đăng nhập với Google
+      </button>
     </div>
     <!-- Register form -->
     <div id="form-register" style="display:none">
@@ -681,6 +691,15 @@
       <input id="reg-address" type="text" placeholder="Địa chỉ giao hàng" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
       <input id="reg-password" type="password" placeholder="Mật khẩu *" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:16px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
       <button onclick="doRegister()" style="width:100%;padding:13px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit">Tạo Tài Khoản</button>
+      <div style="display:flex;align-items:center;gap:10px;margin:16px 0">
+        <div style="flex:1;height:1px;background:#e0d8d0"></div>
+        <span style="color:#aaa;font-size:.82rem;white-space:nowrap">hoặc</span>
+        <div style="flex:1;height:1px;background:#e0d8d0"></div>
+      </div>
+      <button onclick="loginWithGoogle()" style="width:100%;padding:11px;background:#fff;color:#444;border:1.5px solid #ddd;border-radius:12px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;transition:border-color .2s" onmouseover="this.style.borderColor='#C8102E'" onmouseout="this.style.borderColor='#ddd'">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Đăng ký / Đăng nhập với Google
+      </button>
     </div>
   </div>
 
@@ -1501,6 +1520,9 @@
       document.getElementById('profile-info-msg').textContent = '';
       document.getElementById('profile-pwd-msg').textContent = '';
       ['p-old-pwd','p-new-pwd','p-confirm-pwd'].forEach(id => document.getElementById(id).value = '');
+      // Ẩn tab đổi mật khẩu cho tài khoản Google
+      const pwdTab = document.getElementById('ptab-pwd');
+      if (pwdTab) pwdTab.style.display = authUser.is_google_user ? 'none' : '';
       switchProfileTab('info');
       document.getElementById('profile-overlay').style.display = 'block';
       document.getElementById('profile-modal').style.display = 'block';
@@ -1593,6 +1615,7 @@
         if (!res.ok) { toast(data.detail || 'Đăng nhập thất bại', false); return; }
         saveAuth(data.access_token, data.user);
         closeAuthModal();
+        if (data.user.role === 'admin') { window.location.href = '/admin'; return; }
         toast(`✅ Chào mừng ${data.user.name}!`);
       } catch { toast('Lỗi kết nối server', false); }
     }
@@ -1615,6 +1638,70 @@
         closeAuthModal();
         toast(`🎉 Tài khoản đã được tạo, chào ${data.user.name}!`);
       } catch { toast('Lỗi kết nối server', false); }
+    }
+
+    // ── Google OAuth ──────────────────────────────────────
+    let _googleClientId = '';
+
+    async function loadConfig() {
+      try {
+        const res = await fetch('/api/config');
+        const cfg = await res.json();
+        _googleClientId = cfg.google_client_id || '';
+        if (_googleClientId) {
+          google.accounts.id.initialize({
+            client_id: _googleClientId,
+            callback: handleGoogleCredential,
+            auto_select: false,
+            cancel_on_tap_outside: true,
+          });
+        }
+      } catch (e) {
+        console.warn('Không tải được config:', e);
+      }
+    }
+
+    function loginWithGoogle() {
+      if (!_googleClientId) { toast('Google Login chưa được cấu hình', false); return; }
+      if (typeof google === 'undefined') { toast('Google Sign-In chưa tải, thử lại sau!', false); return; }
+      google.accounts.id.initialize({
+        client_id: _googleClientId,
+        callback: handleGoogleCredential,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+      google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // Fallback: mở popup OAuth thủ công
+          const popup = window.open(
+            `https://accounts.google.com/o/oauth2/v2/auth?client_id=${_googleClientId}&redirect_uri=${encodeURIComponent(location.origin + '/api/auth/google/callback')}&response_type=code&scope=openid%20email%20profile&prompt=select_account`,
+            'google-login', 'width=500,height=600'
+          );
+        }
+      });
+    }
+
+    async function handleGoogleCredential(response) {
+      try {
+        const res = await fetch('/api/auth/google/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credential: response.credential }),
+        });
+        const data = await res.json();
+        if (!res.ok) { toast(data.detail || 'Đăng nhập Google thất bại', false); return; }
+        saveAuth(data.access_token, data.user);
+        closeAuthModal();
+        if (data.user.role === 'admin') { window.location.href = '/admin'; return; }
+        toast(`✅ Chào mừng ${data.user.name}!`);
+      } catch { toast('Lỗi kết nối server', false); }
+    }
+
+    // Load config ngay khi trang load (sau khi GSI script sẵn sàng)
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadConfig);
+    } else {
+      loadConfig();
     }
 
     // ── Orders history ───────────────────────────────────
