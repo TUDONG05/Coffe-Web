@@ -29,6 +29,9 @@ add_column_if_missing("users",  "points",  "INT NOT NULL DEFAULT 0")
 add_column_if_missing("orders", "payment_method", "VARCHAR(20) NOT NULL DEFAULT 'cash'")
 add_column_if_missing("orders", "payment_status", "VARCHAR(20) NOT NULL DEFAULT 'unpaid'")
 add_column_if_missing("users",  "google_id", "VARCHAR(255) NULL")
+add_column_if_missing("products", "image_url", "VARCHAR(300) NULL")
+
+# product_reviews table is created via Base.metadata.create_all above
 
 # Make hashed_pwd nullable for Google-only users
 print("Ensuring hashed_pwd is nullable...")

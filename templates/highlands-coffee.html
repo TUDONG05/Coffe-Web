@@ -908,7 +908,9 @@
       }
       el.innerHTML = items.map(([key, item]) => `
         <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f5f0eb">
-          <div style="font-size:2rem;width:50px;height:50px;background:#fff8f0;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${item.emoji}</div>
+          ${item.image_url
+            ? `<img src="${item.image_url}" style="width:50px;height:50px;border-radius:12px;object-fit:cover;flex-shrink:0">`
+            : `<div style="font-size:2rem;width:50px;height:50px;background:#fff8f0;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">☕</div>`}
           <div style="flex:1;min-width:0">
             <div style="font-weight:700;font-size:.9rem;color:#2C1810;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.name}</div>
             <div style="color:#C8102E;font-weight:700;font-size:.85rem;margin-top:2px">${fmt(item.price)}</div>
@@ -941,10 +943,9 @@
         const name = card.querySelector('.product-name').textContent.trim();
         const priceText = card.querySelector('.product-price').childNodes[0].textContent.trim();
         const price = parseInt(priceText.replace(/\D/g, '')) || 0;
-        const emoji = card.querySelector('.product-thumb').textContent.trim() || '☕';
         const key = name;
         if (cart[key]) cart[key].qty++;
-        else cart[key] = { name, price, qty: 1, emoji };
+        else cart[key] = { name, price, qty: 1, image_url: null };
         saveCart();
         updateBadge();
         toast(`Đã thêm "${name}" vào giỏ 🛒`);
@@ -1075,6 +1076,14 @@
       renderFeatured(cat ? featuredProducts.filter(p => p.category === cat) : featuredProducts);
     }
 
+    function renderStars(avg, count) {
+      if (!count) return '';
+      const full = Math.floor(avg), half = avg - full >= 0.5;
+      let s = '';
+      for (let i = 0; i < 5; i++) s += i < full ? '★' : (i === full && half ? '½' : '☆');
+      return `<span style="color:#f5a623;font-size:.75rem;letter-spacing:1px">${s}</span><span style="color:#aaa;font-size:.72rem;margin-left:4px">${avg} (${count})</span>`;
+    }
+
     function renderFeatured(products) {
       const grid = document.getElementById('featured-grid');
       if (!grid) return;
@@ -1082,10 +1091,13 @@
       grid.innerHTML = shown.map(p => `
         <div class="product-card" onclick="openPDP(${p.id})" style="cursor:pointer">
           <div class="product-img-wrap">
-            <div class="product-thumb" style="background:${catBgMap[p.category]||'#f5f0eb'};display:flex;align-items:center;justify-content:center;font-size:3.5rem;height:100%">${p.emoji||'☕'}</div>
+            ${p.image_url
+              ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block">`
+              : `<div class="product-thumb" style="background:${catBgMap[p.category]||'#f5f0eb'};display:flex;align-items:center;justify-content:center;font-size:3.5rem;height:100%">☕</div>`}
           </div>
           <div class="product-info">
             <div class="product-name">${p.name}</div>
+            ${p.review_count ? `<div style="margin-bottom:4px">${renderStars(p.avg_rating, p.review_count)}</div>` : ''}
             <div class="product-sub" style="font-size:.78rem;color:#888;margin-bottom:8px;line-height:1.4">${p.description||''}</div>
             <div class="product-footer">
               <div class="product-price">${p.price.toLocaleString('vi-VN')}đ</div>
@@ -1211,9 +1223,12 @@
       const catBg = { coffee:'linear-gradient(145deg,#fff0e0,#ffd8b0)', tea:'linear-gradient(145deg,#e8f4ff,#c8e8ff)', freeze:'linear-gradient(145deg,#e8fdf0,#b8f0cc)', food:'linear-gradient(145deg,#fff8e0,#ffe8a0)', combo:'linear-gradient(145deg,#f4e8ff,#dcc8ff)' };
       document.getElementById('menu-grid').innerHTML = products.map(p => `
         <div class="api-product-card" onclick="openPDP(${p.id})">
-          <div class="api-card-thumb" style="background:${catBg[p.category]||'#f5f0eb'}">${p.emoji||'☕'}</div>
+          ${p.image_url
+            ? `<img src="${p.image_url}" class="api-card-thumb" style="object-fit:cover">`
+            : `<div class="api-card-thumb" style="background:${catBg[p.category]||'#f5f0eb'}">☕</div>`}
           <div style="padding:16px">
             <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:1rem;color:#2C1810;margin-bottom:4px">${p.name}</div>
+            ${p.review_count ? `<div style="margin-bottom:6px">${renderStars(p.avg_rating, p.review_count)}</div>` : ''}
             <div style="font-size:.78rem;color:#888;margin-bottom:12px;line-height:1.5">${p.description||''}</div>
             <div style="display:flex;align-items:center;justify-content:space-between">
               <span style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:#C8102E">${p.price.toLocaleString('vi-VN')}đ</span>
@@ -1229,7 +1244,7 @@
       if (!p) return;
       const key = p.name;
       if (cart[key]) cart[key].qty++;
-      else cart[key] = { name: p.name, price: p.price, qty: 1, emoji: p.emoji || '☕', product_id: p.id };
+      else cart[key] = { name: p.name, price: p.price, qty: 1, image_url: p.image_url || null, product_id: p.id };
       saveCart();
       updateBadge();
       toast(`Đã thêm "${p.name}" 🛒`);
@@ -1241,23 +1256,98 @@
       document.getElementById('pdp-modal').style.display   = 'block';
       document.getElementById('pdp-content').innerHTML     = '<div style="padding:48px;text-align:center;color:#aaa">⏳ Đang tải...</div>';
       try {
-        const p = allProducts.find(x => x.id === id) || await (await fetch(`${API}/api/products/${id}`)).json();
+        const [p, reviewData, canData] = await Promise.all([
+          fetch(`${API}/api/products/${id}`).then(r => r.json()),
+          fetch(`${API}/api/reviews/product/${id}`).then(r => r.json()),
+          authToken
+            ? fetch(`${API}/api/reviews/can-review/${id}`, { headers: { Authorization: `Bearer ${authToken}` } }).then(r => r.json())
+            : Promise.resolve({ can_review: false, reason: 'not_logged_in' }),
+        ]);
         const catBg = { coffee:'linear-gradient(145deg,#fff0e0,#ffd8b0)', tea:'linear-gradient(145deg,#e8f4ff,#c8e8ff)', freeze:'linear-gradient(145deg,#e8fdf0,#b8f0cc)', food:'linear-gradient(145deg,#fff8e0,#ffe8a0)', combo:'linear-gradient(145deg,#f4e8ff,#dcc8ff)' };
+
+        const reviewsHtml = reviewData.reviews.length
+          ? reviewData.reviews.map(r => `
+            <div style="border-bottom:1px solid #f0ebe5;padding:12px 0">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                <span style="font-weight:700;font-size:.85rem;color:#2C1810">${r.user_name}</span>
+                <span style="color:#f5a623;font-size:.85rem">${'\u2605'.repeat(r.stars)}${'\u2606'.repeat(5-r.stars)}</span>
+                <span style="color:#bbb;font-size:.75rem">${r.created_at}</span>
+              </div>
+              ${r.comment ? `<p style="color:#666;font-size:.84rem;margin:0;line-height:1.6">${r.comment}</p>` : ''}
+            </div>`).join('')
+          : '<p style="color:#bbb;font-size:.84rem;text-align:center;padding:16px 0">Chưa có đánh giá nào</p>';
+
+        const reviewFormHtml = canData.can_review
+          ? `<div id="pdp-review-form" style="margin-top:20px;padding:20px;background:#fff8f6;border-radius:12px;border:1px solid #f0d8d0">
+              <div style="font-weight:700;font-size:.95rem;color:#2C1810;margin-bottom:12px">Viết đánh giá của bạn</div>
+              <div style="display:flex;gap:6px;margin-bottom:12px;font-size:1.8rem;cursor:pointer" id="star-picker">
+                ${[1,2,3,4,5].map(n => `<span data-star="${n}" onclick="pickStar(${n})" style="color:#ddd;transition:color .15s">\u2605</span>`).join('')}
+              </div>
+              <textarea id="review-comment" placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..." style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #e0d8d0;border-radius:8px;font-size:.85rem;resize:vertical;min-height:80px;font-family:inherit"></textarea>
+              <button onclick="submitReview(${id})" style="margin-top:10px;padding:10px 24px;background:#C8102E;color:#fff;border:none;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer">Gửi đánh giá</button>
+              <div id="review-msg" style="margin-top:8px;font-size:.82rem"></div>
+            </div>`
+          : canData.reason === 'already_reviewed'
+            ? `<p style="color:#aaa;font-size:.83rem;margin-top:12px;text-align:center">Bạn đã đánh giá sản phẩm này rồi</p>`
+            : canData.reason === 'not_logged_in'
+              ? `<p style="color:#aaa;font-size:.83rem;margin-top:12px;text-align:center">Đăng nhập để đánh giá sản phẩm</p>`
+              : `<p style="color:#aaa;font-size:.83rem;margin-top:12px;text-align:center">Chỉ khách hàng đã mua mới có thể đánh giá</p>`;
+
         document.getElementById('pdp-content').innerHTML = `
-          <div style="height:200px;display:flex;align-items:center;justify-content:center;font-size:6rem;background:${catBg[p.category]||'#f5f0eb'}">${p.emoji||'☕'}</div>
-          <div style="padding:28px 28px 24px">
+          ${p.image_url
+            ? `<img src="${p.image_url}" style="width:100%;height:220px;object-fit:cover;display:block">`
+            : `<div style="height:220px;display:flex;align-items:center;justify-content:center;font-size:6rem;background:${catBg[p.category]||'#f5f0eb'}">☕</div>`}
+          <div style="padding:24px 24px 8px">
             <span style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#C8102E;background:rgba(200,16,46,.08);padding:3px 10px;border-radius:20px">${p.category}</span>
-            <h3 style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:#2C1810;margin:12px 0 8px">${p.name}</h3>
-            <p style="color:#888;font-size:.88rem;line-height:1.7;margin-bottom:20px">${p.description||'Thức uống thơm ngon đặc trưng của Tu\u2019s Coffee.'}</p>
+            <h3 style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:#2C1810;margin:10px 0 6px">${p.name}</h3>
+            ${reviewData.count ? `<div style="margin-bottom:8px">${renderStars(reviewData.avg_rating, reviewData.count)}</div>` : ''}
+            <p style="color:#888;font-size:.87rem;line-height:1.7;margin-bottom:18px">${p.description||"Thức uống thơm ngon đặc trưng của Tu's Coffee."}</p>
             <div style="display:flex;align-items:center;justify-content:space-between">
-              <span style="font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;color:#C8102E">${p.price.toLocaleString('vi-VN')}đ</span>
-              <button onclick="addToCartById(${p.id});closePDP()" style="padding:12px 28px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit">🛒 Thêm vào giỏ</button>
+              <span style="font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:900;color:#C8102E">${p.price.toLocaleString('vi-VN')}đ</span>
+              <button onclick="addToCartById(${p.id});closePDP()" style="padding:11px 24px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:.92rem;font-weight:700;cursor:pointer;font-family:inherit">🛒 Thêm vào giỏ</button>
+            </div>
+          </div>
+          <div style="padding:0 24px 24px">
+            <div style="border-top:2px solid #f5f0eb;padding-top:20px;margin-top:8px">
+              <div style="font-weight:700;font-size:.95rem;color:#2C1810;margin-bottom:12px">Đánh giá (${reviewData.count})</div>
+              ${reviewsHtml}
+              ${reviewFormHtml}
             </div>
           </div>
           <button onclick="closePDP()" style="position:absolute;top:14px;right:14px;background:rgba(0,0,0,.35);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem">✕</button>`;
         document.getElementById('pdp-modal').style.position = 'fixed';
-      } catch { document.getElementById('pdp-content').innerHTML = '<div style="padding:32px;color:#C8102E">Lỗi tải sản phẩm</div>'; }
+        window._pdpStars = 0;
+      } catch(e) { document.getElementById('pdp-content').innerHTML = '<div style="padding:32px;color:#C8102E">Lỗi tải sản phẩm</div>'; }
     }
+
+    function pickStar(n) {
+      window._pdpStars = n;
+      document.querySelectorAll('#star-picker span').forEach((el, i) => {
+        el.style.color = i < n ? '#f5a623' : '#ddd';
+      });
+    }
+
+    async function submitReview(productId) {
+      const stars = window._pdpStars || 0;
+      const comment = document.getElementById('review-comment')?.value.trim();
+      const msg = document.getElementById('review-msg');
+      if (!stars) { if (msg) msg.innerHTML = '<span style="color:#C8102E">Vui lòng chọn số sao</span>'; return; }
+      try {
+        const res = await fetch(`${API}/api/reviews`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+          body: JSON.stringify({ product_id: productId, stars, comment: comment || null }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Lỗi gửi đánh giá');
+        if (msg) msg.innerHTML = '<span style="color:green">\u2705 ' + data.message + '</span>';
+        const form = document.getElementById('pdp-review-form');
+        if (form) { form.querySelector('button')?.remove(); form.querySelector('textarea')?.remove(); form.querySelector('#star-picker')?.remove(); }
+      } catch(e) {
+        if (msg) msg.innerHTML = `<span style="color:#C8102E">${e.message}</span>`;
+      }
+    }
+
     function closePDP() {
       document.getElementById('pdp-overlay').style.display = 'none';
       document.getElementById('pdp-modal').style.display   = 'none';

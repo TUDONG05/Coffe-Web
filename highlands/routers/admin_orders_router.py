@@ -1,10 +1,12 @@
 """Admin order management endpoints."""
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from highlands.database import get_db
 from highlands import models
 from highlands.auth_utils import require_admin
+import io
 
 router = APIRouter(prefix="/api/admin/orders", tags=["admin-orders"])
 
@@ -62,19 +64,20 @@ class PaginatedOrders(BaseModel):
     has_next: bool
 
 
-@router.get("", response_model=PaginatedOrders)
-def list_orders(
-    skip: int = 0,
-    limit: int = 20,
+def _build_order_query(
+    db: Session,
     status: str | None = None,
     search: str | None = None,
     start_date: str | None = None,
     end_date: str | None = None,
     min_total: int | None = None,
     max_total: int | None = None,
-    admin: models.User = Depends(require_admin),
-    db: Session = Depends(get_db),
+    month: int | None = None,
+    year: int | None = None,
 ):
+    from datetime import datetime
+    from sqlalchemy import extract
+
     query = db.query(models.Order).filter(models.Order.is_active == 1)
 
     if status:
@@ -86,20 +89,24 @@ def list_orders(
             | models.Order.phone.ilike(f"%{search}%")
         )
 
+    if year:
+        query = query.filter(extract("year", models.Order.created_at) == year)
+
+    if month:
+        query = query.filter(extract("month", models.Order.created_at) == month)
+
     if start_date:
-        from datetime import datetime
         try:
             start = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
             query = query.filter(models.Order.created_at >= start)
-        except:
+        except Exception:
             pass
 
     if end_date:
-        from datetime import datetime
         try:
             end = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
             query = query.filter(models.Order.created_at <= end)
-        except:
+        except Exception:
             pass
 
     if min_total is not None:
@@ -107,6 +114,162 @@ def list_orders(
 
     if max_total is not None:
         query = query.filter(models.Order.total <= max_total)
+
+    return query
+
+
+@router.get("/export")
+def export_orders_excel(
+    status: str | None = None,
+    search: str | None = None,
+    month: int | None = None,
+    year: int | None = None,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Export filtered orders to Excel (.xlsx)."""
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    query = _build_order_query(db, status=status, search=search, month=month, year=year)
+    orders = query.order_by(models.Order.created_at.desc()).all()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+
+    label_parts = []
+    if month and year:
+        label_parts.append(f"Tháng {month:02d}/{year}")
+    elif month:
+        label_parts.append(f"Tháng {month:02d}")
+    elif year:
+        label_parts.append(f"Năm {year}")
+    if status:
+        status_vn = {"pending": "Đang Chờ", "confirmed": "Xác Nhận", "done": "Hoàn Thành"}.get(status, status)
+        label_parts.append(status_vn)
+
+    ws.title = "Đơn Hàng"
+    title_text = "DANH SÁCH ĐƠN HÀNG"
+    if label_parts:
+        title_text += " - " + " | ".join(label_parts)
+
+    # Title row
+    ws.merge_cells("A1:J1")
+    title_cell = ws["A1"]
+    title_cell.value = title_text
+    title_cell.font = Font(bold=True, size=14, color="FFFFFF")
+    title_cell.fill = PatternFill(fill_type="solid", fgColor="8B4513")
+    title_cell.alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[1].height = 30
+
+    # Summary row
+    total_revenue = sum(o.total for o in orders)
+    ws.merge_cells("A2:J2")
+    summary_cell = ws["A2"]
+    summary_cell.value = f"Tổng đơn hàng: {len(orders)}  |  Tổng doanh thu: {total_revenue:,}đ".replace(",", ".")
+    summary_cell.font = Font(italic=True, size=11, color="5D4037")
+    summary_cell.fill = PatternFill(fill_type="solid", fgColor="FFF3E0")
+    summary_cell.alignment = Alignment(horizontal="center")
+    ws.row_dimensions[2].height = 20
+
+    # Header
+    headers = ["#", "Mã ĐH", "Khách Hàng", "Số Điện Thoại", "Địa Chỉ", "Tổng Tiền (đ)", "Trạng Thái", "Thanh Toán", "Ghi Chú", "Ngày Tạo"]
+    header_fill = PatternFill(fill_type="solid", fgColor="D7CCC8")
+    thin = Side(style="thin", color="BCAAA4")
+    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+    for col_idx, header in enumerate(headers, start=1):
+        cell = ws.cell(row=3, column=col_idx, value=header)
+        cell.font = Font(bold=True, size=11)
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+        cell.border = border
+    ws.row_dimensions[3].height = 22
+
+    status_vn_map = {"pending": "Đang Chờ", "confirmed": "Xác Nhận", "done": "Hoàn Thành"}
+    payment_vn_map = {"paid": "Đã Thanh Toán", "unpaid": "Chưa Thanh Toán"}
+
+    row_fills = [PatternFill(fill_type="solid", fgColor="FFFFFF"), PatternFill(fill_type="solid", fgColor="FBF9F7")]
+
+    for i, order in enumerate(orders, start=1):
+        row_num = i + 3
+        fill = row_fills[i % 2]
+        values = [
+            i,
+            f"#{order.id}",
+            order.customer_name,
+            order.phone,
+            order.address or "",
+            order.total,
+            status_vn_map.get(order.status, order.status),
+            payment_vn_map.get(getattr(order, "payment_status", "unpaid"), "Chưa TT"),
+            order.note or "",
+            order.created_at.strftime("%d/%m/%Y %H:%M") if order.created_at else "",
+        ]
+        for col_idx, val in enumerate(values, start=1):
+            cell = ws.cell(row=row_num, column=col_idx, value=val)
+            cell.fill = fill
+            cell.border = border
+            cell.alignment = Alignment(vertical="center")
+            if col_idx == 6:
+                cell.number_format = '#,##0'
+                cell.alignment = Alignment(horizontal="right", vertical="center")
+            elif col_idx in (1, 2):
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    # Column widths
+    col_widths = [5, 9, 22, 16, 30, 18, 14, 18, 22, 18]
+    for i, w in enumerate(col_widths, start=1):
+        ws.column_dimensions[get_column_letter(i)].width = w
+
+    # Freeze header rows
+    ws.freeze_panes = "A4"
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    filename_parts = ["don_hang"]
+    if year:
+        filename_parts.append(str(year))
+    if month:
+        filename_parts.append(f"thang{month:02d}")
+    filename = "_".join(filename_parts) + ".xlsx"
+
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.get("", response_model=PaginatedOrders)
+def list_orders(
+    skip: int = 0,
+    limit: int = 20,
+    status: str | None = None,
+    search: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    min_total: int | None = None,
+    max_total: int | None = None,
+    month: int | None = None,
+    year: int | None = None,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    query = _build_order_query(
+        db,
+        status=status,
+        search=search,
+        start_date=start_date,
+        end_date=end_date,
+        min_total=min_total,
+        max_total=max_total,
+        month=month,
+        year=year,
+    )
 
     total = query.count()
     db_items = query.order_by(models.Order.created_at.desc()).offset(skip).limit(limit).all()

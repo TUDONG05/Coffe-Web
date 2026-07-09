@@ -1,12 +1,17 @@
 """
 Admin endpoints for product management: CRUD operations.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+import os
+import uuid
+import aiofiles
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 from highlands.database import get_db
 from highlands import models
 from highlands.auth_utils import require_admin
+
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "static", "images", "products")
 
 router = APIRouter(prefix="/api/admin/products", tags=["admin-products"])
 
@@ -18,7 +23,6 @@ class ProductCreate(BaseModel):
     category: str = Field(..., min_length=1, max_length=50)
     price: int = Field(..., gt=0)
     description: str | None = None
-    emoji: str = "☕"
 
 
 class ProductUpdate(BaseModel):
@@ -26,7 +30,6 @@ class ProductUpdate(BaseModel):
     category: str | None = None
     price: int | None = None
     description: str | None = None
-    emoji: str | None = None
     is_active: int | None = None
 
 
@@ -36,7 +39,7 @@ class ProductOut(BaseModel):
     category: str
     price: int
     description: str | None
-    emoji: str
+    image_url: str | None
     is_active: int
 
     class Config:
@@ -107,7 +110,6 @@ def create_product(
         category=body.category,
         price=body.price,
         description=body.description,
-        emoji=body.emoji,
     )
     db.add(product)
     db.commit()
@@ -148,8 +150,6 @@ def update_product(
         product.price = body.price
     if body.description is not None:
         product.description = body.description
-    if body.emoji is not None:
-        product.emoji = body.emoji
 
     db.commit()
     db.refresh(product)
@@ -190,3 +190,43 @@ def delete_product(
     product.is_active = 0
     db.commit()
     return {"success": True, "message": "Sản phẩm đã được xóa"}
+
+
+@router.post("/{product_id}/image", response_model=ProductOut)
+async def upload_product_image(
+    product_id: int,
+    file: UploadFile = File(...),
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Upload product image. Accepts jpeg/png/webp, max 5MB."""
+    allowed = {"image/jpeg", "image/png", "image/webp"}
+    if file.content_type not in allowed:
+        raise HTTPException(status_code=400, detail="Chỉ chấp nhận JPEG, PNG, WebP")
+
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Ảnh không được vượt quá 5MB")
+
+    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Sản phẩm không tồn tại")
+
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else "jpg"
+    filename = f"{product_id}_{uuid.uuid4().hex[:8]}.{ext}"
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    dest = os.path.join(UPLOAD_DIR, filename)
+
+    # Remove old image file if exists
+    if product.image_url:
+        old_path = os.path.join(os.path.dirname(__file__), "..", "..", product.image_url.lstrip("/"))
+        if os.path.exists(old_path):
+            os.remove(old_path)
+
+    async with aiofiles.open(dest, "wb") as f:
+        await f.write(content)
+
+    product.image_url = f"/static/images/products/{filename}"
+    db.commit()
+    db.refresh(product)
+    return product

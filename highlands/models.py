@@ -39,7 +39,7 @@ class Product(Base):
     category    = Column(String(50), nullable=False)   # coffee/tea/food/smoothie
     price       = Column(Integer, nullable=False)       # VND
     description = Column(Text, nullable=True)
-    emoji       = Column(String(10), default="☕")
+    image_url   = Column(String(300), nullable=True)
     is_active   = Column(Integer, default=1)
 
 
@@ -74,6 +74,19 @@ class OrderItem(Base):
 
     order   = relationship("Order", back_populates="items")
     product = relationship("Product")
+
+
+class ProductReview(Base):
+    __tablename__ = "product_reviews"
+    id         = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    user_id    = Column(Integer, ForeignKey("users.id"), nullable=False)
+    stars      = Column(Integer, nullable=False)   # 1-5
+    comment    = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    product = relationship("Product")
+    user    = relationship("User")
 
 
 class Promotion(Base):

@@ -31,7 +31,7 @@ class MenuRAGService:
                 "category": p.category,
                 "price": p.price,
                 "description": p.description or "",
-                "emoji": p.emoji or "☕",
+                "image_url": p.image_url or "",
             }
             for p in products
         ]
@@ -80,7 +80,7 @@ class MenuRAGService:
         for item in items:
             price_str = f"{item['price']:,}đ".replace(",", ".")
             lines.append(
-                f"{item['emoji']} {item['name']} ({item['category']}) — {price_str}\n"
+                f"{item['name']} ({item['category']}) — {price_str}\n"
                 f"   {item['description']}"
             )
         return "\n\n".join(lines)

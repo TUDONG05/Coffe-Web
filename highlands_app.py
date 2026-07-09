@@ -17,6 +17,7 @@ except ImportError:
 
 from highlands.routers import auth_router, products_router, orders_router
 from highlands.routers import stores_router, news_router, promotions_router
+from highlands.routers import reviews_router
 from highlands.routers import (
     admin_products_router,
     admin_orders_router,
@@ -26,6 +27,7 @@ from highlands.routers import (
     admin_dashboard_router,
     admin_news_router,
     admin_users_router,
+    admin_rfm_router,
     chatbot_router,
 )
 from highlands.database import SessionLocal
@@ -62,6 +64,7 @@ app.include_router(orders_router.router)
 app.include_router(stores_router.router)
 app.include_router(news_router.router)
 app.include_router(promotions_router.router)
+app.include_router(reviews_router.router)
 
 # Admin API
 app.include_router(admin_products_router.router)
@@ -72,6 +75,7 @@ app.include_router(admin_customers_router.router)
 app.include_router(admin_news_router.router)
 app.include_router(admin_users_router.router)
 app.include_router(admin_dashboard_router.router)
+app.include_router(admin_rfm_router.router)
 
 # Chatbot API
 app.include_router(chatbot_router.router)
