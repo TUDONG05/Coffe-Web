@@ -187,12 +187,6 @@
                 <section id="orders">
                     <div class="page-title">Quản Lý Đơn Hàng</div>
 
-                    <!-- Tab bar -->
-                    <div class="orders-tabs">
-                        <button class="orders-tab active" id="tabBtnList" onclick="switchOrdersTab('list', this)">📋 Danh Sách Đơn</button>
-                        <button class="orders-tab" id="tabBtnRfm" onclick="switchOrdersTab('rfm', this)">📊 Phân Nhóm Khách Hàng</button>
-                    </div>
-
                     <!-- PANEL 1: Danh sách đơn hàng -->
                     <div id="ordersListPanel">
                         <div class="toolbar">
@@ -230,61 +224,6 @@
                         </div>
                     </div>
 
-                    <!-- PANEL 2: RFM + K-Means phân nhóm -->
-                    <div id="ordersRfmPanel" style="display:none">
-                        <!-- Config -->
-                        <div class="rfm-config">
-                            <label>
-                                Số cụm
-                                <input type="number" id="rfmNClusters" value="4" min="2" max="10">
-                            </label>
-                            <button class="btn btn-primary" onclick="loadRFM()">▶ Chạy Phân Nhóm</button>
-                            <span id="rfmStatus" style="font-size:12px;color:var(--text-muted);margin-left:4px;"></span>
-                        </div>
-
-                        <!-- Cluster summary cards -->
-                        <div class="rfm-segments-grid" id="rfmSegmentCards">
-                            <div class="rfm-segment-card seg-champions">
-                                <div class="seg-label">Champions</div>
-                                <div class="seg-count">—</div>
-                                <div class="seg-meta">Mua gần nhất, thường xuyên, chi tiêu cao</div>
-                            </div>
-                            <div class="rfm-segment-card seg-loyal">
-                                <div class="seg-label">Loyal Customers</div>
-                                <div class="seg-count">—</div>
-                                <div class="seg-meta">Quay lại thường xuyên, trung thành</div>
-                            </div>
-                            <div class="rfm-segment-card seg-atrisk">
-                                <div class="seg-label">At-Risk</div>
-                                <div class="seg-count">—</div>
-                                <div class="seg-meta">Từng mua nhiều nhưng đang ngừng</div>
-                            </div>
-                            <div class="rfm-segment-card seg-lost">
-                                <div class="seg-label">Lost Customers</div>
-                                <div class="seg-count">—</div>
-                                <div class="seg-meta">Lâu không mua, ít tương tác</div>
-                            </div>
-                        </div>
-
-                        <!-- Customer RFM table -->
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Khách Hàng</th>
-                                        <th>Email</th>
-                                        <th title="Số ngày kể từ lần mua gần nhất">R (ngày)</th>
-                                        <th title="Số đơn hàng hoàn thành">F (đơn)</th>
-                                        <th title="Tổng chi tiêu">M (VND)</th>
-                                        <th>Phân Khúc</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="rfmTable">
-                                    <tr><td colspan="6" style="text-align:center;color:var(--text-muted);">Nhấn "Chạy Phân Nhóm" để bắt đầu</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
                 </section>
 
                 <!-- PRODUCTS -->
@@ -548,7 +487,7 @@
             if (page === 'dashboard') loadDashboard();
             else if (page === 'news') loadNews();
             else if (page === 'customers') loadCustomers();
-            else if (page === 'orders') switchOrdersTab('list', document.getElementById('tabBtnList'));
+            else if (page === 'orders') loadOrders();
             else if (page === 'products') loadProducts();
         }
 
@@ -1031,91 +970,6 @@
                     loadCustomers();
                 } catch(e) { showToast('Lỗi: ' + e.message, 'error'); }
             }, newActive ? 'Mở Khóa' : 'Khóa', false);
-        }
-
-        // ========== ORDERS TABS ==========
-        function switchOrdersTab(tab, el) {
-            document.querySelectorAll('.orders-tab').forEach(b => b.classList.remove('active'));
-            if (el) el.classList.add('active');
-            if (tab === 'list') {
-                document.getElementById('ordersListPanel').style.display = '';
-                document.getElementById('ordersRfmPanel').style.display = 'none';
-                loadOrders();
-            } else {
-                document.getElementById('ordersListPanel').style.display = 'none';
-                document.getElementById('ordersRfmPanel').style.display = '';
-            }
-        }
-
-        // ========== RFM + FCM ==========
-        const _segClass = {
-            'Champions': 'badge-champions',
-            'Loyal Customers': 'badge-loyal',
-            'At-Risk': 'badge-atrisk',
-            'Lost Customers': 'badge-lost',
-        };
-        const _cardClass = {
-            'Champions': 'seg-champions',
-            'Loyal Customers': 'seg-loyal',
-            'At-Risk': 'seg-atrisk',
-            'Lost Customers': 'seg-lost',
-        };
-
-        async function loadRFM() {
-            const n = parseInt(document.getElementById('rfmNClusters').value) || 4;
-            const status = document.getElementById('rfmStatus');
-            const tbody = document.getElementById('rfmTable');
-            status.textContent = '⏳ Đang tính toán...';
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">Đang phân nhóm...</td></tr>';
-
-            try {
-                const params = new URLSearchParams({ n_clusters: n });
-                const data = await apiGet('/api/admin/rfm?' + params);
-
-                // Update segment summary cards
-                const cardContainer = document.getElementById('rfmSegmentCards');
-                const clusterOrder = ['Champions', 'Loyal Customers', 'At-Risk', 'Lost Customers'];
-                const summaryMap = {};
-                (data.clusters || []).forEach(c => { summaryMap[c.segment_label] = c; });
-
-                const allLabels = [...new Set((data.clusters || []).map(c => c.segment_label))];
-                const ordered = [...clusterOrder.filter(l => allLabels.includes(l)), ...allLabels.filter(l => !clusterOrder.includes(l))];
-
-                cardContainer.innerHTML = ordered.map(label => {
-                    const s = summaryMap[label];
-                    const cls = _cardClass[label] || 'seg-atrisk';
-                    return `
-                    <div class="rfm-segment-card ${cls}">
-                        <div class="seg-label">${esc(label)}</div>
-                        <div class="seg-count">${s ? s.count : 0}</div>
-                        <div class="seg-meta">
-                            R: ${s ? s.avg_recency_days : '—'} ngày &nbsp;|&nbsp;
-                            F: ${s ? s.avg_frequency : '—'} đơn<br>
-                            M: ${s ? parseInt(s.avg_monetary).toLocaleString('vi-VN') + 'đ' : '—'}
-                        </div>
-                    </div>`;
-                }).join('');
-
-                // Render customer table
-                const customers = data.customers || [];
-                tbody.innerHTML = customers.length ? customers.map(c => {
-                    const badgeCls = _segClass[c.segment_label] || 'badge-cluster';
-                    return `
-                    <tr>
-                        <td><strong>${esc(c.name)}</strong></td>
-                        <td style="font-size:12px;color:var(--text-muted);">${esc(c.email)}</td>
-                        <td style="text-align:right;">${c.recency_days}</td>
-                        <td style="text-align:right;">${c.frequency}</td>
-                        <td style="text-align:right;">${c.monetary.toLocaleString('vi-VN')}đ</td>
-                        <td><span class="badge ${badgeCls}">${esc(c.segment_label)}</span></td>
-                    </tr>`;
-                }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);">Không có dữ liệu</td></tr>';
-
-                status.textContent = `✅ ${data.n_iter} vòng lặp · ${data.elapsed_ms}ms · ${customers.length} khách hàng`;
-            } catch(e) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--danger);">Lỗi: ${esc(e.message)}</td></tr>`;
-                status.textContent = '';
-            }
         }
 
         // ========== ORDERS ==========
