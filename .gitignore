@@ -37,3 +37,6 @@ htmlcov/
 
 .claude
 
+# Unrelated repos
+msi-ec/
+
