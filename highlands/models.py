@@ -26,9 +26,9 @@ class User(Base):
 
 class Category(Base):
     __tablename__ = "categories"
-    id       = Column(Integer, primary_key=True, index=True)
-    name     = Column(String(100), unique=True, nullable=False)
-    emoji    = Column(String(10), default="☕")
+    id        = Column(Integer, primary_key=True, index=True)
+    name      = Column(String(100), unique=True, nullable=False)
+    image_url = Column(String(300), nullable=True)
     is_active = Column(Integer, default=1)
 
 
@@ -40,6 +40,7 @@ class Product(Base):
     price       = Column(Integer, nullable=False)       # VND
     description = Column(Text, nullable=True)
     image_url   = Column(String(300), nullable=True)
+    video_url   = Column(String(500), nullable=True)
     is_active   = Column(Integer, default=1)
 
 
@@ -52,9 +53,10 @@ class Order(Base):
     total         = Column(Integer, nullable=False)
     address       = Column(String(300), nullable=True)
     note          = Column(Text, nullable=True)
-    status         = Column(String(30), default="pending")  # pending/confirmed/done
-    payment_method = Column(String(20), default="cash")      # cash / qr_transfer
-    payment_status = Column(String(20), default="unpaid")    # unpaid / paid
+    status         = Column(String(30), default="pending")   # pending/confirmed/done
+    payment_method = Column(String(20), default="cash")       # cash / qr_transfer
+    payment_status = Column(String(20), default="unpaid")     # unpaid / paid
+    cancel_token   = Column(String(32), nullable=True)        # guest order cancel token
     is_active      = Column(Integer, default=1)  # soft delete
     created_at    = Column(DateTime, default=datetime.utcnow)
 
@@ -95,7 +97,7 @@ class Promotion(Base):
     title       = Column(String(200), nullable=False)
     description = Column(Text, nullable=True)
     discount    = Column(String(50), nullable=True)   # e.g. "20%", "Mua 1 tặng 1"
-    emoji       = Column(String(10), default="🎁")
+    image_url   = Column(String(300), nullable=True)
     tag         = Column(String(50), nullable=True)   # "HOT", "NEW", "SALE"
     valid_until = Column(String(50), nullable=True)
     is_active   = Column(Integer, default=1)
@@ -120,6 +122,9 @@ class News(Base):
     excerpt      = Column(Text, nullable=True)
     content      = Column(Text, nullable=True)
     tag          = Column(String(50), nullable=True)   # "Tin Tức", "Sự Kiện", "Khuyến Mãi"
-    emoji        = Column(String(10), default="📰")
-    published_at = Column(String(50), nullable=True)
-    is_active    = Column(Integer, default=1)
+    image_url         = Column(String(300), nullable=True)
+    video_url         = Column(String(500), nullable=True)
+    published_at      = Column(String(50), nullable=True)
+    view_count        = Column(Integer, default=0)
+    unique_view_count = Column(Integer, default=0)
+    is_active         = Column(Integer, default=1)

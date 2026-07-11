@@ -1,16 +1,18 @@
 """
 Orders endpoints:
-  POST /api/orders        — create order (guest or logged-in)
-  GET  /api/orders/mine   — order history for current user (auth required)
-  GET  /api/orders        — all orders (admin, no auth for demo)
+  POST /api/orders               — create order (guest or logged-in)
+  GET  /api/orders/mine          — order history for current user (auth required)
+  GET  /api/orders               — all orders (admin only)
+  PATCH /api/orders/{id}/cancel  — cancel pending order
 """
-from fastapi import APIRouter, Depends, HTTPException
+import secrets
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from highlands.database import get_db
 from highlands import models
-from highlands.auth_utils import get_current_user
+from highlands.auth_utils import get_current_user, require_admin
 
 router = APIRouter(prefix="/api/orders", tags=["orders"])
 
@@ -19,14 +21,14 @@ router = APIRouter(prefix="/api/orders", tags=["orders"])
 
 class OrderItemIn(BaseModel):
     product_id: int
-    quantity: int
+    quantity: int = Field(..., ge=1, le=100)
 
 class OrderIn(BaseModel):
-    customer_name: str
-    phone: str
-    address: Optional[str] = ""
-    items: list[OrderItemIn]
-    note: Optional[str] = ""
+    customer_name: str = Field(..., min_length=1, max_length=100)
+    phone: str = Field(..., min_length=1, max_length=20)
+    address: Optional[str] = Field(default="", max_length=300)
+    items: list[OrderItemIn] = Field(..., min_length=1, max_length=50)
+    note: Optional[str] = Field(default="", max_length=500)
     payment_method: Optional[str] = "cash"  # cash | qr_transfer
 
 class OrderItemOut(BaseModel):
@@ -61,11 +63,13 @@ def create_order(
     db: Session = Depends(get_db),
     current_user: Optional[models.User] = Depends(get_current_user),
 ):
+    pay_method = body.payment_method if body.payment_method in ("cash", "qr_transfer") else "cash"
+
     total = 0
     item_rows = []
     for item in body.items:
         product = db.query(models.Product).filter(models.Product.id == item.product_id).first()
-        if not product:
+        if not product or not product.is_active:
             raise HTTPException(status_code=404, detail=f"Sản phẩm #{item.product_id} không tồn tại")
         subtotal = product.price * item.quantity
         total += subtotal
@@ -77,7 +81,9 @@ def create_order(
             subtotal=subtotal,
         ))
 
-    pay_method = body.payment_method or "cash"
+    # Generate cancel token for guest orders (logged-in users cancel via auth)
+    cancel_token = secrets.token_urlsafe(16) if not current_user else None
+
     order = models.Order(
         user_id=current_user.id if current_user else None,
         customer_name=body.customer_name,
@@ -86,7 +92,8 @@ def create_order(
         total=total,
         note=body.note,
         payment_method=pay_method,
-        payment_status="paid" if pay_method == "qr_transfer" else "unpaid",
+        payment_status="unpaid",  # always unpaid on creation; admin confirms payment
+        cancel_token=cancel_token,
     )
     db.add(order)
     db.flush()  # get order.id before committing
@@ -104,7 +111,8 @@ def create_order(
 
     db.commit()
     db.refresh(order)
-    return {
+
+    response = {
         "message": "Đặt hàng thành công!",
         "earned_points": earned_points,
         "order": {
@@ -117,6 +125,11 @@ def create_order(
             "items": [{"name": r.name, "price": r.price, "quantity": r.quantity, "subtotal": r.subtotal} for r in order.items],
         }
     }
+    # Return cancel_token only for guest orders so they can cancel later
+    if cancel_token:
+        response["cancel_token"] = cancel_token
+
+    return response
 
 
 @router.get("/mine")
@@ -150,8 +163,11 @@ def my_orders(
 
 
 @router.get("")
-def all_orders(db: Session = Depends(get_db)):
-    """Admin: list all orders."""
+def all_orders(
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Admin only: list all orders."""
     orders = db.query(models.Order).order_by(models.Order.created_at.desc()).all()
     return [
         {
@@ -170,10 +186,14 @@ def all_orders(db: Session = Depends(get_db)):
 @router.patch("/{order_id}/cancel")
 def cancel_order(
     order_id: int,
+    cancel_token: Optional[str] = Query(default=None),
     db: Session = Depends(get_db),
     current_user: Optional[models.User] = Depends(get_current_user),
 ):
-    """Cancel a pending order. Only the owner (logged-in) or a guest order may cancel."""
+    """Cancel a pending order.
+    - Logged-in users: must own the order.
+    - Guest orders: must supply the cancel_token returned at order creation.
+    """
     order = db.query(models.Order).filter(models.Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Không tìm thấy đơn hàng")
@@ -184,10 +204,14 @@ def cancel_order(
             detail=f"Không thể hủy đơn hàng ở trạng thái '{order.status}'",
         )
 
-    # Authorization: logged-in user must own the order; guest orders (user_id=None) are always cancellable
     if order.user_id is not None:
+        # Logged-in order: must be the owner
         if current_user is None or current_user.id != order.user_id:
             raise HTTPException(status_code=403, detail="Bạn không có quyền hủy đơn hàng này")
+    else:
+        # Guest order: require valid cancel_token
+        if not cancel_token or not order.cancel_token or cancel_token != order.cancel_token:
+            raise HTTPException(status_code=403, detail="Token hủy đơn không hợp lệ")
 
     order.status = "cancelled"
     db.commit()

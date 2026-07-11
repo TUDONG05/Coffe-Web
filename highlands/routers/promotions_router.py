@@ -17,7 +17,7 @@ class PromotionOut(BaseModel):
     title: str
     description: Optional[str]
     discount: Optional[str]
-    emoji: Optional[str]
+    image_url: Optional[str]
     tag: Optional[str]
     valid_until: Optional[str]
 

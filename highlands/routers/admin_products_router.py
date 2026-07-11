@@ -23,6 +23,7 @@ class ProductCreate(BaseModel):
     category: str = Field(..., min_length=1, max_length=50)
     price: int = Field(..., gt=0)
     description: str | None = None
+    video_url: str | None = None
 
 
 class ProductUpdate(BaseModel):
@@ -31,6 +32,7 @@ class ProductUpdate(BaseModel):
     price: int | None = None
     description: str | None = None
     is_active: int | None = None
+    video_url: str | None = None
 
 
 class ProductOut(BaseModel):
@@ -40,6 +42,7 @@ class ProductOut(BaseModel):
     price: int
     description: str | None
     image_url: str | None
+    video_url: str | None
     is_active: int
 
     class Config:
@@ -110,6 +113,7 @@ def create_product(
         category=body.category,
         price=body.price,
         description=body.description,
+        video_url=body.video_url,
     )
     db.add(product)
     db.commit()
@@ -150,6 +154,8 @@ def update_product(
         product.price = body.price
     if body.description is not None:
         product.description = body.description
+    if body.video_url is not None:
+        product.video_url = body.video_url
 
     db.commit()
     db.refresh(product)

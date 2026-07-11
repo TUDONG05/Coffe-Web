@@ -27,6 +27,7 @@ class CustomerUpdate(BaseModel):
     email: EmailStr | None = None
     phone: str | None = None
     address: str | None = None
+    role: str | None = None
 
 
 class CustomerOut(BaseModel):
@@ -235,6 +236,17 @@ def update_customer(
         customer.phone = body.phone
     if body.address is not None:
         customer.address = body.address
+    if body.role is not None:
+        if body.role not in ["admin", "user"]:
+            raise HTTPException(status_code=400, detail="Role không hợp lệ. Chỉ chấp nhận 'admin' hoặc 'user'")
+        if customer.role == "admin" and body.role != "admin":
+            admin_count = db.query(models.User).filter(
+                models.User.role == "admin",
+                models.User.is_active == 1,
+            ).count()
+            if admin_count <= 1:
+                raise HTTPException(status_code=400, detail="Không thể hạ quyền admin cuối cùng")
+        customer.role = body.role
 
     db.commit()
     db.refresh(customer)

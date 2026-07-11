@@ -5,8 +5,12 @@ Admin News Management endpoints:
   GET /api/admin/news/{id}     — Get news details
   PUT /api/admin/news/{id}     — Update news
   DELETE /api/admin/news/{id}  — Delete news (soft delete)
+  POST /api/admin/news/{id}/image — Upload news image
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+import os
+import uuid
+import aiofiles
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
@@ -14,6 +18,8 @@ from datetime import datetime
 from highlands.database import get_db
 from highlands import models
 from highlands.auth_utils import require_admin
+
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "static", "images", "news")
 
 router = APIRouter(prefix="/api/admin/news", tags=["admin-news"])
 
@@ -23,7 +29,8 @@ class NewsCreate(BaseModel):
     excerpt: Optional[str] = None
     content: str
     tag: Optional[str] = None
-    emoji: Optional[str] = "📰"
+    image_url: Optional[str] = None
+    video_url: Optional[str] = None
 
 
 class NewsUpdate(BaseModel):
@@ -31,7 +38,8 @@ class NewsUpdate(BaseModel):
     excerpt: Optional[str] = None
     content: Optional[str] = None
     tag: Optional[str] = None
-    emoji: Optional[str] = None
+    image_url: Optional[str] = None
+    video_url: Optional[str] = None
     is_active: Optional[int] = None
 
 
@@ -41,8 +49,11 @@ class NewsOut(BaseModel):
     excerpt: Optional[str]
     content: str
     tag: Optional[str]
-    emoji: str
+    image_url: Optional[str]
+    video_url: Optional[str]
     published_at: Optional[str]
+    view_count: int = 0
+    unique_view_count: int = 0
     is_active: int
 
     class Config:
@@ -104,7 +115,8 @@ def create_news(
         excerpt=body.excerpt,
         content=body.content,
         tag=body.tag or "Tin Tuc",
-        emoji=body.emoji,
+        image_url=body.image_url,
+        video_url=body.video_url,
         published_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         is_active=1
     )
@@ -145,8 +157,10 @@ def update_news(
         news.content = body.content
     if body.tag is not None:
         news.tag = body.tag
-    if body.emoji is not None:
-        news.emoji = body.emoji
+    if body.image_url is not None:
+        news.image_url = body.image_url
+    if body.video_url is not None:
+        news.video_url = body.video_url
 
     db.commit()
     db.refresh(news)
@@ -188,3 +202,42 @@ def delete_news(
     db.commit()
 
     return {"detail": "Tin tuc da xoa"}
+
+
+@router.post("/{news_id}/image", response_model=NewsOut)
+async def upload_news_image(
+    news_id: int,
+    file: UploadFile = File(...),
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Upload news image. Accepts jpeg/png/webp, max 5MB."""
+    allowed = {"image/jpeg", "image/png", "image/webp"}
+    if file.content_type not in allowed:
+        raise HTTPException(status_code=400, detail="Chỉ chấp nhận JPEG, PNG, WebP")
+
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Ảnh không được vượt quá 5MB")
+
+    news = db.query(models.News).filter(models.News.id == news_id).first()
+    if not news:
+        raise HTTPException(status_code=404, detail="Tin tức không tồn tại")
+
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else "jpg"
+    filename = f"{news_id}_{uuid.uuid4().hex[:8]}.{ext}"
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    dest = os.path.join(UPLOAD_DIR, filename)
+
+    if news.image_url and news.image_url.startswith("/static/images/news/"):
+        old_path = os.path.join(os.path.dirname(__file__), "..", "..", news.image_url.lstrip("/"))
+        if os.path.exists(old_path):
+            os.remove(old_path)
+
+    async with aiofiles.open(dest, "wb") as f:
+        await f.write(content)
+
+    news.image_url = f"/static/images/news/{filename}"
+    db.commit()
+    db.refresh(news)
+    return news

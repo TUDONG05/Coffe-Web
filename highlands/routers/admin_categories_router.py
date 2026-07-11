@@ -15,18 +15,18 @@ router = APIRouter(prefix="/api/admin/categories", tags=["admin-categories"])
 
 class CategoryCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
-    emoji: str = "☕"
+    image_url: str | None = None
 
 
 class CategoryUpdate(BaseModel):
     name: str | None = None
-    emoji: str | None = None
+    image_url: str | None = None
 
 
 class CategoryOut(BaseModel):
     id: int
     name: str
-    emoji: str
+    image_url: str | None
     is_active: int
 
     class Config:
@@ -58,7 +58,7 @@ def create_category(
 
     category = models.Category(
         name=body.name,
-        emoji=body.emoji,
+        image_url=body.image_url,
     )
     db.add(category)
     db.commit()
@@ -100,8 +100,8 @@ def update_category(
             raise HTTPException(status_code=400, detail="Tên danh mục đã tồn tại")
         category.name = body.name
 
-    if body.emoji is not None:
-        category.emoji = body.emoji
+    if body.image_url is not None:
+        category.image_url = body.image_url
 
     db.commit()
     db.refresh(category)

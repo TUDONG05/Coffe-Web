@@ -19,6 +19,7 @@ class ProductOut(BaseModel):
     price: int
     description: Optional[str]
     image_url: Optional[str]
+    video_url: Optional[str]
     avg_rating: float = 0.0
     review_count: int = 0
 

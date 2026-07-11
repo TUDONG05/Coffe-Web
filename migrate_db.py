@@ -26,10 +26,15 @@ def add_column_if_missing(table, column, col_type):
 add_column_if_missing("users",  "address", "VARCHAR(300) NULL")
 add_column_if_missing("orders", "address", "VARCHAR(300) NULL")
 add_column_if_missing("users",  "points",  "INT NOT NULL DEFAULT 0")
-add_column_if_missing("orders", "payment_method", "VARCHAR(20) NOT NULL DEFAULT 'cash'")
-add_column_if_missing("orders", "payment_status", "VARCHAR(20) NOT NULL DEFAULT 'unpaid'")
+add_column_if_missing("orders", "payment_method",  "VARCHAR(20) NOT NULL DEFAULT 'cash'")
+add_column_if_missing("orders", "payment_status",  "VARCHAR(20) NOT NULL DEFAULT 'unpaid'")
+add_column_if_missing("orders", "cancel_token",    "VARCHAR(32) NULL")
 add_column_if_missing("users",  "google_id", "VARCHAR(255) NULL")
 add_column_if_missing("products", "image_url", "VARCHAR(300) NULL")
+add_column_if_missing("products", "video_url", "VARCHAR(500) NULL")
+add_column_if_missing("news",     "video_url", "VARCHAR(500) NULL")
+add_column_if_missing("news",     "view_count", "INT NOT NULL DEFAULT 0")
+add_column_if_missing("news",     "unique_view_count", "INT NOT NULL DEFAULT 0")
 
 # product_reviews table is created via Base.metadata.create_all above
 

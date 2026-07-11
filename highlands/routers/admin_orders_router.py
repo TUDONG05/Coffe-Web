@@ -31,6 +31,8 @@ class OrderOut(BaseModel):
     total: int
     note: str | None
     status: str
+    payment_status: str
+    payment_method: str
     created_at: str | None
     user_id: int | None
     items: list[OrderItemOut]
@@ -40,7 +42,8 @@ class OrderOut(BaseModel):
 
 
 class OrderStatusUpdate(BaseModel):
-    status: str
+    status: str | None = None
+    payment_status: str | None = None
 
 
 class OrderItemCreate(BaseModel):
@@ -284,6 +287,8 @@ def list_orders(
             "total": order.total,
             "note": order.note,
             "status": order.status,
+            "payment_status": order.payment_status or "unpaid",
+            "payment_method": order.payment_method or "cash",
             "created_at": order.created_at.strftime("%Y-%m-%d %H:%M:%S") if order.created_at else None,
             "user_id": order.user_id,
             "items": [
@@ -326,6 +331,8 @@ def get_order(
         "total": order.total,
         "note": order.note,
         "status": order.status,
+        "payment_status": order.payment_status or "unpaid",
+        "payment_method": order.payment_method or "cash",
         "created_at": order.created_at.strftime("%Y-%m-%d %H:%M:%S") if order.created_at else None,
         "user_id": order.user_id,
         "items": [
@@ -353,11 +360,18 @@ def update_order_status(
     if not order:
         raise HTTPException(status_code=404, detail="Not found")
 
-    valid_statuses = ["pending", "confirmed", "done"]
-    if body.status not in valid_statuses:
-        raise HTTPException(status_code=400, detail="Invalid status")
+    if body.status is not None:
+        valid_statuses = ["pending", "confirmed", "done"]
+        if body.status not in valid_statuses:
+            raise HTTPException(status_code=400, detail="Invalid status")
+        order.status = body.status
 
-    order.status = body.status
+    if body.payment_status is not None:
+        valid_payment_statuses = ["unpaid", "paid"]
+        if body.payment_status not in valid_payment_statuses:
+            raise HTTPException(status_code=400, detail="Invalid payment_status")
+        order.payment_status = body.payment_status
+
     db.commit()
     db.refresh(order)
 
@@ -369,6 +383,8 @@ def update_order_status(
         "total": order.total,
         "note": order.note,
         "status": order.status,
+        "payment_status": order.payment_status or "unpaid",
+        "payment_method": order.payment_method or "cash",
         "created_at": order.created_at.strftime("%Y-%m-%d %H:%M:%S") if order.created_at else None,
         "user_id": order.user_id,
         "items": [
@@ -440,9 +456,12 @@ def create_order(
         "id": order.id,
         "customer_name": order.customer_name,
         "phone": order.phone,
+        "address": order.address,
         "total": order.total,
         "note": order.note,
         "status": order.status,
+        "payment_status": order.payment_status or "unpaid",
+        "payment_method": order.payment_method or "cash",
         "created_at": order.created_at.strftime("%Y-%m-%d %H:%M:%S") if order.created_at else None,
         "user_id": order.user_id,
         "items": [
