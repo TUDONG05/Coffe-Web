@@ -5,42 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Về Chúng Tôi – Tu's Coffee</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
   <link rel="stylesheet" href="/static/css/about.css" />
 </head>
 <body>
-
-  <!-- TOP BAR -->
-  <div class="top-bar">
-    <div class="inner">
-      <span>📞 Hotline: <a href="#">1800 6006</a> <span class="divider">|</span> <a href="/#stores">Tìm cửa hàng</a> <span class="divider">|</span> <a href="#">Nhượng quyền</a></span>
-      <span><a href="/">Đăng nhập</a> <span class="divider">|</span> <a href="/">Đăng ký</a> <span class="divider">|</span> 🌐 VI / EN</span>
-    </div>
-  </div>
 
   <!-- NAVBAR -->
   <nav class="navbar">
     <div class="nav-inner">
       <a href="/" class="logo">
-        <div class="logo-mark">TC</div>
-        <div class="logo-text"><strong>Tu's</strong><span>Coffee</span></div>
+        <img src="/static/images/logo/logo.png" alt="Tu's Coffee" style="height:48px;width:auto;display:block;">
       </a>
       <div class="nav-links" id="navLinks">
-        <a href="/">Trang Chủ</a>
-        <a href="/#menu">Thực Đơn</a>
-        <a href="/#promotions">Ưu Đãi</a>
-        <a href="/#stores">Cửa Hàng</a>
-        <a href="/#rewards">Tu's Coffee Rewards</a>
-        <a href="/#news">Tin Tức</a>
-        <a href="/about" class="active">Về Chúng Tôi</a>
+        <a href="/" class="nav-link">Trang Chủ</a>
+        <a href="/#promotions" class="nav-link">Ưu Đãi</a>
+        <a href="/#stores" class="nav-link">Cửa Hàng</a>
+        <a href="/#rewards" class="nav-link">Tu's Coffee Rewards</a>
+        <a href="/#news" class="nav-link">Tin Tức</a>
+        <a href="/about" class="nav-link active">Về Chúng Tôi</a>
       </div>
-      <button class="nav-toggle" id="navToggle" aria-label="Mở menu">
+      <button class="hamburger-btn" id="navToggle" aria-label="Mở menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
       <div class="nav-actions">
-        <a href="/" class="icon-btn" title="Tìm kiếm">🔍</a>
-        <a href="/" class="icon-btn" title="Giỏ hàng">🛒</a>
-        <a href="/" class="btn-solid">Đặt Ngay</a>
+        <button class="icon-btn" title="Tìm kiếm">🔍</button>
+        <button class="icon-btn" title="Giỏ hàng">🛒</button>
+        <button id="auth-nav-btn" class="btn-solid" style="background:transparent;border:2px solid #C8102E;color:#C8102E">Đăng Nhập</button>
       </div>
     </div>
   </nav>
@@ -247,15 +238,9 @@
     </div>
   </section>
 
-  <!-- CTA -->
-  <section class="cta-section">
-    <h2>Hãy Ghé Thăm Chúng Tôi Hôm Nay ☕</h2>
-    <p>Hơn 600 cửa hàng trên khắp Việt Nam — luôn có một Tu's Coffee gần bạn.</p>
-    <a href="/" class="cta-btn">Tìm Cửa Hàng Gần Nhất →</a>
-  </section>
 
   <!-- FOOTER -->
-  <footer>
+  <footer class="about-footer">
     <p>© 2002–2026 <strong>Tu's Coffee</strong>. Đậm chất cà phê Việt. Mọi quyền được bảo lưu.</p>
     <p style="margin-top:6px;">📍 Hà Nội, TP. Hồ Chí Minh & 30+ tỉnh thành toàn quốc &nbsp;|&nbsp; 📞 Hotline: 1800 6006</p>
   </footer>
@@ -264,8 +249,9 @@
     const toggle = document.getElementById('navToggle');
     const links  = document.getElementById('navLinks');
     toggle.addEventListener('click', () => {
-      links.classList.toggle('open');
-      toggle.classList.toggle('active');
+      const open = links.classList.toggle('nav-open');
+      toggle.classList.toggle('is-active');
+      toggle.setAttribute('aria-expanded', open);
     });
   </script>
 </body>
