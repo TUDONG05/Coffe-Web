@@ -11,8 +11,10 @@
 **Tài khoản & Xác thực**
 - Đăng ký tài khoản với xác thực **OTP qua email** (Gmail SMTP), tặng 50 điểm Rewards
 - Đăng nhập bằng **email/mật khẩu** hoặc **Google OAuth** (Sign in with Google)
+- **Quên mật khẩu** — luồng 3 bước: nhập email → nhận OTP reset → đặt mật khẩu mới
 - Đăng xuất, xem & cập nhật hồ sơ cá nhân (tên, số điện thoại, địa chỉ)
 - Đổi mật khẩu
+- Validation số điện thoại Việt Nam (10 chữ số, bắt đầu 03/05/07/08/09)
 
 **Menu & Tìm kiếm**
 - Duyệt 30+ sản phẩm, lọc theo danh mục (Cà phê, Trà, Freeze, Thức ăn, Combo)
@@ -21,7 +23,7 @@
 
 **Giỏ hàng & Đặt hàng**
 - Thêm sản phẩm vào giỏ hàng, điều chỉnh số lượng
-- Đặt hàng online (hỗ trợ cả khách vãng lai và tài khoản đăng nhập)
+- Đặt hàng online — **yêu cầu đăng nhập** (điểm Rewards được tích ngay sau mỗi đơn)
 - Chọn phương thức thanh toán: **Tiền mặt** hoặc **Chuyển khoản QR** (VietQR)
 - Quét mã QR thanh toán ngay sau khi đặt (MB Bank — 010320058686 DONG VAN TU)
 - Đơn QR tự động chuyển trạng thái `payment_status = paid`
@@ -152,7 +154,7 @@ Coffe-Web/
 │   │       └── admin_users_router.py       # /api/admin/users
 │   │
 │   └── services/
-│       ├── email_service.py        # Gmail SMTP: tạo/gửi/xác thực OTP (TTL 10 phút)
+│       ├── email_service.py        # Gmail SMTP: OTP đăng ký & reset mật khẩu (TTL 10 phút, tách key theo purpose)
 │       └── menu_rag_service.py     # RAG service cho chatbot gợi ý menu (TF-IDF)
 │
 ├── templates/
@@ -239,7 +241,7 @@ created_at  DATETIME     DEFAULT now()
 **`orders`**
 ```
 id             INT          PK
-user_id        INT          FK → users.id (NULL cho khách vãng lai)
+user_id        INT          FK → users.id NOT NULL (yêu cầu đăng nhập)
 customer_name  VARCHAR(100) NOT NULL
 phone          VARCHAR(20)  NOT NULL
 address        VARCHAR(300)
@@ -541,12 +543,14 @@ Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override q
 
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| POST | `/api/auth/send-otp` | Gửi mã OTP 6 số về email (TTL 10 phút) |
+| POST | `/api/auth/send-otp` | Gửi mã OTP 6 số về email để xác thực đăng ký (TTL 10 phút) |
 | POST | `/api/auth/register` | Đăng ký — cần xác thực OTP, tặng 50 điểm Rewards |
 | POST | `/api/auth/login` | Đăng nhập email/mật khẩu, trả JWT |
 | POST | `/api/auth/google/verify` | Đăng nhập / đăng ký qua Google OAuth |
+| POST | `/api/auth/forgot-password` | Gửi OTP reset mật khẩu về email (TTL 10 phút) |
+| POST | `/api/auth/reset-password` | Xác thực OTP và đặt lại mật khẩu mới |
 | GET | `/api/auth/me` | Thông tin tài khoản hiện tại |
-| PUT | `/api/auth/profile` | Cập nhật hồ sơ |
+| PUT | `/api/auth/profile` | Cập nhật hồ sơ (validate SĐT Việt Nam) |
 | PUT | `/api/auth/change-password` | Đổi mật khẩu |
 
 #### Sản phẩm (`/api/products`)
@@ -560,7 +564,7 @@ Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override q
 
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| POST | `/api/orders` | Tạo đơn — hỗ trợ `payment_method: cash \| qr_transfer` |
+| POST | `/api/orders` | Tạo đơn — **yêu cầu đăng nhập**, `payment_method: cash \| qr_transfer` |
 | GET | `/api/orders/mine` | Lịch sử đơn (cần đăng nhập) |
 | PATCH | `/api/orders/{id}/cancel` | Huỷ đơn `pending` |
 
@@ -608,8 +612,11 @@ Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override q
 - Bcrypt hashing cho mật khẩu
 - JWT HS256 với thời hạn 24 giờ
 - Phân quyền theo role: `admin` / `user`
-- OTP 6 số qua Gmail SMTP — TTL 10 phút, xác thực khi đăng ký
-- Google OAuth — xác thực token phía server qua `google-auth`
+- OTP 6 số qua Gmail SMTP — TTL 10 phút, tách biệt mục đích (`register` / `reset`) qua key `purpose:email`
+- Luồng quên mật khẩu 3 bước an toàn — OTP reset độc lập với OTP đăng ký
+- Google OAuth — xác thực token phía server qua `google-auth`; tài khoản Google không có `reset-password`
+- Đặt hàng yêu cầu đăng nhập — loại bỏ khách vãng lai
+- Validation số điện thoại Việt Nam (regex `^0[35789]\d{8}$`)
 - Soft delete — không xoá dữ liệu vật lý
 - Kiểm tra email duy nhất khi đăng ký
 - Mật khẩu tối thiểu 6 ký tự
