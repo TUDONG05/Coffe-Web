@@ -85,6 +85,16 @@ class MenuRAGService:
             )
         return "\n\n".join(lines)
 
+    def search_relevant(self, query: str, top_k: int = 4, min_score: float = 0.20) -> list[dict]:
+        """Trả về top_k sản phẩm với cosine score >= min_score (strict, không fallback).
+        Dùng để hiển thị product cards — trả empty list nếu không có gì liên quan."""
+        if self._vectorizer is None or not self._items:
+            return []
+        q_vec = self._vectorizer.transform([query.lower()])
+        scores = cosine_similarity(q_vec, self._matrix).flatten()
+        top_indices = np.argsort(scores)[::-1][:top_k]
+        return [self._items[i] for i in top_indices if scores[i] >= min_score]
+
     def all_items_context(self) -> str:
         """Toàn bộ menu dạng compact để nhúng vào system prompt."""
         return self.format_context(self._items)
