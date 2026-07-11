@@ -8,6 +8,7 @@ from highlands.database import get_db
 from highlands import models
 from highlands.auth_utils import hash_password, verify_password, create_access_token, require_login
 from highlands.config import GOOGLE_CLIENT_ID
+from highlands.services.email_service import create_otp, verify_otp, send_otp_email
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
@@ -16,12 +17,16 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 # ── Schemas ───────────────────────────────────────────────
 
+class SendOtpIn(BaseModel):
+    email: EmailStr
+
 class RegisterIn(BaseModel):
     name: str
     email: EmailStr
     phone: str = ""
     address: str | None = None
     password: str
+    otp_code: str
 
 class LoginIn(BaseModel):
     email: EmailStr
@@ -61,8 +66,23 @@ class UserOut(BaseModel):
 
 # ── Routes ────────────────────────────────────────────────
 
+@router.post("/send-otp", status_code=200)
+def send_otp(body: SendOtpIn, db: Session = Depends(get_db)):
+    """Gửi mã OTP 6 số về email để xác thực trước khi đăng ký."""
+    if db.query(models.User).filter(models.User.email == body.email).first():
+        raise HTTPException(status_code=400, detail="Email đã được sử dụng")
+    otp = create_otp(body.email)
+    try:
+        send_otp_email(body.email, otp)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Không gửi được email: {e}")
+    return {"message": "Mã OTP đã được gửi đến email của bạn"}
+
+
 @router.post("/register", status_code=201)
 def register(body: RegisterIn, db: Session = Depends(get_db)):
+    if not verify_otp(body.email, body.otp_code):
+        raise HTTPException(status_code=400, detail="Mã OTP không hợp lệ hoặc đã hết hạn")
     if db.query(models.User).filter(models.User.email == body.email).first():
         raise HTTPException(status_code=400, detail="Email đã được sử dụng")
     user = models.User(

@@ -24,9 +24,15 @@ DATABASE_URL = (
 )
 
 # ── JWT ──────────────────────────────────────────────────
-SECRET_KEY      = os.getenv("SECRET_KEY", "highlands-secret-change-in-prod-2026")
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY environment variable is not set. Add it to your .env file.")
 ALGORITHM       = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day
 
 # ── Google OAuth ─────────────────────────────────────────
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+
+# ── Gmail SMTP (Google App Password) ─────────────────────
+GMAIL_USER         = os.getenv("GMAIL_USER", "")
+GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD", "")
