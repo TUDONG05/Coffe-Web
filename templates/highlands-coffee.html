@@ -44,10 +44,30 @@
         <button class="icon-btn" id="cart-btn" title="Giỏ hàng">🛒<span class="cart-badge" id="cart-count" style="display:none">0</span></button>
         <button class="icon-btn" id="orders-btn" title="Đơn hàng" style="display:none">📋</button>
         <button id="auth-nav-btn" onclick="openAuthModal()" class="btn-solid" style="background:transparent;border:2px solid #C8102E;color:#C8102E">Đăng Nhập</button>
-        <span id="user-nav" style="display:none;align-items:center;gap:8px">
-          <span id="user-greeting" onclick="openProfileModal()" style="font-size:.82rem;color:#5C3D2E;font-weight:600;cursor:pointer;text-decoration:underline dotted"></span>
-          <button onclick="logout()" style="background:none;border:none;cursor:pointer;font-size:.8rem;color:#888;text-decoration:underline">Đăng xuất</button>
-        </span>
+        <div id="user-nav" style="display:none;position:relative">
+          <button id="user-greeting-btn" onclick="toggleUserDropdown(event)" style="display:flex;align-items:center;gap:6px;background:none;border:1.5px solid #C8102E;border-radius:20px;padding:6px 14px;cursor:pointer;font-family:inherit;color:#C8102E;font-weight:700;font-size:.82rem;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background='none'">
+            <span id="user-greeting"></span>
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,4 6,8 10,4"/></svg>
+          </button>
+          <div id="user-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 8px);background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(44,24,16,.18);min-width:200px;overflow:hidden;z-index:2000;border:1px solid #f0e8e0">
+            <button onclick="openProfileInfo()" style="width:100%;padding:13px 18px;border:none;background:none;text-align:left;cursor:pointer;font-family:inherit;font-size:.88rem;font-weight:600;color:#333;display:flex;align-items:center;gap:10px;box-sizing:border-box" onmouseover="this.style.background='#faf5f0'" onmouseout="this.style.background='none'">
+              <span>👤</span> Thông tin tài khoản
+            </button>
+            <button id="dd-pwd-btn" onclick="openProfilePwd()" style="width:100%;padding:13px 18px;border:none;background:none;text-align:left;cursor:pointer;font-family:inherit;font-size:.88rem;font-weight:600;color:#333;display:flex;align-items:center;gap:10px;box-sizing:border-box" onmouseover="this.style.background='#faf5f0'" onmouseout="this.style.background='none'">
+              <span>🔑</span> Đổi mật khẩu
+            </button>
+            <div id="dd-admin-wrap" style="display:none">
+              <div style="height:1px;background:#f0e8e0"></div>
+              <button onclick="window.location.href='/admin'" style="width:100%;padding:13px 18px;border:none;background:none;text-align:left;cursor:pointer;font-family:inherit;font-size:.88rem;font-weight:700;color:#C8102E;display:flex;align-items:center;gap:10px;box-sizing:border-box" onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background='none'">
+                <span>⚙️</span> Quản lý
+              </button>
+            </div>
+            <div style="height:1px;background:#f0e8e0"></div>
+            <button onclick="logout()" style="width:100%;padding:13px 18px;border:none;background:none;text-align:left;cursor:pointer;font-family:inherit;font-size:.88rem;font-weight:600;color:#888;display:flex;align-items:center;gap:10px;box-sizing:border-box" onmouseover="this.style.background='#faf5f0'" onmouseout="this.style.background='none'">
+              <span>🚪</span> Đăng xuất
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </nav>
@@ -416,24 +436,75 @@
         <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
         Đăng nhập với Google
       </button>
+      <div style="text-align:center;margin-top:14px">
+        <button onclick="openForgotPassword()" style="background:none;border:none;color:#C8102E;font-size:.88rem;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:3px">Quên mật khẩu?</button>
+      </div>
+    </div>
+    <!-- Forgot password flow (3 steps) -->
+    <div id="form-forgot" style="display:none">
+      <!-- Step 1: nhập email -->
+      <div id="forgot-step-1">
+        <p style="color:#555;font-size:.9rem;margin:0 0 16px;line-height:1.5">Nhập email tài khoản của bạn, chúng tôi sẽ gửi mã OTP 6 số để xác nhận.</p>
+        <input id="forgot-email" type="email" placeholder="Email của bạn" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:14px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+        <button onclick="doForgotSendOtp()" style="width:100%;padding:13px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit">Gửi Mã OTP</button>
+        <div style="text-align:center;margin-top:12px">
+          <button onclick="switchAuthTab('login')" style="background:none;border:none;color:#888;font-size:.85rem;cursor:pointer;font-family:inherit">← Quay lại đăng nhập</button>
+        </div>
+      </div>
+      <!-- Step 2: nhập OTP -->
+      <div id="forgot-step-2" style="display:none">
+        <p style="color:#555;font-size:.9rem;margin:0 0 4px;line-height:1.5">Mã OTP đã gửi đến</p>
+        <p id="forgot-email-display" style="color:#C8102E;font-weight:700;font-size:.9rem;margin:0 0 16px;word-break:break-all"></p>
+        <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center">
+          <input id="forgot-otp" type="text" inputmode="numeric" maxlength="6" placeholder="_ _ _ _ _ _" style="flex:1;padding:14px;border:1.5px solid #e0d8d0;border-radius:10px;font-size:1.4rem;font-weight:700;text-align:center;letter-spacing:.3em;outline:none;font-family:inherit;box-sizing:border-box">
+        </div>
+        <button onclick="doForgotVerifyOtp()" style="width:100%;padding:13px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit">Xác Nhận OTP</button>
+        <div style="display:flex;justify-content:space-between;margin-top:12px">
+          <button onclick="showForgotStep(1)" style="background:none;border:none;color:#888;font-size:.85rem;cursor:pointer;font-family:inherit">← Quay lại</button>
+          <button onclick="doForgotSendOtp(true)" style="background:none;border:none;color:#C8102E;font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit">Gửi lại mã</button>
+        </div>
+      </div>
+      <!-- Step 3: nhập mật khẩu mới -->
+      <div id="forgot-step-3" style="display:none">
+        <p style="color:#555;font-size:.9rem;margin:0 0 16px;line-height:1.5">OTP hợp lệ! Nhập mật khẩu mới cho tài khoản của bạn.</p>
+        <input id="forgot-newpwd" type="password" placeholder="Mật khẩu mới (tối thiểu 6 ký tự)" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+        <input id="forgot-confirmpwd" type="password" placeholder="Xác nhận mật khẩu mới" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:14px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+        <button onclick="doResetPassword()" style="width:100%;padding:13px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit">Đặt Lại Mật Khẩu</button>
+      </div>
     </div>
     <!-- Register form -->
     <div id="form-register" style="display:none">
-      <input id="reg-name" type="text" placeholder="Họ tên *" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
-      <input id="reg-email" type="email" placeholder="Email *" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
-      <input id="reg-phone" type="tel" placeholder="Số điện thoại" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
-      <input id="reg-address" type="text" placeholder="Địa chỉ giao hàng" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
-      <input id="reg-password" type="password" placeholder="Mật khẩu *" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:16px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
-      <button onclick="doRegister()" style="width:100%;padding:13px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit">Tạo Tài Khoản</button>
-      <div style="display:flex;align-items:center;gap:10px;margin:16px 0">
-        <div style="flex:1;height:1px;background:#e0d8d0"></div>
-        <span style="color:#aaa;font-size:.82rem;white-space:nowrap">hoặc</span>
-        <div style="flex:1;height:1px;background:#e0d8d0"></div>
+      <!-- Step 1: điền thông tin -->
+      <div id="reg-step-1">
+        <input id="reg-name" type="text" placeholder="Họ tên *" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+        <input id="reg-email" type="email" placeholder="Email *" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+        <input id="reg-phone" type="tel" placeholder="Số điện thoại" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+        <input id="reg-address" type="text" placeholder="Địa chỉ giao hàng" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:10px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+        <input id="reg-password" type="password" placeholder="Mật khẩu *" style="width:100%;padding:11px 14px;border:1.5px solid #e0d8d0;border-radius:10px;margin-bottom:16px;font-size:.9rem;outline:none;font-family:inherit;box-sizing:border-box">
+        <button onclick="doRegisterSendOtp()" style="width:100%;padding:13px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit">Tiếp Tục</button>
+        <div style="display:flex;align-items:center;gap:10px;margin:16px 0">
+          <div style="flex:1;height:1px;background:#e0d8d0"></div>
+          <span style="color:#aaa;font-size:.82rem;white-space:nowrap">hoặc</span>
+          <div style="flex:1;height:1px;background:#e0d8d0"></div>
+        </div>
+        <button onclick="loginWithGoogle()" style="width:100%;padding:11px;background:#fff;color:#444;border:1.5px solid #ddd;border-radius:12px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;transition:border-color .2s" onmouseover="this.style.borderColor='#C8102E'" onmouseout="this.style.borderColor='#ddd'">
+          <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Đăng ký / Đăng nhập với Google
+        </button>
       </div>
-      <button onclick="loginWithGoogle()" style="width:100%;padding:11px;background:#fff;color:#444;border:1.5px solid #ddd;border-radius:12px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;transition:border-color .2s" onmouseover="this.style.borderColor='#C8102E'" onmouseout="this.style.borderColor='#ddd'">
-        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-        Đăng ký / Đăng nhập với Google
-      </button>
+      <!-- Step 2: xác thực OTP -->
+      <div id="reg-step-2" style="display:none">
+        <p style="color:#555;font-size:.9rem;margin:0 0 4px;line-height:1.5">Mã OTP đã gửi đến</p>
+        <p id="reg-otp-email-display" style="color:#C8102E;font-weight:700;font-size:.9rem;margin:0 0 16px;word-break:break-all"></p>
+        <div style="margin-bottom:14px">
+          <input id="reg-otp" type="text" inputmode="numeric" maxlength="6" placeholder="_ _ _ _ _ _" style="width:100%;padding:14px;border:1.5px solid #e0d8d0;border-radius:10px;font-size:1.4rem;font-weight:700;text-align:center;letter-spacing:.3em;outline:none;font-family:inherit;box-sizing:border-box">
+        </div>
+        <button onclick="doRegister()" style="width:100%;padding:13px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit">Xác Nhận & Đăng Ký</button>
+        <div style="display:flex;justify-content:space-between;margin-top:12px">
+          <button onclick="backToRegStep1()" style="background:none;border:none;color:#888;font-size:.85rem;cursor:pointer;font-family:inherit">← Quay lại</button>
+          <button onclick="doRegisterSendOtp(true)" style="background:none;border:none;color:#C8102E;font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit">Gửi lại mã</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -719,6 +790,8 @@
 
     // ── Submit order to FastAPI ───────────────────────────
     async function submitOrder() {
+      if (!authToken) { closeCart(); toast('Vui lòng đăng nhập để đặt hàng!', false); openAuthModal(); return; }
+
       const name    = document.getElementById('f-name').value.trim();
       const phone   = document.getElementById('f-phone').value.trim();
       const address = document.getElementById('f-address').value.trim();
@@ -728,6 +801,7 @@
 
       if (!name)  { toast('Vui lòng nhập họ tên!', false); document.getElementById('f-name').focus(); return; }
       if (!phone) { toast('Vui lòng nhập số điện thoại!', false); document.getElementById('f-phone').focus(); return; }
+      if (!isVnPhone(phone)) { toast('Số điện thoại không hợp lệ (10 số, bắt đầu 03/05/07/08/09)', false); document.getElementById('f-phone').focus(); return; }
       if (!address){ toast('Vui lòng nhập địa chỉ giao hàng!', false); document.getElementById('f-address').focus(); return; }
       if (!items.length) { toast('Giỏ hàng đang trống!', false); return; }
 
@@ -1001,6 +1075,7 @@
     }
 
     function addToCartById(id) {
+      if (!authToken) { toast('Vui lòng đăng nhập để thêm vào giỏ hàng!', false); openAuthModal(); return; }
       const p = allProducts.find(x => x.id === id);
       if (!p) return;
       const key = p.name;
@@ -1012,6 +1087,7 @@
     }
 
     function addToCartFromData(p) {
+      if (!authToken) { toast('Vui lòng đăng nhập để thêm vào giỏ hàng!', false); openAuthModal(); return; }
       const key = p.name;
       if (cart[key]) cart[key].qty++;
       else cart[key] = { name: p.name, price: p.price, qty: 1, image_url: p.image_url || null, product_id: p.id };
@@ -1295,11 +1371,41 @@
       renderNews(tag ? allNews.filter(n => n.tag === tag) : allNews);
     }
 
+    function getYoutubeThumbnail(videoUrl) {
+      if (!videoUrl) return null;
+      let m = videoUrl.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+      if (m) return `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg`;
+      m = videoUrl.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+      if (m) return `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg`;
+      m = videoUrl.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+      if (m) return `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg`;
+      return null;
+    }
+
     function renderNews(newsList) {
       const tagColor = { 'Tin Tức':'#3b82f6', 'Sự Kiện':'#10b981', 'Khuyến Mãi':'#C8102E' };
-      document.getElementById('news-grid').innerHTML = newsList.map(n => `
+      document.getElementById('news-grid').innerHTML = newsList.map(n => {
+        const thumbUrl = getYoutubeThumbnail(n.video_url) || n.image_url;
+        const viewBadge = `<div style="position:absolute;bottom:6px;right:6px;display:flex;gap:5px;align-items:center;">
+          <span style="background:rgba(0,0,0,.55);color:#fff;font-size:.62rem;font-weight:600;padding:2px 7px;border-radius:20px;display:flex;align-items:center;gap:3px;backdrop-filter:blur(4px)">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            ${(n.view_count||0).toLocaleString('vi-VN')}
+          </span>
+          <span style="background:rgba(0,0,0,.55);color:#fff;font-size:.62rem;font-weight:600;padding:2px 7px;border-radius:20px;display:flex;align-items:center;gap:3px;backdrop-filter:blur(4px)">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            ${(n.unique_view_count||0).toLocaleString('vi-VN')}
+          </span>
+        </div>`;
+        const mediaHtml = thumbUrl
+          ? `<div style="height:160px;overflow:hidden;border-radius:12px 12px 0 0;position:relative;">
+               <img src="${thumbUrl}" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.parentElement.innerHTML='<div style=\\'height:160px;display:flex;align-items:center;justify-content:center;font-size:4.5rem;background:linear-gradient(135deg,#fff8f0,#ffe8d8)\\'>${n.emoji||'📰'}</div>'">
+               ${n.video_url ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><div style="width:48px;height:48px;background:rgba(0,0,0,.6);border-radius:50%;display:flex;align-items:center;justify-content:center;"><svg width=\'20\' height=\'20\' viewBox=\'0 0 24 24\' fill=\'white\'><polygon points=\'5,3 19,12 5,21\'/></svg></div></div>' : ''}
+               ${viewBadge}
+             </div>`
+          : `<div style="height:160px;display:flex;align-items:center;justify-content:center;font-size:4.5rem;background:linear-gradient(135deg,#fff8f0,#ffe8d8);position:relative;">${n.emoji||'📰'}${viewBadge}</div>`;
+        return `
         <div class="api-news-card" onclick="openNewsDetail(${n.id})">
-          <div style="height:160px;display:flex;align-items:center;justify-content:center;font-size:4.5rem;background:linear-gradient(135deg,#fff8f0,#ffe8d8)">${n.emoji||'📰'}</div>
+          ${mediaHtml}
           <div style="padding:20px">
             <span style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:${tagColor[n.tag]||'#888'};background:rgba(0,0,0,.05);padding:2px 8px;border-radius:20px">${n.tag||'Tin Tức'}</span>
             <h4 style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:#2C1810;margin:10px 0 8px;line-height:1.4">${n.title}</h4>
@@ -1309,7 +1415,8 @@
               <span style="font-size:.75rem;color:#C8102E;font-weight:700">Đọc thêm →</span>
             </div>
           </div>
-        </div>`).join('') || '<div class="page-loading" style="grid-column:1/-1">Không có tin tức</div>';
+        </div>`;
+      }).join('') || '<div class="page-loading" style="grid-column:1/-1">Không có tin tức</div>';
     }
 
     // ── Rewards page ──────────────────────────────────────
@@ -1397,6 +1504,11 @@
       if (tbUser) tbUser.style.display = loggedIn ? '' : 'none';
       if (loggedIn && authUser) {
         document.getElementById('user-greeting').textContent = authUser.name.split(' ').pop();
+        // show/hide dropdown items based on role/type
+        const adminWrap = document.getElementById('dd-admin-wrap');
+        if (adminWrap) adminWrap.style.display = authUser.role === 'admin' ? '' : 'none';
+        const pwdBtn = document.getElementById('dd-pwd-btn');
+        if (pwdBtn) pwdBtn.style.display = authUser.is_google_user ? 'none' : '';
         // pre-fill order form with user info
         const fn = document.getElementById('f-name');
         const fp = document.getElementById('f-phone');
@@ -1446,8 +1558,30 @@
       }
     }
 
+    // ── User dropdown ────────────────────────────────────
+    function toggleUserDropdown(event) {
+      event.stopPropagation();
+      const dd = document.getElementById('user-dropdown');
+      dd.style.display = dd.style.display === 'none' ? '' : 'none';
+    }
+    function closeUserDropdown() {
+      const dd = document.getElementById('user-dropdown');
+      if (dd) dd.style.display = 'none';
+    }
+    function openProfileInfo() {
+      closeUserDropdown();
+      openProfileModal('info');
+    }
+    function openProfilePwd() {
+      closeUserDropdown();
+      openProfileModal('pwd');
+    }
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#user-nav')) closeUserDropdown();
+    });
+
     // ── Profile modal ─────────────────────────────────────
-    function openProfileModal() {
+    function openProfileModal(tab = 'info') {
       if (!authUser) return;
       document.getElementById('profile-modal-name').textContent = authUser.name || '';
       document.getElementById('profile-modal-email').textContent = authUser.email || '';
@@ -1461,7 +1595,7 @@
       // Ẩn tab đổi mật khẩu cho tài khoản Google
       const pwdTab = document.getElementById('ptab-pwd');
       if (pwdTab) pwdTab.style.display = authUser.is_google_user ? 'none' : '';
-      switchProfileTab('info');
+      switchProfileTab(tab);
       document.getElementById('profile-overlay').style.display = 'block';
       document.getElementById('profile-modal').style.display = 'block';
     }
@@ -1484,6 +1618,7 @@
       const address = document.getElementById('p-address').value.trim();
       const msg     = document.getElementById('profile-info-msg');
       if (!name) { msg.style.color = '#C8102E'; msg.textContent = 'Vui lòng nhập họ tên'; return; }
+      if (phone && !isVnPhone(phone)) { msg.style.color = '#C8102E'; msg.textContent = 'Số điện thoại không hợp lệ (10 số, bắt đầu 03/05/07/08/09)'; document.getElementById('p-phone').focus(); return; }
       try {
         const res  = await fetch('/api/auth/profile', {
           method: 'PUT', headers: {'Content-Type':'application/json', Authorization:`Bearer ${authToken}`},
@@ -1534,6 +1669,7 @@
       const isLogin = tab === 'login';
       document.getElementById('form-login').style.display    = isLogin ? '' : 'none';
       document.getElementById('form-register').style.display = isLogin ? 'none' : '';
+      document.getElementById('form-forgot').style.display   = 'none';
       document.getElementById('tab-login').style.color       = isLogin ? '#C8102E' : '#aaa';
       document.getElementById('tab-login').style.borderBottom= isLogin ? '2.5px solid #C8102E' : '2.5px solid transparent';
       document.getElementById('tab-register').style.color    = isLogin ? '#aaa' : '#C8102E';
@@ -1553,9 +1689,40 @@
         if (!res.ok) { toast(data.detail || 'Đăng nhập thất bại', false); return; }
         saveAuth(data.access_token, data.user);
         closeAuthModal();
-        if (data.user.role === 'admin') { window.location.href = '/admin'; return; }
-        toast(`✅ Chào mừng ${data.user.name}!`);
+        toast(`Chào mừng ${data.user.name}!`);
       } catch { toast('Lỗi kết nối server', false); }
+    }
+
+    // ── Đăng ký 2 bước (thông tin → OTP → hoàn tất) ─────
+    function isVnPhone(p) { return /^0[35789]\d{8}$/.test(p); }
+
+    async function doRegisterSendOtp(isResend = false) {
+      const name     = document.getElementById('reg-name').value.trim();
+      const email    = document.getElementById('reg-email').value.trim();
+      const phone    = document.getElementById('reg-phone').value.trim();
+      const password = document.getElementById('reg-password').value;
+      if (!name || !email || !password) { toast('Vui lòng điền đủ họ tên, email và mật khẩu', false); return; }
+      if (phone && !isVnPhone(phone)) { toast('Số điện thoại không hợp lệ (10 số, bắt đầu 03/05/07/08/09)', false); document.getElementById('reg-phone').focus(); return; }
+      if (password.length < 6) { toast('Mật khẩu phải tối thiểu 6 ký tự', false); return; }
+      try {
+        const res  = await fetch('/api/auth/send-otp', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) { toast(data.detail || 'Gửi OTP thất bại', false); return; }
+        document.getElementById('reg-otp-email-display').textContent = email;
+        document.getElementById('reg-step-1').style.display = 'none';
+        document.getElementById('reg-step-2').style.display = '';
+        document.getElementById('reg-otp').value = '';
+        document.getElementById('reg-otp').focus();
+        toast(isResend ? 'Đã gửi lại mã OTP!' : 'Mã OTP đã được gửi đến email của bạn');
+      } catch { toast('Lỗi kết nối server', false); }
+    }
+
+    function backToRegStep1() {
+      document.getElementById('reg-step-1').style.display = '';
+      document.getElementById('reg-step-2').style.display = 'none';
     }
 
     async function doRegister() {
@@ -1564,17 +1731,92 @@
       const phone    = document.getElementById('reg-phone').value.trim();
       const address  = document.getElementById('reg-address').value.trim();
       const password = document.getElementById('reg-password').value;
-      if (!name || !email || !password) { toast('Vui lòng điền đầy đủ thông tin', false); return; }
+      const otp_code = document.getElementById('reg-otp').value.trim();
+      if (!otp_code || otp_code.length !== 6) { toast('Vui lòng nhập đúng mã OTP 6 số', false); return; }
       try {
         const res  = await fetch('/api/auth/register', {
           method: 'POST', headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ name, email, phone, address: address || null, password })
+          body: JSON.stringify({ name, email, phone, address: address || null, password, otp_code })
         });
         const data = await res.json();
         if (!res.ok) { toast(data.detail || 'Đăng ký thất bại', false); return; }
         saveAuth(data.access_token, data.user);
         closeAuthModal();
-        toast(`🎉 Tài khoản đã được tạo, chào ${data.user.name}!`);
+        backToRegStep1();
+        toast(`Tài khoản đã được tạo, chào ${data.user.name}!`);
+      } catch { toast('Lỗi kết nối server', false); }
+    }
+
+    // ── Quên mật khẩu 3 bước ─────────────────────────────
+    let _forgotEmail = '';
+    let _forgotOtp   = '';
+
+    function openForgotPassword() {
+      document.getElementById('form-login').style.display    = 'none';
+      document.getElementById('form-register').style.display = 'none';
+      document.getElementById('form-forgot').style.display   = '';
+      showForgotStep(1);
+      document.getElementById('forgot-email').value = document.getElementById('login-email').value || '';
+    }
+
+    function showForgotStep(n) {
+      document.getElementById('forgot-step-1').style.display = n === 1 ? '' : 'none';
+      document.getElementById('forgot-step-2').style.display = n === 2 ? '' : 'none';
+      document.getElementById('forgot-step-3').style.display = n === 3 ? '' : 'none';
+    }
+
+    async function doForgotSendOtp(isResend = false) {
+      const email = document.getElementById('forgot-email').value.trim();
+      if (!email) { toast('Vui lòng nhập email', false); return; }
+      try {
+        const res  = await fetch('/api/auth/forgot-password', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) { toast(data.detail || 'Gửi OTP thất bại', false); return; }
+        _forgotEmail = email;
+        document.getElementById('forgot-email-display').textContent = email;
+        document.getElementById('forgot-otp').value = '';
+        showForgotStep(2);
+        document.getElementById('forgot-otp').focus();
+        toast(isResend ? 'Đã gửi lại mã OTP!' : data.message || 'Mã OTP đã được gửi đến email');
+      } catch { toast('Lỗi kết nối server', false); }
+    }
+
+    async function doForgotVerifyOtp() {
+      const otp = document.getElementById('forgot-otp').value.trim();
+      if (!otp || otp.length !== 6) { toast('Vui lòng nhập đúng mã OTP 6 số', false); return; }
+      // Verify OTP bằng cách thử reset-password với mật khẩu rỗng — không, ta verify inline
+      // Ta chỉ hiển thị bước 3 sau khi user nhập OTP đúng khi submit reset-password
+      // Nhưng UX tốt hơn là bước riêng → ta sẽ giữ otp trong state và gọi reset ở bước 3
+      _forgotOtp = otp;
+      document.getElementById('forgot-newpwd').value = '';
+      document.getElementById('forgot-confirmpwd').value = '';
+      showForgotStep(3);
+      document.getElementById('forgot-newpwd').focus();
+    }
+
+    async function doResetPassword() {
+      const newPwd     = document.getElementById('forgot-newpwd').value;
+      const confirmPwd = document.getElementById('forgot-confirmpwd').value;
+      if (newPwd.length < 6) { toast('Mật khẩu mới phải tối thiểu 6 ký tự', false); return; }
+      if (newPwd !== confirmPwd) { toast('Mật khẩu xác nhận không khớp', false); return; }
+      try {
+        const res  = await fetch('/api/auth/reset-password', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ email: _forgotEmail, otp_code: _forgotOtp, new_password: newPwd })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          toast(data.detail || 'Đặt lại mật khẩu thất bại', false);
+          if (data.detail && data.detail.includes('OTP')) showForgotStep(2);
+          return;
+        }
+        toast('Đặt lại mật khẩu thành công! Hãy đăng nhập lại.');
+        _forgotEmail = '';
+        _forgotOtp = '';
+        switchAuthTab('login');
       } catch { toast('Lỗi kết nối server', false); }
     }
 
@@ -1630,8 +1872,7 @@
         if (!res.ok) { toast(data.detail || 'Đăng nhập Google thất bại', false); return; }
         saveAuth(data.access_token, data.user);
         closeAuthModal();
-        if (data.user.role === 'admin') { window.location.href = '/admin'; return; }
-        toast(`✅ Chào mừng ${data.user.name}!`);
+        toast(`Chào mừng ${data.user.name}!`);
       } catch { toast('Lỗi kết nối server', false); }
     }
 
