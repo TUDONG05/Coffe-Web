@@ -3,12 +3,13 @@ Auth endpoints: POST /api/auth/register, POST /api/auth/login, GET /api/auth/me
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
+import re
 from highlands.database import get_db
 from highlands import models
 from highlands.auth_utils import hash_password, verify_password, create_access_token, require_login
 from highlands.config import GOOGLE_CLIENT_ID
-from highlands.services.email_service import create_otp, verify_otp, send_otp_email
+from highlands.services.email_service import create_otp, verify_otp, send_otp_email, send_reset_otp_email
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
@@ -20,6 +21,13 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 class SendOtpIn(BaseModel):
     email: EmailStr
 
+_VN_PHONE_RE = re.compile(r"^0[35789]\d{8}$")
+
+def _validate_vn_phone(v: str | None) -> str | None:
+    if v and not _VN_PHONE_RE.match(v):
+        raise ValueError("Số điện thoại không hợp lệ (phải là số Việt Nam 10 chữ số, bắt đầu bằng 03/05/07/08/09)")
+    return v
+
 class RegisterIn(BaseModel):
     name: str
     email: EmailStr
@@ -27,6 +35,12 @@ class RegisterIn(BaseModel):
     address: str | None = None
     password: str
     otp_code: str
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, v: str) -> str:
+        _validate_vn_phone(v)
+        return v
 
 class LoginIn(BaseModel):
     email: EmailStr
@@ -37,12 +51,22 @@ class ProfileUpdate(BaseModel):
     phone: str | None = None
     address: str | None = None
 
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, v: str | None) -> str | None:
+        return _validate_vn_phone(v)
+
 class ChangePasswordIn(BaseModel):
     old_password: str
     new_password: str
 
 class GoogleTokenIn(BaseModel):
     credential: str
+
+class ResetPasswordIn(BaseModel):
+    email: EmailStr
+    otp_code: str
+    new_password: str
 
 class UserOut(BaseModel):
     id: int
@@ -71,7 +95,7 @@ def send_otp(body: SendOtpIn, db: Session = Depends(get_db)):
     """Gửi mã OTP 6 số về email để xác thực trước khi đăng ký."""
     if db.query(models.User).filter(models.User.email == body.email).first():
         raise HTTPException(status_code=400, detail="Email đã được sử dụng")
-    otp = create_otp(body.email)
+    otp = create_otp(body.email, purpose="register")
     try:
         send_otp_email(body.email, otp)
     except Exception as e:
@@ -79,9 +103,40 @@ def send_otp(body: SendOtpIn, db: Session = Depends(get_db)):
     return {"message": "Mã OTP đã được gửi đến email của bạn"}
 
 
+@router.post("/forgot-password", status_code=200)
+def forgot_password(body: SendOtpIn, db: Session = Depends(get_db)):
+    """Gửi mã OTP để đặt lại mật khẩu (chỉ cho tài khoản đã tồn tại)."""
+    user = db.query(models.User).filter(models.User.email == body.email).first()
+    if not user:
+        return {"message": "Nếu email tồn tại, mã OTP đã được gửi"}
+    if user.google_id and not user.hashed_pwd:
+        raise HTTPException(status_code=400, detail="Tài khoản này đăng nhập bằng Google, không có mật khẩu để đặt lại")
+    otp = create_otp(body.email, purpose="reset")
+    try:
+        send_reset_otp_email(body.email, otp)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Không gửi được email: {e}")
+    return {"message": "Nếu email tồn tại, mã OTP đã được gửi"}
+
+
+@router.post("/reset-password", status_code=200)
+def reset_password(body: ResetPasswordIn, db: Session = Depends(get_db)):
+    """Xác thực OTP và đặt lại mật khẩu mới."""
+    if not verify_otp(body.email, body.otp_code, purpose="reset"):
+        raise HTTPException(status_code=400, detail="Mã OTP không hợp lệ hoặc đã hết hạn")
+    user = db.query(models.User).filter(models.User.email == body.email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Tài khoản không tồn tại")
+    if len(body.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Mật khẩu mới phải tối thiểu 6 ký tự")
+    user.hashed_pwd = hash_password(body.new_password)
+    db.commit()
+    return {"success": True, "message": "Đặt lại mật khẩu thành công"}
+
+
 @router.post("/register", status_code=201)
 def register(body: RegisterIn, db: Session = Depends(get_db)):
-    if not verify_otp(body.email, body.otp_code):
+    if not verify_otp(body.email, body.otp_code, purpose="register"):
         raise HTTPException(status_code=400, detail="Mã OTP không hợp lệ hoặc đã hết hạn")
     if db.query(models.User).filter(models.User.email == body.email).first():
         raise HTTPException(status_code=400, detail="Email đã được sử dụng")
