@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from highlands.database import get_db
 from highlands import models
-from highlands.auth_utils import get_current_user, require_admin
+from highlands.auth_utils import get_current_user, require_admin, require_login
 
 router = APIRouter(prefix="/api/orders", tags=["orders"])
 
@@ -61,7 +61,7 @@ class OrderOut(BaseModel):
 def create_order(
     body: OrderIn,
     db: Session = Depends(get_db),
-    current_user: Optional[models.User] = Depends(get_current_user),
+    current_user: models.User = Depends(require_login),
 ):
     pay_method = body.payment_method if body.payment_method in ("cash", "qr_transfer") else "cash"
 
@@ -81,19 +81,15 @@ def create_order(
             subtotal=subtotal,
         ))
 
-    # Generate cancel token for guest orders (logged-in users cancel via auth)
-    cancel_token = secrets.token_urlsafe(16) if not current_user else None
-
     order = models.Order(
-        user_id=current_user.id if current_user else None,
+        user_id=current_user.id,
         customer_name=body.customer_name,
         phone=body.phone,
         address=body.address,
         total=total,
         note=body.note,
         payment_method=pay_method,
-        payment_status="unpaid",  # always unpaid on creation; admin confirms payment
-        cancel_token=cancel_token,
+        payment_status="unpaid",
     )
     db.add(order)
     db.flush()  # get order.id before committing
@@ -102,17 +98,15 @@ def create_order(
         row.order_id = order.id
         db.add(row)
 
-    # Cộng điểm cho user đăng nhập: 10.000đ = 1 điểm
-    earned_points = 0
-    if current_user:
-        earned_points = total // 10000
-        if earned_points > 0:
-            current_user.points = (current_user.points or 0) + earned_points
+    # Cộng điểm: 10.000đ = 1 điểm
+    earned_points = total // 10000
+    if earned_points > 0:
+        current_user.points = (current_user.points or 0) + earned_points
 
     db.commit()
     db.refresh(order)
 
-    response = {
+    return {
         "message": "Đặt hàng thành công!",
         "earned_points": earned_points,
         "order": {
@@ -125,11 +119,6 @@ def create_order(
             "items": [{"name": r.name, "price": r.price, "quantity": r.quantity, "subtotal": r.subtotal} for r in order.items],
         }
     }
-    # Return cancel_token only for guest orders so they can cancel later
-    if cancel_token:
-        response["cancel_token"] = cancel_token
-
-    return response
 
 
 @router.get("/mine")
