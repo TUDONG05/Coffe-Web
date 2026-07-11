@@ -8,17 +8,16 @@
 
 ### Giao diện khách hàng (`/`)
 
-[![Xem video](https://img.youtube.com/vi/Iw8Dd8FMvbE/0.jpg)](https://youtu.be/Iw8Dd8FMvbE)
-
 **Tài khoản & Xác thực**
-- Đăng ký tài khoản (mặc định role `user`, tặng 50 điểm Rewards)
-- Đăng nhập / đăng xuất bằng JWT
-- Xem & cập nhật hồ sơ cá nhân (tên, số điện thoại, địa chỉ)
+- Đăng ký tài khoản với xác thực **OTP qua email** (Gmail SMTP), tặng 50 điểm Rewards
+- Đăng nhập bằng **email/mật khẩu** hoặc **Google OAuth** (Sign in with Google)
+- Đăng xuất, xem & cập nhật hồ sơ cá nhân (tên, số điện thoại, địa chỉ)
 - Đổi mật khẩu
 
 **Menu & Tìm kiếm**
 - Duyệt 30+ sản phẩm, lọc theo danh mục (Cà phê, Trà, Freeze, Thức ăn, Combo)
-- Tìm kiếm sản phẩm theo tên hoặc danh mục (thanh tìm kiếm menu & nút 🔍 navbar)
+- Tìm kiếm sản phẩm theo tên hoặc danh mục (thanh tìm kiếm menu & nút tìm kiếm navbar)
+- Xem ảnh sản phẩm thực tế
 
 **Giỏ hàng & Đặt hàng**
 - Thêm sản phẩm vào giỏ hàng, điều chỉnh số lượng
@@ -29,15 +28,20 @@
 - Xem lịch sử đơn hàng (trạng thái, phương thức thanh toán, chi tiết items)
 - Huỷ đơn hàng đang chờ xử lý
 
+**Đánh giá sản phẩm**
+- Gửi đánh giá (1–5 sao + bình luận) cho sản phẩm đã mua
+- Chỉ tài khoản có đơn hàng `done` / `confirmed` chứa sản phẩm mới được đánh giá
+- Xem danh sách đánh giá và điểm trung bình của từng sản phẩm
+
 **Tu's Coffee Rewards**
 - Trang Rewards riêng biệt với 3 tầng: Bronze / Silver / Gold
 - Tích điểm khi đặt hàng: 10.000đ = 1 điểm
 - Hiển thị điểm hiện tại, toast thông báo điểm tích sau mỗi đơn
 - Catalog đổi thưởng (đồ uống miễn phí, voucher, quà tặng)
 
-**Nội dung**
-- Xem khuyến mãi đang áp dụng
-- Đọc tin tức & bài viết mới nhất
+**Nội dung**   
+- Xem khuyến mãi đang áp dụng (kèm ảnh minh hoạ)
+- Đọc tin tức & bài viết mới nhất (kèm ảnh bìa)
 - Tìm kiếm cửa hàng theo thành phố, lọc theo từ khóa
 - Trang Giới thiệu (About) — ban lãnh đạo, câu chuyện thương hiệu
 
@@ -45,17 +49,15 @@
 
 ### Giao diện quản trị (`/admin`)
 
-[![Xem video](https://img.youtube.com/vi/H9Vw_seuFYQ/0.jpg)](https://youtu.be/H9Vw_seuFYQ)
-
 **Dashboard**
 - Thống kê tổng quan: tổng sản phẩm, đơn hàng, tài khoản, doanh thu
 - Bảng đơn hàng gần đây
 
 **Quản lý nội dung (CRUD đầy đủ)**
-- **Sản phẩm** — tìm kiếm, lọc theo danh mục/giá, phân trang, toggle kích hoạt
+- **Sản phẩm** — tìm kiếm, lọc theo danh mục/giá, phân trang, toggle kích hoạt, **upload ảnh sản phẩm** (JPEG/PNG/WebP, tối đa 5MB)
 - **Đơn hàng** — cập nhật trạng thái, xem chi tiết items, cột Thanh Toán (paid/unpaid + phương thức)
 - **Tài khoản** — hiển thị role, điểm Rewards; lọc theo role (`admin` / `user`) và trạng thái
-- **Tin tức** — tìm kiếm, lọc theo thẻ
+- **Tin tức** — tìm kiếm, lọc theo thẻ, **upload ảnh bìa bài viết**
 - **Cửa hàng** — quản lý địa điểm toàn hệ thống
 - **Danh mục** — quản lý danh mục sản phẩm
 - **Tài khoản Admin** — tạo, phân quyền, khóa/mở tài khoản nội bộ
@@ -91,10 +93,14 @@
 | DB driver | PyMySQL | 1.1.0 |
 | Validation | Pydantic | v2.5.0 |
 | Xác thực | JWT (HS256) + Bcrypt | python-jose 3.3.0 / bcrypt 4.1.1 |
+| Google OAuth | google-auth | 2.29.0 |
+| Email OTP | Gmail SMTP (smtplib) | — |
+| File upload | python-multipart | ≥0.0.9 |
 | Config | python-dotenv | 1.0.0 |
 | File tĩnh | aiofiles | ≥23.0.0 |
 | AI / Chatbot | scikit-learn | ≥1.3.0 |
 | HTTP client | httpx | ≥0.27.0 |
+| Export | openpyxl | ≥3.1.0 |
 | Frontend | HTML5, CSS3, Vanilla JavaScript (SPA) | — |
 | Thanh toán QR | VietQR free API | — |
 | Runtime | Python | 3.10+ |
@@ -104,7 +110,7 @@
 ## Cấu trúc source code
 
 ```
-web-prj/
+Coffe-Web/
 │
 ├── highlands_app.py          # Entry point — khởi tạo FastAPI, mount routers, serve HTML
 ├── requirements.txt          # Danh sách thư viện Python
@@ -116,36 +122,38 @@ web-prj/
 ├── .env.example              # File mẫu .env
 │
 ├── highlands/                # Package backend chính
-│   ├── config.py             # Cấu hình: DATABASE_URL, SECRET_KEY, JWT expiry
+│   ├── config.py             # Cấu hình: DATABASE_URL, SECRET_KEY, JWT expiry, Google/Gmail keys
 │   ├── database.py           # SQLAlchemy engine + SessionLocal + get_db()
 │   ├── models.py             # ORM models: User, Category, Product, Order, OrderItem,
-│   │                         #             Store, News, Promotion
+│   │                         #             ProductReview, Store, News, Promotion
 │   ├── auth_utils.py         # Hash mật khẩu, tạo/xác minh JWT, require_admin
 │   ├── seed_db.py            # Seed dữ liệu mẫu
 │   │
 │   ├── routers/
 │   │   │
 │   │   ├── ── Public API (không cần xác thực) ──
-│   │   ├── auth_router.py          # /api/auth — đăng ký, đăng nhập, hồ sơ
+│   │   ├── auth_router.py          # /api/auth — OTP, đăng ký, đăng nhập, Google OAuth, hồ sơ
 │   │   ├── products_router.py      # /api/products — danh sách, tìm kiếm
 │   │   ├── orders_router.py        # /api/orders — tạo đơn, lịch sử, huỷ
+│   │   ├── reviews_router.py       # /api/reviews — đánh giá sản phẩm
 │   │   ├── stores_router.py        # /api/stores
 │   │   ├── news_router.py          # /api/news
 │   │   ├── promotions_router.py    # /api/promotions
-│   │   ├── chatbot_router.py       # /api/chatbot — AI tư vấn menu
+│   │   ├── chatbot_router.py       # /api/chat — AI tư vấn + đặt hàng qua chat
 │   │   │
 │   │   └── ── Admin API (yêu cầu JWT role=admin) ──
 │   │       ├── admin_dashboard_router.py   # /api/admin/dashboard
-│   │       ├── admin_products_router.py    # /api/admin/products
+│   │       ├── admin_products_router.py    # /api/admin/products (+ image upload)
 │   │       ├── admin_orders_router.py      # /api/admin/orders
 │   │       ├── admin_customers_router.py   # /api/admin/customers
-│   │       ├── admin_news_router.py        # /api/admin/news
+│   │       ├── admin_news_router.py        # /api/admin/news (+ image upload)
 │   │       ├── admin_stores_router.py      # /api/admin/stores
 │   │       ├── admin_categories_router.py  # /api/admin/categories
 │   │       └── admin_users_router.py       # /api/admin/users
 │   │
 │   └── services/
-│       └── menu_rag_service.py     # RAG service cho chatbot gợi ý menu
+│       ├── email_service.py        # Gmail SMTP: tạo/gửi/xác thực OTP (TTL 10 phút)
+│       └── menu_rag_service.py     # RAG service cho chatbot gợi ý menu (TF-IDF)
 │
 ├── templates/
 │   ├── highlands-coffee.html # Trang khách hàng (SPA)
@@ -153,10 +161,14 @@ web-prj/
 │   └── about.html            # Trang giới thiệu
 │
 └── static/
-    └── css/
-        ├── main.css          # Style trang khách hàng (responsive)
-        ├── admin.css         # Style trang quản trị
-        └── about.css         # Style trang giới thiệu (responsive)
+    ├── css/
+    │   ├── main.css          # Style trang khách hàng (responsive)
+    │   ├── admin.css         # Style trang quản trị
+    │   └── about.css         # Style trang giới thiệu (responsive)
+    └── images/
+        ├── logo/             # Logo thương hiệu
+        ├── products/         # Ảnh sản phẩm (upload qua admin)
+        └── news/             # Ảnh bài viết (upload qua admin)
 ```
 
 ---
@@ -167,14 +179,15 @@ web-prj/
 
 | Bảng | Mô tả |
 |------|-------|
-| `users` | Tài khoản người dùng (role: admin / user) |
+| `users` | Tài khoản người dùng (role: admin / user, hỗ trợ Google OAuth) |
 | `categories` | Danh mục sản phẩm |
-| `products` | Sản phẩm (tên, danh mục, giá, mô tả, emoji) |
+| `products` | Sản phẩm (tên, danh mục, giá, mô tả, emoji, ảnh) |
+| `product_reviews` | Đánh giá sản phẩm (sao + bình luận, chỉ khách đã mua) |
 | `orders` | Đơn hàng (tên khách, SĐT, địa chỉ, tổng tiền, trạng thái, thanh toán) |
 | `order_items` | Chi tiết từng sản phẩm trong đơn hàng |
 | `stores` | Cửa hàng (địa chỉ, quận, thành phố, giờ mở cửa) |
-| `news` | Tin tức & bài viết |
-| `promotions` | Khuyến mãi đang áp dụng |
+| `news` | Tin tức & bài viết (kèm ảnh bìa) |
+| `promotions` | Khuyến mãi đang áp dụng (kèm ảnh minh hoạ) |
 
 ### Chi tiết các model
 
@@ -185,6 +198,7 @@ name          VARCHAR(100) NOT NULL
 email         VARCHAR(150) UNIQUE, NOT NULL
 phone         VARCHAR(20)
 hashed_pwd    VARCHAR(255) NOT NULL
+google_id     VARCHAR(255) UNIQUE (NULL nếu đăng nhập thường)
 role          VARCHAR(20)  DEFAULT 'user'   -- admin | user
 address       VARCHAR(300)
 points        INT          DEFAULT 0        -- điểm Rewards
@@ -208,7 +222,18 @@ category    VARCHAR(50)  NOT NULL
 price       INT          NOT NULL   -- VND
 description TEXT
 emoji       VARCHAR(10)  DEFAULT '☕'
+image_url   VARCHAR(300)            -- đường dẫn ảnh upload
 is_active   INT          DEFAULT 1
+```
+
+**`product_reviews`**
+```
+id          INT          PK
+product_id  INT          FK → products.id
+user_id     INT          FK → users.id
+stars       INT          NOT NULL   -- 1-5
+comment     TEXT
+created_at  DATETIME     DEFAULT now()
 ```
 
 **`orders`**
@@ -261,6 +286,7 @@ excerpt      TEXT
 content      TEXT
 tag          VARCHAR(50)   -- 'Tin Tức' | 'Sự Kiện' | 'Khuyến Mãi'
 emoji        VARCHAR(10)  DEFAULT '📰'
+image_url    VARCHAR(300)            -- ảnh bìa bài viết
 published_at VARCHAR(50)
 is_active    INT          DEFAULT 1
 ```
@@ -272,6 +298,7 @@ title       VARCHAR(200) NOT NULL
 description TEXT
 discount    VARCHAR(50)  -- '20%', 'Mua 1 tặng 1'
 emoji       VARCHAR(10)  DEFAULT '🎁'
+image_url   VARCHAR(300)            -- ảnh minh hoạ
 tag         VARCHAR(50)  -- 'HOT' | 'NEW' | 'SALE'
 valid_until VARCHAR(50)
 is_active   INT          DEFAULT 1
@@ -280,9 +307,11 @@ is_active   INT          DEFAULT 1
 ### Quan hệ
 
 ```
-users ──────────────────── orders          (1 : nhiều)
-orders ─────────────────── order_items     (1 : nhiều)
-order_items ────────────── products        (nhiều : 1)
+users ──────────────────── orders            (1 : nhiều)
+users ──────────────────── product_reviews   (1 : nhiều)
+orders ─────────────────── order_items       (1 : nhiều)
+order_items ────────────── products          (nhiều : 1)
+product_reviews ─────────── products         (nhiều : 1)
 ```
 
 > Soft delete qua cờ `is_active` — không xoá vật lý dữ liệu.
@@ -338,12 +367,26 @@ copy .env.example .env
 Chỉnh sửa `.env`:
 
 ```env
+# Database
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
 MYSQL_USER=root
 MYSQL_PASSWORD=your_password
 MYSQL_DB=highlands_coffee
+
+# JWT
 SECRET_KEY=your-random-secret-key-min-32-chars
+
+# Google OAuth (tuỳ chọn — bỏ trống nếu không dùng)
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+
+# Gmail SMTP — xác thực OTP khi đăng ký (tuỳ chọn)
+GMAIL_USER=your-gmail@gmail.com
+GMAIL_APP_PASSWORD=your-16-char-app-password
+
+# Chatbot (tuỳ chọn — bỏ trống nếu không dùng Ollama)
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=qwen2.5:3b
 ```
 
 > Bắt buộc đổi `SECRET_KEY` thành chuỗi ngẫu nhiên trước khi deploy production.
@@ -417,31 +460,23 @@ uvicorn highlands_app:app --host 0.0.0.0 --port 8000 --workers 4
 
 ## Dừng ứng dụng
 
-### Nếu chạy foreground (Ctrl+C)
-
 ```bash
-# Nhấn Ctrl+C trong terminal đang chạy uvicorn
-```
+# Nhấn Ctrl+C nếu chạy foreground
 
-### Nếu chạy background
-
-```bash
-# Windows — dừng toàn bộ process Python
+# Windows
 taskkill /F /IM python.exe
 
-# Linux/macOS — tìm và kill process uvicorn
+# Linux/macOS
 pkill -f "uvicorn highlands_app"
-
-# Hoặc tìm PID rồi kill
-lsof -i :8000
-kill -9 <PID>
+# hoặc
+lsof -i :8000 && kill -9 <PID>
 ```
 
 ---
 
 ## AI Chatbot
 
-Tu's Coffee tích hợp chatbot AI tư vấn thực đơn trực tiếp trên giao diện khách hàng.
+Tu's Coffee tích hợp chatbot AI tư vấn thực đơn và hỗ trợ đặt hàng trực tiếp trên giao diện khách hàng.
 
 ### Kiến trúc
 
@@ -453,8 +488,9 @@ Frontend (SSE stream)
    │  POST /api/chat/stream
    ▼
 ChatbotRouter
-   │  1. Tìm món liên quan (RAG)
-   │  2. Build system prompt với context
+   │  1. Phát hiện intent đặt hàng (từ khoá: "đặt", "mua", "gọi món", …)
+   │  2. Tìm món liên quan (RAG)
+   │  3. Build system prompt với context
    ▼
 MenuRAGService (TF-IDF)          ←── DB sản phẩm
    │  trả top-4 món phù hợp
@@ -463,36 +499,29 @@ Ollama (local LLM)               ←── model qwen2.5:3b
    │  stream token
    ▼
 Frontend render từng token (streaming)
+   │
+   └── Nếu có intent đặt hàng: phát SSE event `order_form`
+       → Frontend hiển thị form đặt hàng ngay trong khung chat
 ```
 
 ### Cách hoạt động
 
-1. **RAG (Retrieval-Augmented Generation)**: Mỗi câu hỏi được vector hoá bằng **TF-IDF** (char n-gram 2–4, tốt với tiếng Việt), tìm top-4 sản phẩm liên quan nhất qua cosine similarity
-2. **System prompt**: Inject context sản phẩm vào prompt → LLM chỉ tư vấn đúng menu thực tế
+1. **RAG**: Câu hỏi được vector hoá bằng **TF-IDF** (char n-gram 2–4, tốt với tiếng Việt), tìm top-4 sản phẩm liên quan nhất qua cosine similarity
+2. **Intent đặt hàng**: Nếu phát hiện từ khoá đặt hàng, chatbot song song trích xuất tên món → inject SSE event `order_form` kèm danh sách items vào stream
 3. **Streaming**: Dùng **SSE (Server-Sent Events)** — response hiển thị từng token ngay khi Ollama trả về
 4. **History**: Giữ 6 lượt hội thoại gần nhất để chatbot nhớ ngữ cảnh
 
 ### Yêu cầu để chạy chatbot
 
-Cần cài **Ollama** và pull model:
-
 ```bash
 # Cài Ollama (ollama.com)
-# Sau đó pull model
 ollama pull qwen2.5:3b
-
-# Chạy Ollama
 ollama serve
 ```
 
-Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override qua `.env`:
+Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override qua `.env` với `OLLAMA_BASE_URL` và `OLLAMA_MODEL`.
 
-```env
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=qwen2.5:3b
-```
-
-> Nếu không cài Ollama, các tính năng khác vẫn hoạt động bình thường. Chatbot sẽ hiển thị lỗi "Không kết nối được Ollama".
+> Nếu không cài Ollama, các tính năng khác vẫn hoạt động bình thường.
 
 ### API chatbot
 
@@ -512,8 +541,10 @@ OLLAMA_MODEL=qwen2.5:3b
 
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| POST | `/api/auth/register` | Đăng ký — tặng 50 điểm Rewards, role mặc định `user` |
-| POST | `/api/auth/login` | Đăng nhập, trả JWT |
+| POST | `/api/auth/send-otp` | Gửi mã OTP 6 số về email (TTL 10 phút) |
+| POST | `/api/auth/register` | Đăng ký — cần xác thực OTP, tặng 50 điểm Rewards |
+| POST | `/api/auth/login` | Đăng nhập email/mật khẩu, trả JWT |
+| POST | `/api/auth/google/verify` | Đăng nhập / đăng ký qua Google OAuth |
 | GET | `/api/auth/me` | Thông tin tài khoản hiện tại |
 | PUT | `/api/auth/profile` | Cập nhật hồ sơ |
 | PUT | `/api/auth/change-password` | Đổi mật khẩu |
@@ -529,9 +560,17 @@ OLLAMA_MODEL=qwen2.5:3b
 
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
-| POST | `/api/orders` | Tạo đơn — hỗ trợ `payment_method: cash | qr_transfer` |
+| POST | `/api/orders` | Tạo đơn — hỗ trợ `payment_method: cash \| qr_transfer` |
 | GET | `/api/orders/mine` | Lịch sử đơn (cần đăng nhập) |
 | PATCH | `/api/orders/{id}/cancel` | Huỷ đơn `pending` |
+
+#### Đánh giá (`/api/reviews`)
+
+| Method | Endpoint | Mô tả |
+|--------|----------|-------|
+| GET | `/api/reviews/product/{id}` | Lấy danh sách đánh giá + điểm trung bình sản phẩm |
+| GET | `/api/reviews/can-review/{id}` | Kiểm tra user có được phép đánh giá không |
+| POST | `/api/reviews` | Gửi đánh giá (cần đăng nhập, phải có đơn `done`/`confirmed`) |
 
 #### Nội dung
 
@@ -552,9 +591,11 @@ OLLAMA_MODEL=qwen2.5:3b
 |----------|-----------|---------|
 | Dashboard | `/api/admin/dashboard` | GET |
 | Sản phẩm | `/api/admin/products` | GET (filter: category, search, price), POST, PUT, PATCH, DELETE |
-| Đơn hàng | `/api/admin/orders` | GET (filter: status, date, price), POST, GET/{id}, PATCH, DELETE |
+| Ảnh sản phẩm | `/api/admin/products/{id}/image` | POST (multipart/form-data) |
+| Đơn hàng | `/api/admin/orders` | GET (filter: status, date, price), GET/{id}, PATCH, DELETE |
 | Tài khoản | `/api/admin/customers` | GET (filter: `role`, `status`, `search`), POST, PUT, PATCH, DELETE |
 | Tin tức | `/api/admin/news` | GET (filter: tag), POST, PUT, PATCH, DELETE |
+| Ảnh tin tức | `/api/admin/news/{id}/image` | POST (multipart/form-data) |
 | Cửa hàng | `/api/admin/stores` | GET, POST, PUT, DELETE |
 | Danh mục | `/api/admin/categories` | GET, POST, PUT, DELETE |
 | Admin users | `/api/admin/users` | GET, POST, PUT, PATCH, DELETE |
@@ -567,9 +608,12 @@ OLLAMA_MODEL=qwen2.5:3b
 - Bcrypt hashing cho mật khẩu
 - JWT HS256 với thời hạn 24 giờ
 - Phân quyền theo role: `admin` / `user`
+- OTP 6 số qua Gmail SMTP — TTL 10 phút, xác thực khi đăng ký
+- Google OAuth — xác thực token phía server qua `google-auth`
 - Soft delete — không xoá dữ liệu vật lý
 - Kiểm tra email duy nhất khi đăng ký
 - Mật khẩu tối thiểu 6 ký tự
+- Giới hạn loại file upload (JPEG/PNG/WebP) và kích thước (5MB)
 
 **Cần cấu hình trước khi deploy production:**
 
@@ -578,6 +622,7 @@ OLLAMA_MODEL=qwen2.5:3b
 - [ ] Giới hạn `allow_origins` trong CORS (thay `"*"` bằng domain thực)
 - [ ] Bật HTTPS (Nginx + Let's Encrypt hoặc Cloudflare)
 - [ ] Đổi mật khẩu tài khoản admin mặc định
+- [ ] Cấu hình `GMAIL_APP_PASSWORD` bằng Google App Password (không dùng mật khẩu Gmail thường)
 - [ ] Sao lưu database định kỳ
 
 ---

@@ -1,4 +1,4 @@
-# Hướng Dẫn Triển Khai — Highlands Coffee FastAPI trên CentOS 7
+# Hướng Dẫn Triển Khai — Tu's Coffee FastAPI trên CentOS 7
 
 ## Yêu Cầu Hệ Thống
 
@@ -83,19 +83,19 @@ sudo passwd highlands
 
 ```bash
 sudo su - highlands
-git clone <your-repo-url> /home/highlands/app
-cd /home/highlands/app/web-prj
+git clone https://github.com/TUDONG05/Coffe-Web.git /home/highlands/app
+cd /home/highlands/app
 ```
 
 > Hoặc upload thủ công qua SCP:
 > ```bash
-> scp -r ./web-prj highlands@<server-ip>:/home/highlands/app/
+> scp -r ./ highlands@<server-ip>:/home/highlands/app/
 > ```
 
 ### 2.3 Tạo virtual environment và cài dependencies
 
 ```bash
-cd /home/highlands/app/web-prj
+cd /home/highlands/app
 python3.9 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
@@ -113,18 +113,32 @@ vim .env
 Nội dung `.env` trên production:
 
 ```env
+# Database
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
 MYSQL_USER=highlands_user
 MYSQL_PASSWORD=StrongPass@2026!
 MYSQL_DB=highlands_coffee
-SECRET_KEY=<random-64-char-string>   # openssl rand -hex 32
+
+# JWT — bắt buộc, app sẽ crash nếu thiếu
+SECRET_KEY=<random-64-char-string>
+
+# Google OAuth (Sign in with Google)
+GOOGLE_CLIENT_ID=<your-client-id>.apps.googleusercontent.com
+
+# Gmail SMTP — gửi OTP xác thực tài khoản
+GMAIL_USER=your_gmail@gmail.com
+GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx   # Google App Password (không phải mật khẩu Gmail)
 ```
 
 > Tạo SECRET_KEY mạnh:
 > ```bash
+> python3 -c "import secrets; print(secrets.token_hex(32))"
+> # hoặc
 > openssl rand -hex 32
 > ```
+
+> Tạo Gmail App Password: Google Account → Security → 2-Step Verification → App passwords
 
 ### 2.5 Khởi tạo database
 
@@ -146,16 +160,16 @@ sudo vim /etc/systemd/system/highlands.service
 
 ```ini
 [Unit]
-Description=Highlands Coffee FastAPI App
+Description=Tu's Coffee FastAPI App
 After=network.target mysqld.service
 
 [Service]
 Type=exec
 User=highlands
 Group=highlands
-WorkingDirectory=/home/highlands/app/web-prj
-EnvironmentFile=/home/highlands/app/web-prj/.env
-ExecStart=/home/highlands/app/web-prj/venv/bin/gunicorn \
+WorkingDirectory=/home/highlands/app
+EnvironmentFile=/home/highlands/app/.env
+ExecStart=/home/highlands/app/venv/bin/gunicorn \
     -w 4 \
     -k uvicorn.workers.UvicornWorker \
     --bind 127.0.0.1:8000 \
@@ -245,7 +259,7 @@ server {
 
     # Static files phục vụ trực tiếp qua Nginx (nhanh hơn FastAPI)
     location /static/ {
-        alias /home/highlands/app/web-prj/static/;
+        alias /home/highlands/app/static/;
         expires 30d;
         add_header Cache-Control "public, immutable";
     }
@@ -373,7 +387,7 @@ sudo tail -f /var/log/nginx/highlands_error.log
 
 ```bash
 sudo su - highlands
-cd /home/highlands/app/web-prj
+cd /home/highlands/app
 
 # Pull code mới
 git pull origin main
@@ -406,7 +420,7 @@ sestatus
 sudo setsebool -P httpd_can_network_connect 1
 
 # Nếu gặp lỗi permission với static files
-sudo chcon -Rt httpd_sys_content_t /home/highlands/app/web-prj/static/
+sudo chcon -Rt httpd_sys_content_t /home/highlands/app/static/
 ```
 
 ---
@@ -433,14 +447,16 @@ mkdir -p /home/highlands/backups
 
 ```
 /home/highlands/
-├── app/
-│   └── web-prj/
-│       ├── .env                  # biến môi trường (không commit git)
-│       ├── highlands_app.py
-│       ├── requirements.txt
-│       ├── venv/
-│       ├── static/
-│       └── templates/
+├── app/                          # repo root
+│   ├── .env                      # biến môi trường (không commit git)
+│   ├── highlands_app.py          # entry point: highlands_app:app
+│   ├── highlands/                # package chính (routers, models, services)
+│   ├── migrate_db.py
+│   ├── create_admin.py
+│   ├── requirements.txt
+│   ├── venv/
+│   ├── static/
+│   └── templates/
 ├── backups/                      # backup database
 └── ...
 
@@ -458,8 +474,11 @@ mkdir -p /home/highlands/backups
 | Vấn đề | Kiểm tra |
 |---|---|
 | App không khởi động | `journalctl -u highlands -n 50` |
+| `SECRET_KEY` chưa set | App crash ngay khi start — kiểm tra `.env` |
 | Nginx lỗi 502 Bad Gateway | App chưa chạy: `systemctl status highlands` |
 | SSL không hoạt động | `certbot certificates` — kiểm tra cert còn hạn |
 | Database connection refused | `systemctl status mysqld`, kiểm tra `.env` |
+| OTP email không gửi được | Kiểm tra `GMAIL_USER` / `GMAIL_APP_PASSWORD` trong `.env` |
+| Google OAuth lỗi | Kiểm tra `GOOGLE_CLIENT_ID`, thêm domain vào Google Console |
 | SELinux block | `audit2why < /var/log/audit/audit.log` |
 | Static files 404 | Kiểm tra `alias` trong nginx config và quyền thư mục |
