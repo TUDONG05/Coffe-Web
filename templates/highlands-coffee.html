@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/css/main.css" />
+  <link rel="stylesheet" href="/static/css/about.css" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -24,7 +25,7 @@
         <a href="#" class="nav-link"        onclick="navigateTo('stores',this)">Cửa Hàng</a>
         <a href="#" class="nav-link" onclick="navigateTo('rewards',this)">Tu's Coffee Rewards</a>
         <a href="#" class="nav-link"        onclick="navigateTo('news',this)">Tin Tức</a>
-        <a href="/about" class="nav-link">Về Chúng Tôi</a>
+        <a href="#" class="nav-link" onclick="navigateTo('about',this)">Về Chúng Tôi</a>
       </div>
       <button class="hamburger-btn" id="hamburger-btn" aria-label="Mở menu" aria-expanded="false">
         <span></span><span></span><span></span>
@@ -38,8 +39,8 @@
               onkeydown="if(event.key==='Escape')closeNavSearch()"
               autocomplete="off">
             <button onclick="closeNavSearch()" title="Đóng">✕</button>
-            <div class="nav-search-dropdown" id="nav-search-dropdown"></div>
           </div>
+          <div class="nav-search-dropdown" id="nav-search-dropdown"></div>
         </div>
         <button class="icon-btn" id="cart-btn" title="Giỏ hàng">🛒<span class="cart-badge" id="cart-count" style="display:none">0</span></button>
         <button class="icon-btn" id="orders-btn" title="Đơn hàng" style="display:none">📋</button>
@@ -407,6 +408,118 @@
     </div>
   </div><!-- /page-rewards -->
 
+  <!-- ── ABOUT PAGE ───────────────────────────────────── -->
+  <div id="page-about" style="display:none;">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-badge">☕ Đậm Chất Cà Phê Việt</div>
+        <h1>Hành Trình <em>20 Năm</em><br/>Cùng Cà Phê Việt</h1>
+        <p>Từ một cửa hàng nhỏ tại Hà Nội năm 2002, Tu's Coffee đã trở thành chuỗi cà phê hàng đầu Việt Nam — nơi mỗi ly cà phê là một câu chuyện về đất, người và văn hóa Việt.</p>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat"><div class="stat-num">600+</div><div class="stat-label">Cửa Hàng</div></div>
+      <div class="stat"><div class="stat-num">30+</div><div class="stat-label">Tỉnh Thành</div></div>
+      <div class="stat"><div class="stat-num">20+</div><div class="stat-label">Năm Thành Lập</div></div>
+      <div class="stat"><div class="stat-num">1M+</div><div class="stat-label">Khách Hàng Trung Thành</div></div>
+    </div>
+
+    <!-- STORY -->
+    <section class="section" style="background: var(--white);">
+      <div class="section-inner">
+        <div class="story-grid">
+          <div>
+            <div class="eyebrow">Câu Chuyện Của Chúng Tôi</div>
+            <h2 class="section-title">Sinh Ra Từ<br/><em>Tình Yêu Cà Phê Việt</em></h2>
+            <p class="section-desc" style="margin-bottom:20px;">Tu's Coffee được thành lập bởi Đồng Văn Tú — người mang trong mình khát vọng giữ gìn và tôn vinh văn hóa cà phê Việt Nam, xây dựng thương hiệu cà phê Việt chất lượng cao từ chính những hạt cà phê quê hương.</p>
+            <p class="section-desc" style="margin-bottom:20px;">Xuất phát từ niềm tin rằng Việt Nam sở hữu những hạt cà phê tuyệt vời nhất thế giới, chúng tôi đã dày công tìm kiếm, tuyển chọn và chế biến từng mẻ cà phê từ vùng cao nguyên Tây Nguyên — vùng đất đỏ bazan màu mỡ, nơi cây cà phê sinh trưởng tốt nhất.</p>
+            <p class="section-desc">Hơn 20 năm qua, Tu's Coffee không chỉ là nơi thưởng thức cà phê — mà còn là không gian để người Việt gặp gỡ, trò chuyện và cảm nhận bản sắc văn hóa dân tộc qua từng ngụm cà phê đậm đà.</p>
+          </div>
+          <div class="story-visual">
+            <div class="big-emoji">☕</div>
+            <p>Từ Tây Nguyên đến ly cà phê của bạn</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MISSION -->
+    <section class="section">
+      <div class="section-inner">
+        <div style="text-align:center; margin-bottom: 8px;">
+          <div class="eyebrow">Tầm Nhìn & Sứ Mệnh</div>
+          <h2 class="section-title">Chúng Tôi Hướng Tới <em>Điều Gì</em></h2>
+        </div>
+        <div class="mission-grid">
+          <div class="mission-card"><div class="mission-icon">🎯</div><h3>Sứ Mệnh</h3><p>Mang đến những ly cà phê chất lượng cao nhất từ nguồn nguyên liệu Việt Nam thuần túy, phục vụ triệu triệu người Việt và du khách quốc tế trong không gian hiện đại, ấm cúng.</p></div>
+          <div class="mission-card"><div class="mission-icon">🔭</div><h3>Tầm Nhìn</h3><p>Trở thành thương hiệu cà phê Việt Nam được nhận biết toàn cầu, là đại sứ văn hóa cà phê Việt trên bản đồ ẩm thực thế giới vào năm 2030.</p></div>
+          <div class="mission-card"><div class="mission-icon">💚</div><h3>Cam Kết Bền Vững</h3><p>Giảm 50% rác thải nhựa năm 2026, hỗ trợ nông dân trồng cà phê bền vững, và triển khai chương trình cốc tái sử dụng trên toàn hệ thống chuỗi.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TIMELINE -->
+    <section class="section" style="background: var(--white);">
+      <div class="section-inner">
+        <div class="timeline-grid">
+          <div>
+            <div class="eyebrow">Lịch Sử Phát Triển</div>
+            <h2 class="section-title">Những <em>Cột Mốc</em><br/>Đáng Nhớ</h2>
+            <p class="section-desc">Hành trình hơn hai thập kỷ xây dựng thương hiệu cà phê Việt Nam số một.</p>
+          </div>
+          <div class="timeline">
+            <div class="tl-item"><div class="tl-dot"></div><div class="tl-year">2002</div><div class="tl-title">Cửa hàng đầu tiên tại Hà Nội</div><div class="tl-desc">Tu's Coffee khai trương cửa hàng đầu tiên tại trung tâm Hà Nội, mở đầu cho hành trình cà phê Việt hiện đại.</div></div>
+            <div class="tl-item"><div class="tl-dot"></div><div class="tl-year">2008</div><div class="tl-title">Mở rộng vào TP. Hồ Chí Minh</div><div class="tl-desc">Bước chân vào thị trường phía Nam, mang văn hóa cà phê Hà Nội hòa quyện với nét năng động của Sài Gòn.</div></div>
+            <div class="tl-item"><div class="tl-dot"></div><div class="tl-year">2012</div><div class="tl-title">100 cửa hàng trên toàn quốc</div><div class="tl-desc">Cột mốc 100 cửa hàng, hiện diện tại 15 tỉnh thành, khẳng định vị thế chuỗi cà phê hàng đầu Việt Nam.</div></div>
+            <div class="tl-item"><div class="tl-dot"></div><div class="tl-year">2017</div><div class="tl-title">Ra mắt Tu's Coffee App</div><div class="tl-desc">Ứng dụng di động tích điểm, đặt hàng và nhận ưu đãi độc quyền, phục vụ hơn 2 triệu thành viên.</div></div>
+            <div class="tl-item"><div class="tl-dot"></div><div class="tl-year">2022</div><div class="tl-title">600+ cửa hàng – Kỷ niệm 20 năm</div><div class="tl-desc">Kỷ niệm 20 năm thành lập với hơn 600 cửa hàng, 30 tỉnh thành và hơn 1 triệu khách hàng thân thiết.</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VALUES -->
+    <section class="section">
+      <div class="section-inner">
+        <div style="text-align:center; margin-bottom: 8px;">
+          <div class="eyebrow">Giá Trị Cốt Lõi</div>
+          <h2 class="section-title">Điều Làm Nên <em>Tu's Coffee</em></h2>
+        </div>
+        <div class="values-grid">
+          <div class="value-card"><div class="value-icon">🏆</div><div><h4>Chất Lượng Không Thỏa Hiệp</h4><p>Mỗi ly cà phê được pha chế từ hạt Arabica và Robusta tuyển chọn từ Tây Nguyên, rang mới mỗi ngày để giữ trọn hương vị nguyên bản.</p></div></div>
+          <div class="value-card"><div class="value-icon">🤝</div><div><h4>Tôn Trọng Con Người</h4><p>Chúng tôi xây dựng mối quan hệ bền vững với nông dân trồng cà phê — đảm bảo giá thu mua công bằng và hỗ trợ cải thiện đời sống cộng đồng.</p></div></div>
+          <div class="value-card"><div class="value-icon">🌿</div><div><h4>Trách Nhiệm Với Môi Trường</h4><p>Từng bước chuyển đổi sang bao bì tái chế, ống hút giấy và cốc tái sử dụng. Tu's Coffee cam kết xanh hóa toàn bộ chuỗi cung ứng vào 2027.</p></div></div>
+          <div class="value-card"><div class="value-icon">🎨</div><div><h4>Không Gian Truyền Cảm Hứng</h4><p>Mỗi cửa hàng là một không gian làm việc, gặp gỡ và sáng tạo — thiết kế ấm cúng, WiFi miễn phí và âm nhạc nhẹ nhàng cho một ngày làm việc hiệu quả.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEAM -->
+    <section class="section" style="background: var(--white);">
+      <div class="section-inner">
+        <div style="text-align:center; margin-bottom:8px;">
+          <div class="eyebrow">Ban Lãnh Đạo</div>
+          <h2 class="section-title">Những Người <em>Dẫn Dắt</em></h2>
+        </div>
+        <div class="team-grid">
+          <div class="team-card">
+            <div class="team-avatar a1" style="height:auto;padding:0;"><img src="/static/images/logo/chu_tich.png" alt="Đồng Văn Tú" style="width:100%;height:auto;display:block;"></div>
+            <div class="team-body">
+              <div class="team-name">Đồng Văn Tú</div>
+              <div class="team-role">Nhà Sáng Lập & Chủ Tịch</div>
+              <div class="team-desc">Người đặt nền móng cho Tu's Coffee với khát vọng xây dựng thương hiệu cà phê Việt chất lượng cao, mang hương vị quê hương đến gần hơn với mọi người.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /page-about -->
+
   <!-- ── PRODUCT DETAIL MODAL ──────────────────────────── -->
   <div id="pdp-overlay" onclick="closePDP()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000"></div>
   <div id="pdp-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:24px;padding:0;width:500px;max-width:96vw;z-index:1001;box-shadow:0 20px 60px rgba(44,24,16,.25);overflow:hidden">
@@ -556,6 +669,32 @@
       <button onclick="closeOrders()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#888">✕</button>
     </div>
     <div id="orders-list" style="flex:1;overflow-y:auto;padding:16px 24px"></div>
+  </div>
+
+  <!-- ── REVIEW MODAL ─────────────────────────────────── -->
+  <div id="review-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1100;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:20px;padding:28px 28px 24px;width:92%;max-width:420px;box-shadow:0 16px 48px rgba(44,24,16,.18);position:relative;">
+      <button onclick="closeReviewModal()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#aaa;line-height:1;">✕</button>
+      <div style="font-family:'Inter',sans-serif;font-size:1.1rem;font-weight:700;color:#2C1810;margin-bottom:4px;">✍ Đánh Giá Sản Phẩm</div>
+      <div id="review-product-name" style="font-size:.88rem;color:#C8102E;font-weight:600;margin-bottom:18px;"></div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:.85rem;color:#5C3D2E;font-weight:600;margin-bottom:8px;">Số sao <span style="color:#C8102E">*</span></div>
+        <div id="review-stars" style="display:flex;gap:6px;font-size:2rem;cursor:pointer;">
+          <span data-star="1" onclick="setReviewStar(1)">☆</span>
+          <span data-star="2" onclick="setReviewStar(2)">☆</span>
+          <span data-star="3" onclick="setReviewStar(3)">☆</span>
+          <span data-star="4" onclick="setReviewStar(4)">☆</span>
+          <span data-star="5" onclick="setReviewStar(5)">☆</span>
+        </div>
+        <div id="review-star-error" style="color:#C8102E;font-size:.78rem;margin-top:4px;display:none;">Vui lòng chọn số sao</div>
+      </div>
+      <div style="margin-bottom:18px;">
+        <div style="font-size:.85rem;color:#5C3D2E;font-weight:600;margin-bottom:8px;">Bình luận (tùy chọn)</div>
+        <textarea id="review-comment" rows="3" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..." style="width:100%;border:1.5px solid #e0d8d0;border-radius:10px;padding:10px 12px;font-family:inherit;font-size:.88rem;resize:vertical;outline:none;box-sizing:border-box;transition:border-color .2s;" onfocus="this.style.borderColor='#C8102E'" onblur="this.style.borderColor='#e0d8d0'"></textarea>
+      </div>
+      <div id="review-error" style="color:#C8102E;font-size:.82rem;margin-bottom:10px;display:none;"></div>
+      <button id="review-submit-btn" onclick="submitReview()" style="width:100%;padding:12px;background:#C8102E;color:#fff;border:none;border-radius:12px;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#a50d26'" onmouseout="this.style.background='#C8102E'">Gửi Đánh Giá</button>
+    </div>
   </div>
 
   <!-- ── CART DRAWER ──────────────────────────────────── -->
@@ -861,7 +1000,7 @@
 
     // ── SPA Router ───────────────────────────────────────
     const API = '';  // same origin (FastAPI serves both frontend and API)
-    const PAGES = ['home','menu','promotions','stores','news','rewards'];
+    const PAGES = ['home','menu','promotions','stores','news','rewards','about'];
 
     // ── Menu state (must be before loadMenuPage call) ────
     let allProducts = [], currentCat = '', menuPage = 1;
@@ -1893,27 +2032,60 @@
       const el = document.getElementById('orders-list');
       el.innerHTML = '<div style="text-align:center;padding:32px;color:#aaa">Đang tải...</div>';
       try {
-        const res  = await fetch('/api/orders/mine', {
-          headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}
-        });
-        const data = await res.json();
-        if (!res.ok) { el.innerHTML = `<div style="padding:32px;color:#C8102E">${data.detail}</div>`; return; }
+        const headers = authToken ? { Authorization: `Bearer ${authToken}` } : {};
+        const [ordersRes, reviewsRes] = await Promise.all([
+          fetch('/api/orders/mine', { headers }),
+          fetch('/api/reviews/mine', { headers }),
+        ]);
+        const data = await ordersRes.json();
+        if (!ordersRes.ok) { el.innerHTML = `<div style="padding:32px;color:#C8102E">${data.detail}</div>`; return; }
         if (!data.length) {
           el.innerHTML = '<div style="text-align:center;padding:48px 0;color:#aaa"><div style="font-size:3rem;margin-bottom:12px">📋</div><p>Chưa có đơn hàng nào</p></div>';
           return;
         }
-        el.innerHTML = data.map(o => `
+
+        // build set of reviewed product_ids
+        const myReviews = reviewsRes.ok ? await reviewsRes.json() : [];
+        const reviewedMap = {}; // product_id → stars
+        myReviews.forEach(r => { reviewedMap[r.product_id] = r.stars; });
+
+        const statusBg  = { done:'#e8fdf0', cancelled:'#f0f0f0', confirmed:'#fff8e0', pending:'#ffeaea' };
+        const statusClr = { done:'#2a9d5c', cancelled:'#aaa',     confirmed:'#b07d00', pending:'#C8102E' };
+        const statusLbl = { done:'Hoàn thành', cancelled:'Đã huỷ', confirmed:'Đã xác nhận', pending:'Chờ xử lý' };
+        const canReviewOrder = o => o.status === 'done' || o.status === 'confirmed';
+
+        el.innerHTML = data.map(o => {
+          const itemsHtml = o.items.map(i => {
+            const reviewed = reviewedMap[i.product_id];
+            const reviewBtn = canReviewOrder(o) && i.product_id
+              ? (reviewed !== undefined
+                  ? `<span style="font-size:.8rem;color:#f59e0b;font-weight:700;" title="${reviewed}/5 sao">${'★'.repeat(reviewed)}${'☆'.repeat(5-reviewed)}</span>`
+                  : `<button onclick="openReviewModal(${i.product_id},'${i.name.replace(/'/g,'\\\'')}')" style="padding:3px 10px;border-radius:8px;border:1.5px solid #C8102E;background:#fff;color:#C8102E;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;">✍ Đánh giá</button>`)
+              : '';
+            const nameHtml = i.product_id
+              ? `<span onclick="openPDP(${i.product_id});closeOrders();" style="cursor:pointer;color:#5C3D2E;text-decoration:underline dotted #C8102E;text-underline-offset:3px;">${i.name}</span>`
+              : `<span>${i.name}</span>`;
+            return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f5ede6;">
+              <span style="font-size:.82rem;">${nameHtml} <span style="color:#aaa;">x${i.quantity}</span></span>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:.8rem;font-weight:700;color:#C8102E;">${(i.subtotal||i.price*i.quantity).toLocaleString('vi-VN')}đ</span>
+                ${reviewBtn}
+              </div>
+            </div>`;
+          }).join('');
+
+          return `
           <div id="order-card-${o.id}" style="border:1.5px solid #f0e8e0;border-radius:16px;padding:16px;margin-bottom:14px">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
               <div>
                 <span style="font-family:'Inter',sans-serif;font-weight:700;color:#2C1810">Đơn #${o.id}</span>
                 <div style="font-size:.75rem;color:#aaa;margin-top:2px">${o.created_at}</div>
               </div>
-              <span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:700;background:${o.status==='done'?'#e8fdf0':o.status==='cancelled'?'#f0f0f0':o.status==='confirmed'?'#fff8e0':'#ffeaea'};color:${o.status==='done'?'#2a9d5c':o.status==='cancelled'?'#aaa':o.status==='confirmed'?'#b07d00':'#C8102E'}">${{done:'Hoàn thành',cancelled:'Đã huỷ',confirmed:'Xác nhận',pending:'Chờ xử lý'}[o.status]||o.status}</span>
+              <span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:700;background:${statusBg[o.status]||'#ffeaea'};color:${statusClr[o.status]||'#C8102E'}">${statusLbl[o.status]||o.status}</span>
             </div>
-            <div style="font-size:.82rem;color:#5C3D2E;margin-bottom:8px">${o.items.map(i=>`${i.name} x${i.quantity}`).join(' • ')}</div>
+            <div style="margin-bottom:8px;">${itemsHtml}</div>
             ${o.note ? `<div style="font-size:.78rem;color:#aaa;margin-bottom:6px">Ghi chú: ${o.note}</div>` : ''}
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:8px">
               <div style="display:flex;align-items:center;gap:8px">
                 <span style="font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:900;color:#C8102E">${o.total.toLocaleString('vi-VN')}đ</span>
                 <span style="font-size:.7rem;padding:2px 8px;border-radius:20px;font-weight:700;background:${o.payment_status==='paid'?'#e8fdf0':'#fff8e0'};color:${o.payment_status==='paid'?'#2a9d5c':'#b07d00'}">
@@ -1923,8 +2095,9 @@
               </div>
               ${o.status==='pending' ? `<button onclick="cancelOrder(${o.id})" style="padding:6px 14px;background:#fff;border:1.5px solid #C8102E;color:#C8102E;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit">Huỷ đơn</button>` : ''}
             </div>
-          </div>`).join('');
-      } catch { el.innerHTML = '<div style="padding:32px;color:#C8102E">Lỗi tải đơn hàng</div>'; }
+          </div>`;
+        }).join('');
+      } catch(e) { el.innerHTML = '<div style="padding:32px;color:#C8102E">Lỗi tải đơn hàng</div>'; }
     }
 
     function closeOrders() {
@@ -1957,7 +2130,76 @@
       } catch { toast('Lỗi kết nối', false); }
     }
 
-  // ── Mobile hamburger menu ────────────────────────────
+  // ── Review modal ─────────────────────────────────────
+  let _reviewProductId = null;
+  let _reviewStars = 0;
+
+  function openReviewModal(productId, productName) {
+    _reviewProductId = productId;
+    _reviewStars = 0;
+    document.getElementById('review-product-name').textContent = productName;
+    document.getElementById('review-comment').value = '';
+    document.getElementById('review-error').style.display = 'none';
+    document.getElementById('review-star-error').style.display = 'none';
+    renderReviewStars(0);
+    document.getElementById('review-overlay').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeReviewModal() {
+    document.getElementById('review-overlay').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  function setReviewStar(n) {
+    _reviewStars = n;
+    renderReviewStars(n);
+    document.getElementById('review-star-error').style.display = 'none';
+  }
+
+  function renderReviewStars(n) {
+    document.querySelectorAll('#review-stars span').forEach((el, i) => {
+      el.textContent = i < n ? '★' : '☆';
+      el.style.color  = i < n ? '#f59e0b' : '#ccc';
+    });
+  }
+
+  async function submitReview() {
+    if (!_reviewStars) {
+      document.getElementById('review-star-error').style.display = 'block';
+      return;
+    }
+    const errEl  = document.getElementById('review-error');
+    const btn    = document.getElementById('review-submit-btn');
+    const comment = document.getElementById('review-comment').value.trim() || null;
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Đang gửi...';
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+        body: JSON.stringify({ product_id: _reviewProductId, stars: _reviewStars, comment }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        closeReviewModal();
+        toast('✅ Cảm ơn bạn đã đánh giá!');
+        openOrders(); // refresh lại danh sách đơn hàng
+      } else {
+        errEl.textContent = data.detail || 'Gửi đánh giá thất bại';
+        errEl.style.display = 'block';
+      }
+    } catch {
+      errEl.textContent = 'Lỗi kết nối, vui lòng thử lại';
+      errEl.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Gửi Đánh Giá';
+    }
+  }
+
+  // ── Mobile hamburger menu ─────────────────────────────
   const hamburgerBtn = document.getElementById('hamburger-btn');
   const navLinks = document.querySelector('.nav-links');
   if (hamburgerBtn && navLinks) {
