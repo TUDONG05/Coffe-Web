@@ -2360,18 +2360,24 @@
     }
 
     /* Product cards row */
+    .chat-bot-group {
+      display: flex; flex-direction: column;
+      align-items: flex-start; gap: 6px; width: 100%;
+    }
     .chat-products-row {
       display: flex; gap: 8px; overflow-x: auto;
-      padding: 2px 0 8px; align-self: stretch;
+      padding: 2px 0 8px;
+      width: 100%; max-width: 100%;
       scrollbar-width: thin; scrollbar-color: #e0d8d0 transparent;
     }
     .chat-products-row::-webkit-scrollbar { height: 4px; }
     .chat-products-row::-webkit-scrollbar-thumb { background: #e0d8d0; border-radius: 2px; }
     .chat-product-card {
-      min-width: 96px; max-width: 96px; background: #fff;
+      min-width: 90px; max-width: 90px; background: #fff;
       border: 1.5px solid #e8ddd6; border-radius: 12px;
       overflow: hidden; flex-shrink: 0; cursor: pointer;
       transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
     }
     .chat-product-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,.13); }
     .chat-product-img {
@@ -2381,19 +2387,19 @@
     .chat-product-emoji {
       width: 100%; aspect-ratio: 1 / 1;
       display: flex; align-items: center; justify-content: center;
-      font-size: 2.1rem;
+      font-size: 1.8rem;
       background: linear-gradient(135deg, #fdf0e8, #f5d5b0);
     }
     .chat-product-info { padding: 5px 6px 4px; }
     .chat-product-name {
-      font-size: .7rem; font-weight: 600; color: #333;
+      font-size: .68rem; font-weight: 600; color: #333;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       display: block;
     }
-    .chat-product-price { font-size: .68rem; color: #C8102E; font-weight: 700; }
+    .chat-product-price { font-size: .65rem; color: #C8102E; font-weight: 700; }
     .chat-product-add {
-      width: 100%; padding: 5px; border: none;
-      background: #C8102E; color: #fff; font-size: .72rem;
+      width: 100%; padding: 4px; border: none;
+      background: #C8102E; color: #fff; font-size: .68rem;
       cursor: pointer; font-family: inherit; transition: background .15s;
     }
     .chat-product-add:hover { background: #a50d26; }
@@ -2592,7 +2598,14 @@
         if (!resp.ok) throw new Error('Server lỗi');
 
         typingEl.remove();
-        botEl = appendBot('');
+        const botWrapper = document.createElement('div');
+        botWrapper.className = 'chat-bot-group';
+        messagesEl.appendChild(botWrapper);
+        botEl = document.createElement('div');
+        botEl.className = 'chat-bubble bot';
+        botEl.style.whiteSpace = 'pre-wrap';
+        botWrapper.appendChild(botEl);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
 
         const reader = resp.body.getReader();
         const decoder = new TextDecoder();
@@ -2622,7 +2635,7 @@
                 messagesEl.scrollTop = messagesEl.scrollHeight;
               }
               if (data.type === 'product_cards' && data.products?.length) {
-                renderProductCards(data.products);
+                renderProductCards(data.products, botWrapper);
               }
               if (data.type === 'order_form' && data.order) {
                 renderOrderConfirmCard(data.order);
@@ -2684,7 +2697,7 @@
     // ── Product cards ─────────────────────────────────────
     const _catEmoji = { coffee:'☕', tea:'🍵', food:'🥐', smoothie:'🧋', freeze:'🧋', combo:'🎁' };
 
-    function renderProductCards(products) {
+    function renderProductCards(products, container) {
       const row = document.createElement('div');
       row.className = 'chat-products-row';
 
@@ -2718,7 +2731,7 @@
         row.appendChild(card);
       });
 
-      messagesEl.appendChild(row);
+      (container || messagesEl).appendChild(row);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
