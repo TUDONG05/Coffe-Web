@@ -32,18 +32,19 @@ from highlands.routers import (
 )
 from highlands.database import SessionLocal
 from highlands import models
-from highlands.services.menu_rag_service import menu_rag
+from highlands.services.menu_rag_service import menu_rag, compute_hot_items
 
 app = FastAPI(title="Highlands Coffee", version="2.0.0", docs_url="/docs")
 
 
 @app.on_event("startup")
 def load_menu_index():
-    """Build TF-IDF chatbot index từ DB khi app khởi động."""
+    """Build TF-IDF chatbot index và hot items từ DB khi app khởi động."""
     db = SessionLocal()
     try:
         products = db.query(models.Product).filter(models.Product.is_active == 1).all()
         menu_rag.build_index(products)
+        menu_rag.set_hot_items(compute_hot_items(db))
     finally:
         db.close()
 

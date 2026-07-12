@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 from highlands import models
 from highlands.auth_utils import require_admin
 from highlands.database import get_db
-from highlands.services.menu_rag_service import menu_rag
+from highlands.services.menu_rag_service import menu_rag, compute_hot_items
 
 logger = logging.getLogger(__name__)
 
@@ -307,9 +307,10 @@ def reload_menu(
     admin: models.User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """Reload TF-IDF index từ DB (gọi sau khi admin thêm/sửa sản phẩm)."""
+    """Reload TF-IDF index + hot items từ DB (gọi sau khi admin thêm/sửa sản phẩm)."""
     products = db.query(models.Product).filter(models.Product.is_active == 1).all()
     menu_rag.build_index(products)
+    menu_rag.set_hot_items(compute_hot_items(db))
     return {"message": f"Đã reload {menu_rag.total} sản phẩm vào chatbot index."}
 
 

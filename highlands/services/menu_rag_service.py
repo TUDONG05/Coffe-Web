@@ -7,8 +7,17 @@ from typing import Optional
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
+
+
+RECOMMEND_KEYWORDS = [
+    "gợi ý", "recommend", "đề xuất", "nên uống", "nên dùng", "nên ăn",
+    "hot", "bán chạy", "nổi tiếng", "phổ biến", "best seller", "bestseller",
+    "ngon nhất", "ngon", "đặc biệt", "thử xem", "thử cái gì", "muốn thử",
+    "không biết chọn", "giúp chọn", "chọn gì", "uống gì", "ăn gì",
+]
 
 
 class MenuRAGService:
@@ -19,6 +28,7 @@ class MenuRAGService:
         self._corpus: list[str] = []
         self._vectorizer: Optional[TfidfVectorizer] = None
         self._matrix = None
+        self._hot_items: list[dict] = []  # top-selling products, set externally
 
     # ── Build / Reload ──────────────────────────────────────
 
@@ -85,15 +95,26 @@ class MenuRAGService:
             )
         return "\n\n".join(lines)
 
+    def set_hot_items(self, items: list[dict]) -> None:
+        """Lưu danh sách sản phẩm bán chạy để dùng làm fallback."""
+        self._hot_items = items
+
     def search_relevant(self, query: str, top_k: int = 4, min_score: float = 0.20) -> list[dict]:
-        """Trả về top_k sản phẩm với cosine score >= min_score (strict, không fallback).
-        Dùng để hiển thị product cards — trả empty list nếu không có gì liên quan."""
+        """Trả về top_k sản phẩm liên quan (score >= min_score).
+        Fallback về hot_items nếu query chứa từ khoá gợi ý và không khớp sản phẩm nào."""
         if self._vectorizer is None or not self._items:
             return []
         q_vec = self._vectorizer.transform([query.lower()])
         scores = cosine_similarity(q_vec, self._matrix).flatten()
         top_indices = np.argsort(scores)[::-1][:top_k]
-        return [self._items[i] for i in top_indices if scores[i] >= min_score]
+        results = [self._items[i] for i in top_indices if scores[i] >= min_score]
+        if results:
+            return results
+        # Fallback: nếu câu hỏi có từ gợi ý/hot thì trả top bán chạy
+        q_lower = query.lower()
+        if any(kw in q_lower for kw in RECOMMEND_KEYWORDS):
+            return self._hot_items[:top_k] or self._items[:top_k]
+        return []
 
     def all_items_context(self) -> str:
         """Toàn bộ menu dạng compact để nhúng vào system prompt."""
@@ -102,6 +123,36 @@ class MenuRAGService:
     @property
     def total(self) -> int:
         return len(self._items)
+
+
+def compute_hot_items(db: Session, top_k: int = 8) -> list[dict]:
+    """Tính top sản phẩm bán chạy từ OrderItem (import lazy để tránh circular)."""
+    from sqlalchemy import func
+    from highlands import models
+
+    rows = (
+        db.query(models.OrderItem.product_id, func.sum(models.OrderItem.quantity).label("total"))
+        .group_by(models.OrderItem.product_id)
+        .order_by(func.sum(models.OrderItem.quantity).desc())
+        .limit(top_k)
+        .all()
+    )
+    if not rows:
+        return []
+    hot_ids = {r.product_id for r in rows}
+    products = (
+        db.query(models.Product)
+        .filter(models.Product.id.in_(hot_ids), models.Product.is_active == 1)
+        .all()
+    )
+    id_order = {r.product_id: i for i, r in enumerate(rows)}
+    products.sort(key=lambda p: id_order.get(p.id, 999))
+    return [
+        {"id": p.id, "name": p.name, "category": p.category,
+         "price": p.price, "description": p.description or "",
+         "image_url": p.image_url or ""}
+        for p in products
+    ]
 
 
 # Singleton dùng chung toàn app
