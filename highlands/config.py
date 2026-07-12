@@ -16,11 +16,14 @@ PG_USER     = os.getenv("PG_USER",     "postgres")
 PG_PASSWORD = os.getenv("PG_PASSWORD", "")
 PG_DB       = os.getenv("PG_DB",       "highlands_coffee")
 
-# Support full DATABASE_URL override (e.g. from Vercel Postgres / Neon / Supabase)
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    f"postgresql+psycopg2://{PG_USER}:{quote_plus(PG_PASSWORD)}@{PG_HOST}:{PG_PORT}/{PG_DB}"
+# Vercel Postgres sets POSTGRES_URL; fallback to manual PG_* vars
+_raw_url = (
+    os.getenv("POSTGRES_URL")
+    or os.getenv("DATABASE_URL")
+    or f"postgresql+psycopg2://{PG_USER}:{quote_plus(PG_PASSWORD)}@{PG_HOST}:{PG_PORT}/{PG_DB}"
 )
+# psycopg2 requires postgresql:// not postgres://
+DATABASE_URL = _raw_url.replace("postgres://", "postgresql://", 1)
 
 # ── JWT ──────────────────────────────────────────────────
 SECRET_KEY = os.environ.get("SECRET_KEY")
