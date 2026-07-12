@@ -1088,26 +1088,43 @@
       if (qrLabel)   qrLabel.style.background    = method === 'qr_transfer' ? '#fff8f6' : '#fff';
     }
 
+    let _qrPollTimer = null;
+    let _qrCurrentOrder = null;
+
     function showQR(orderId, total) {
+      _qrCurrentOrder = orderId;
       const ref = `TUSCOFFEE DH${orderId}`;
       const amountStr = total.toLocaleString('vi-VN') + 'đ';
       document.getElementById('qr-amount-text').textContent = `Số tiền: ${amountStr}`;
       document.getElementById('qr-amount-inline').textContent = amountStr;
       document.getElementById('qr-order-ref').textContent = ref;
-      // VietQR động — encode đúng số tiền và mã đơn hàng
       const qrUrl = `https://img.vietqr.io/image/MB-010320058686-compact2.png`
         + `?amount=${total}`
         + `&addInfo=${encodeURIComponent(ref)}`
         + `&accountName=${encodeURIComponent('DONG VAN TU')}`;
       document.getElementById('qr-code-img').src = qrUrl;
-      // Reset về step scan
       document.getElementById('qr-step-scan').style.display = 'block';
       document.getElementById('qr-step-success').style.display = 'none';
       document.getElementById('qr-overlay').style.display = 'block';
       document.getElementById('qr-modal').style.display   = 'block';
+
+      // Poll payment status every 5s — auto-confirm when Casso marks paid
+      clearInterval(_qrPollTimer);
+      _qrPollTimer = setInterval(async () => {
+        try {
+          const r = await fetch(`/api/orders/${orderId}/payment-status`);
+          if (!r.ok) return;
+          const d = await r.json();
+          if (d.payment_status === 'paid') {
+            clearInterval(_qrPollTimer);
+            confirmQRPaid();
+          }
+        } catch {}
+      }, 5000);
     }
 
     function confirmQRPaid() {
+      clearInterval(_qrPollTimer);
       const ref = document.getElementById('qr-order-ref').textContent;
       document.getElementById('qr-step-scan').style.display = 'none';
       document.getElementById('qr-success-ref').textContent = `Mã đơn hàng: ${ref}`;
@@ -1115,6 +1132,8 @@
     }
 
     function closeQR() {
+      clearInterval(_qrPollTimer);
+      _qrCurrentOrder = null;
       document.getElementById('qr-overlay').style.display = 'none';
       document.getElementById('qr-modal').style.display   = 'none';
     }

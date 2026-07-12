@@ -29,6 +29,7 @@ from highlands.routers import (
     admin_users_router,
     admin_promotions_router,
     chatbot_router,
+    webhooks_router,
 )
 from highlands.database import SessionLocal, engine
 from highlands import models
@@ -87,6 +88,9 @@ app.include_router(admin_dashboard_router.router)
 
 # Chatbot API
 app.include_router(chatbot_router.router)
+
+# Payment Webhooks
+app.include_router(webhooks_router.router)
 
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")

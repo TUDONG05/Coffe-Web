@@ -121,6 +121,19 @@ def create_order(
     }
 
 
+@router.get("/{order_id}/payment-status")
+def get_payment_status(order_id: int, db: Session = Depends(get_db)):
+    """Poll endpoint: frontend calls this every 5s to detect when Casso marks the order paid."""
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Đơn hàng không tồn tại")
+    return {
+        "order_id": order.id,
+        "payment_status": order.payment_status,
+        "payment_method": order.payment_method,
+    }
+
+
 @router.get("/mine")
 def my_orders(
     db: Session = Depends(get_db),
