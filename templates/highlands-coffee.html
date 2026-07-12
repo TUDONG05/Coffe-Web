@@ -1031,7 +1031,6 @@
 
     // ── Menu page ────────────────────────────────────────
     async function loadMenuPage() {
-      if (allProducts.length) { applyMenuFilter(); return; }
       document.getElementById('menu-grid').innerHTML = '<div class="page-loading">⏳ Đang tải...</div>';
       try {
         const res = await fetch(`${API}/api/products`);
