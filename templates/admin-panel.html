@@ -40,6 +40,14 @@
                     <span class="nav-icon">🛍️</span>
                     <span>Sản Phẩm</span>
                 </div>
+                <div class="nav-item" onclick="switchPage('promotions', this)">
+                    <span class="nav-icon">🎁</span>
+                    <span>Ưu Đãi</span>
+                </div>
+                <div class="nav-item" onclick="switchPage('stores', this)">
+                    <span class="nav-icon">🏪</span>
+                    <span>Cửa Hàng</span>
+                </div>
             </div>
 
         </div>
@@ -304,6 +312,93 @@
                     </div>
                     <div id="productsPagination" class="pagination-bar"></div>
                 </section>
+
+                <!-- PROMOTIONS -->
+                <section id="promotions">
+                    <div class="toolbar">
+                        <button class="btn btn-primary" onclick="openPromotionModal('create')">+ Tạo Mới</button>
+                        <input type="text" class="search-box" id="promotionsSearch" placeholder="🔍 Tìm kiếm ưu đãi...">
+                        <select id="promotionsTagFilter" onchange="loadPromotions()">
+                            <option value="">Tất Cả Thẻ</option>
+                            <option value="HOT">🔥 HOT</option>
+                            <option value="SALE">💸 SALE</option>
+                            <option value="NEW">✨ NEW</option>
+                        </select>
+                        <select id="promotionsStatusFilter" onchange="loadPromotions()">
+                            <option value="">Tất Cả Trạng Thái</option>
+                            <option value="1">Đang Hiển Thị</option>
+                            <option value="0">Đã Ẩn</option>
+                        </select>
+                        <select id="promotionsPageSize" class="page-size-select" onchange="onPageSizeChange('promotions')">
+                            <option value="10">10 / trang</option>
+                            <option value="25">25 / trang</option>
+                            <option value="50">50 / trang</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tiêu Đề</th>
+                                    <th>Giảm Giá</th>
+                                    <th>Thẻ</th>
+                                    <th>Hiệu Lực</th>
+                                    <th>Trạng Thái</th>
+                                    <th>Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="promotionsTable">
+                                <tr><td colspan="7" style="text-align:center;color:var(--text-muted);">Đang tải...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="promotionsPagination" class="pagination-bar"></div>
+                </section>
+
+                <!-- STORES -->
+                <section id="stores">
+                    <div class="toolbar">
+                        <button class="btn btn-primary" onclick="openStoreModal('create')">+ Tạo Mới</button>
+                        <input type="text" class="search-box" id="storesSearch" placeholder="🔍 Tìm tên, địa chỉ, quận...">
+                        <select id="storesCityFilter" onchange="loadStores()">
+                            <option value="">Tất Cả Thành Phố</option>
+                            <option value="Hà Nội">Hà Nội</option>
+                            <option value="TP.HCM">TP.HCM</option>
+                            <option value="Đà Nẵng">Đà Nẵng</option>
+                        </select>
+                        <select id="storesStatusFilter" onchange="loadStores()">
+                            <option value="">Tất Cả Trạng Thái</option>
+                            <option value="1">Đang Hoạt Động</option>
+                            <option value="0">Đã Đóng</option>
+                        </select>
+                        <select id="storesPageSize" class="page-size-select" onchange="onPageSizeChange('stores')">
+                            <option value="10">10 / trang</option>
+                            <option value="25">25 / trang</option>
+                            <option value="50">50 / trang</option>
+                        </select>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên Cửa Hàng</th>
+                                    <th>Địa Chỉ</th>
+                                    <th>Thành Phố</th>
+                                    <th>Điện Thoại</th>
+                                    <th>Giờ Mở Cửa</th>
+                                    <th>Trạng Thái</th>
+                                    <th>Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="storesTable">
+                                <tr><td colspan="8" style="text-align:center;color:var(--text-muted);">Đang tải...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="storesPagination" class="pagination-bar"></div>
+                </section>
             </div>
         </div>
     </div>
@@ -553,6 +648,113 @@
         </div>
     </div>
 
+    <!-- ORDER DETAIL MODAL -->
+    <div class="modal" id="orderDetailModal">
+        <div class="modal-content modal-content-wide" style="max-width:680px;">
+            <div class="modal-header" id="orderDetailTitle">Chi Tiết Đơn Hàng</div>
+            <div id="orderDetailBody" style="max-height:70vh;overflow-y:auto;"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('orderDetailModal')">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STORES MODAL -->
+    <div class="modal" id="storesModal">
+        <div class="modal-content" style="max-width:580px;">
+            <div class="modal-header" id="storesModalTitle">Tạo Cửa Hàng Mới</div>
+            <div id="storesModalError"></div>
+            <form id="storesForm" onsubmit="submitStoreForm(event)">
+                <div class="form-group">
+                    <label>Tên Cửa Hàng <span style="color:var(--danger)">*</span></label>
+                    <input type="text" name="name" placeholder="VD: Tu's Coffee – Vincom Bà Triệu" maxlength="200">
+                    <div class="form-error" id="storeNameError"></div>
+                </div>
+                <div class="form-group">
+                    <label>Địa Chỉ <span style="color:var(--danger)">*</span></label>
+                    <input type="text" name="address" placeholder="VD: 191 Bà Triệu" maxlength="300">
+                    <div class="form-error" id="storeAddressError"></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label>Quận / Huyện <span style="color:var(--danger)">*</span></label>
+                        <input type="text" name="district" placeholder="VD: Hai Bà Trưng" maxlength="100">
+                        <div class="form-error" id="storeDistrictError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Thành Phố</label>
+                        <select name="city">
+                            <option value="Hà Nội">Hà Nội</option>
+                            <option value="TP.HCM">TP.HCM</option>
+                            <option value="Đà Nẵng">Đà Nẵng</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label>Điện Thoại</label>
+                        <input type="text" name="phone" placeholder="VD: 024 3974 0001" maxlength="30">
+                    </div>
+                    <div class="form-group">
+                        <label>Giờ Mở Cửa</label>
+                        <input type="text" name="hours" placeholder="VD: 06:30 – 22:30" maxlength="100">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('storesModal')">Hủy</button>
+                    <button type="submit" class="btn btn-primary" id="storesSubmitBtn">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PROMOTIONS MODAL -->
+    <div class="modal" id="promotionsModal">
+        <div class="modal-content" style="max-width:560px;">
+            <div class="modal-header" id="promotionsModalTitle">Tạo Ưu Đãi Mới</div>
+            <div id="promotionsModalError"></div>
+            <form id="promotionsForm" onsubmit="submitPromotionForm(event)">
+                <div class="form-group">
+                    <label>Tiêu Đề <span style="color:var(--danger)">*</span></label>
+                    <input type="text" name="title" placeholder="VD: Mua 1 Tặng 1 Cà Phê" maxlength="200">
+                    <div class="form-error" id="promoTitleError"></div>
+                </div>
+                <div class="form-group">
+                    <label>Mô Tả</label>
+                    <textarea name="description" rows="3" placeholder="Chi tiết ưu đãi..."></textarea>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label>Mức Giảm</label>
+                        <input type="text" name="discount" placeholder="VD: 20%, Mua 1 tặng 1" maxlength="50">
+                    </div>
+                    <div class="form-group">
+                        <label>Thẻ</label>
+                        <select name="tag">
+                            <option value="HOT">🔥 HOT</option>
+                            <option value="SALE">💸 SALE</option>
+                            <option value="NEW">✨ NEW</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group">
+                        <label>Icon / URL Ảnh</label>
+                        <input type="text" name="image_url" placeholder="VD: ☕ hoặc /static/images/...">
+                    </div>
+                    <div class="form-group">
+                        <label>Hiệu Lực Đến</label>
+                        <input type="text" name="valid_until" placeholder="VD: 31/12/2026" maxlength="50">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('promotionsModal')">Hủy</button>
+                    <button type="submit" class="btn btn-primary" id="promotionsSubmitBtn">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- CHANGE PASSWORD MODAL -->
     <div class="modal" id="changePasswordModal">
         <div class="modal-content" style="max-width:420px;">
@@ -590,7 +792,7 @@
     </div>
 
     <script>
-        const API_BASE = "http://localhost:8000";
+        const API_BASE = "http://localhost:8001";
         // Đổi thành domain khi deploy trên server
 
         let authToken = localStorage.getItem('hc_token');
@@ -619,13 +821,15 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(page).classList.add('active');
             if (element) element.classList.add('active');
-            const titles = { dashboard:'Dashboard', news:'Quản Lý Tin Tức', customers:'Quản Lý Tài Khoản', orders:'Quản Lý Đơn Hàng', products:'Quản Lý Sản Phẩm' };
+            const titles = { dashboard:'Dashboard', news:'Quản Lý Tin Tức', customers:'Quản Lý Tài Khoản', orders:'Quản Lý Đơn Hàng', products:'Quản Lý Sản Phẩm', promotions:'Quản Lý Ưu Đãi', stores:'Quản Lý Cửa Hàng' };
             document.getElementById('pageTitle').textContent = titles[page] || 'Dashboard';
             if (page === 'dashboard') loadDashboard();
             else if (page === 'news') loadNews();
             else if (page === 'customers') loadCustomers();
             else if (page === 'orders') loadOrders();
             else if (page === 'products') loadProducts();
+            else if (page === 'promotions') loadPromotions();
+            else if (page === 'stores') loadStores();
         }
 
         // ========== AUTH ==========
@@ -931,23 +1135,25 @@
         // ========== PRODUCTS ==========
         // ========== PAGINATION ==========
         const pagState = {
-            news:      { page: 1, pageSize: 10 },
-            customers: { page: 1, pageSize: 10 },
-            orders:    { page: 1, pageSize: 10 },
-            products:  { page: 1, pageSize: 10 },
+            news:       { page: 1, pageSize: 10 },
+            customers:  { page: 1, pageSize: 10 },
+            orders:     { page: 1, pageSize: 10 },
+            products:   { page: 1, pageSize: 10 },
+            promotions: { page: 1, pageSize: 10 },
+            stores:     { page: 1, pageSize: 10 },
         };
 
         function onPageSizeChange(section) {
             const sel = document.getElementById(section + 'PageSize');
             if (sel) pagState[section].pageSize = parseInt(sel.value);
             pagState[section].page = 1;
-            const loaders = { news: loadNews, customers: loadCustomers, orders: loadOrders, products: loadProducts };
+            const loaders = { news: loadNews, customers: loadCustomers, orders: loadOrders, products: loadProducts, promotions: loadPromotions, stores: loadStores };
             loaders[section]?.(false);
         }
 
         function goToPage(section, page) {
             pagState[section].page = page;
-            const loaders = { news: loadNews, customers: loadCustomers, orders: loadOrders, products: loadProducts };
+            const loaders = { news: loadNews, customers: loadCustomers, orders: loadOrders, products: loadProducts, promotions: loadPromotions, stores: loadStores };
             loaders[section]?.(false);
         }
 
@@ -1511,6 +1717,7 @@
                         <td style="font-size:12px;">${o.created_at||''}</td>
                         <td>
                             <div class="action-buttons">
+                                <button class="btn btn-secondary btn-sm btn-icon" title="Chi Tiết" onclick="viewOrderDetail(${o.id})">👁</button>
                                 <button class="btn btn-secondary btn-sm btn-icon" title="Cập Nhật" onclick="editOrder(${o.id})">✏️</button>
                                 <button class="btn btn-danger btn-sm btn-icon" title="Xóa" onclick="deleteOrder(${o.id})">🗑️</button>
                             </div>
@@ -1654,6 +1861,333 @@
                 m.addEventListener('click', e => { if (e.target === m && m.id !== 'loginModal') m.classList.remove('active'); });
             });
         });
+
+        // ========== ORDER DETAIL + REVIEWS ==========
+        async function viewOrderDetail(orderId) {
+            document.getElementById('orderDetailTitle').textContent = `Chi Tiết Đơn Hàng #${orderId}`;
+            document.getElementById('orderDetailBody').innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);">Đang tải...</div>';
+            document.getElementById('orderDetailModal').classList.add('active');
+            try {
+                const [order, reviews] = await Promise.all([
+                    apiGet(`/api/admin/orders/${orderId}`),
+                    apiGet(`/api/admin/orders/${orderId}/reviews`),
+                ]);
+                const statusLabel = { pending:'⏳ Đang Chờ', confirmed:'✅ Đã Xác Nhận', done:'🎉 Hoàn Thành' };
+                const reviewMap = {};
+                reviews.forEach(r => { reviewMap[r.product_id] = r; });
+
+                const stars = n => '★'.repeat(n) + '☆'.repeat(5 - n);
+
+                const itemsHtml = (order.items || []).map(item => {
+                    const rev = reviewMap[item.product_id];
+                    return `
+                    <div style="border:1px solid var(--border-light);border-radius:10px;padding:14px;margin-bottom:10px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <strong>${esc(item.name)}</strong>
+                                <span style="margin-left:8px;color:var(--text-muted);font-size:13px;">x${item.quantity}</span>
+                            </div>
+                            <strong>${(item.subtotal||0).toLocaleString('vi-VN')}đ</strong>
+                        </div>
+                        ${rev ? `
+                        <div style="margin-top:10px;background:#fffbf5;border-radius:8px;padding:10px 12px;border-left:3px solid #f59e0b;">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                                <div>
+                                    <span style="color:#f59e0b;font-size:15px;">${stars(rev.stars)}</span>
+                                    <span style="font-size:12px;color:var(--text-muted);margin-left:6px;">${esc(rev.created_at||'')}</span>
+                                    ${rev.comment ? `<div style="margin-top:4px;font-size:13px;color:#444;">"${esc(rev.comment)}"</div>` : ''}
+                                </div>
+                                <button class="btn btn-danger btn-sm" style="white-space:nowrap;margin-left:12px;" onclick="deleteReview(${rev.id}, ${orderId})">🗑 Xóa</button>
+                            </div>
+                        </div>` : `<div style="margin-top:8px;font-size:12px;color:var(--text-muted);">Chưa có đánh giá</div>`}
+                    </div>`;
+                }).join('');
+
+                document.getElementById('orderDetailBody').innerHTML = `
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;font-size:13px;">
+                        <div><span style="color:var(--text-muted);">Khách hàng:</span> <strong>${esc(order.customer_name)}</strong></div>
+                        <div><span style="color:var(--text-muted);">SĐT:</span> ${esc(order.phone)}</div>
+                        <div><span style="color:var(--text-muted);">Địa chỉ:</span> ${esc(order.address||'—')}</div>
+                        <div><span style="color:var(--text-muted);">Trạng thái:</span> ${statusLabel[order.status]||order.status}</div>
+                        <div><span style="color:var(--text-muted);">Thanh toán:</span> ${order.payment_status==='paid'?'✅ Đã thanh toán':'⏳ Chưa thanh toán'}</div>
+                        <div><span style="color:var(--text-muted);">Ngày đặt:</span> ${esc(order.created_at||'')}</div>
+                        ${order.note ? `<div style="grid-column:1/-1;"><span style="color:var(--text-muted);">Ghi chú:</span> ${esc(order.note)}</div>` : ''}
+                    </div>
+                    <div style="font-weight:600;margin-bottom:10px;font-size:14px;">🛍 Sản Phẩm & Đánh Giá</div>
+                    ${itemsHtml}
+                    <div style="text-align:right;margin-top:12px;font-size:15px;font-weight:700;color:var(--danger);">
+                        Tổng: ${(order.total||0).toLocaleString('vi-VN')}đ
+                    </div>`;
+            } catch(e) {
+                document.getElementById('orderDetailBody').innerHTML = `<div style="text-align:center;padding:32px;color:var(--danger);">Lỗi: ${esc(e.message)}</div>`;
+            }
+        }
+
+        async function deleteReview(reviewId, orderId) {
+            showConfirm('Xóa đánh giá này?', async () => {
+                try {
+                    await apiDelete(`/api/admin/orders/reviews/${reviewId}`);
+                    showToast('✅ Đã xóa đánh giá', 'success');
+                    viewOrderDetail(orderId);
+                } catch(e) { showToast('Lỗi: ' + e.message, 'error'); }
+            }, 'Xóa', true);
+        }
+
+        // ========== STORES ==========
+        async function loadStores(resetPage = true) {
+            if (resetPage) pagState.stores.page = 1;
+            const { page, pageSize } = pagState.stores;
+            const skip = (page - 1) * pageSize;
+            const search = document.getElementById('storesSearch')?.value || '';
+            const city   = document.getElementById('storesCityFilter')?.value || '';
+            const status = document.getElementById('storesStatusFilter')?.value || '';
+            const params = new URLSearchParams({ skip, limit: pageSize });
+            if (search) params.append('search', search);
+            if (city)   params.append('city', city);
+            if (status !== '') params.append('is_active', status);
+            try {
+                const data = await apiGet('/api/admin/stores?' + params);
+                document.getElementById('storesTable').innerHTML = (data.items || []).map(s => `
+                    <tr>
+                        <td>#${s.id}</td>
+                        <td><strong>${esc(s.name)}</strong></td>
+                        <td style="font-size:13px;">${esc(s.address)}<br><span style="color:var(--text-muted);">${esc(s.district)}</span></td>
+                        <td>${esc(s.city)}</td>
+                        <td style="font-size:13px;">${esc(s.phone||'—')}</td>
+                        <td style="font-size:13px;white-space:nowrap;">${esc(s.hours)}</td>
+                        <td><span class="badge ${s.is_active ? 'badge-active' : 'badge-inactive'}">${s.is_active ? '✅ Hoạt Động' : '⛔ Đã Đóng'}</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary btn-sm btn-icon" title="Chỉnh Sửa" onclick="editStore(${s.id})">✏️</button>
+                                <button class="btn ${s.is_active ? 'btn-warning' : 'btn-success'} btn-sm btn-icon" title="${s.is_active ? 'Đóng cửa' : 'Mở lại'}" onclick="toggleStore(${s.id}, ${s.is_active ? 0 : 1})">${s.is_active ? '🔒' : '🔓'}</button>
+                                <button class="btn btn-danger btn-sm btn-icon" title="Xóa" onclick="deleteStore(${s.id}, '${esc(s.name)}')">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);">Không có dữ liệu</td></tr>';
+                renderPagination('stores', data.total || 0);
+            } catch(e) {
+                document.getElementById('storesTable').innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--danger);">Lỗi: ${esc(e.message)}</td></tr>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('storesSearch')?.addEventListener('input', () => {
+                clearTimeout(window._storeSearchTimer);
+                window._storeSearchTimer = setTimeout(() => loadStores(), 350);
+            });
+        });
+
+        let _editingStoreId = null;
+
+        function openStoreModal(mode = 'create', data = null) {
+            _editingStoreId = data ? data.id : null;
+            document.getElementById('storesModalTitle').textContent = mode === 'edit' ? 'Chỉnh Sửa Cửa Hàng' : 'Tạo Cửa Hàng Mới';
+            clearModalError('storesModalError');
+            ['storeNameError','storeAddressError','storeDistrictError'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '';
+            });
+            const form = document.getElementById('storesForm');
+            form.reset();
+            if (data) {
+                form.elements['name'].value     = data.name     || '';
+                form.elements['address'].value  = data.address  || '';
+                form.elements['district'].value = data.district || '';
+                form.elements['city'].value     = data.city     || 'Hà Nội';
+                form.elements['phone'].value    = data.phone    || '';
+                form.elements['hours'].value    = data.hours    || '';
+            }
+            document.getElementById('storesModal').classList.add('active');
+        }
+
+        async function editStore(id) {
+            try {
+                const data = await apiGet(`/api/admin/stores/${id}`);
+                openStoreModal('edit', data);
+            } catch(e) { showToast('Không tải được dữ liệu: ' + e.message, 'error'); }
+        }
+
+        async function submitStoreForm(e) {
+            e.preventDefault();
+            const form = document.getElementById('storesForm');
+            const name     = form.elements['name'].value.trim();
+            const address  = form.elements['address'].value.trim();
+            const district = form.elements['district'].value.trim();
+            let valid = true;
+            if (!name)     { document.getElementById('storeNameError').textContent = 'Bắt buộc'; valid = false; }
+            if (!address)  { document.getElementById('storeAddressError').textContent = 'Bắt buộc'; valid = false; }
+            if (!district) { document.getElementById('storeDistrictError').textContent = 'Bắt buộc'; valid = false; }
+            if (!valid) return;
+
+            document.getElementById('storesSubmitBtn').disabled = true;
+            clearModalError('storesModalError');
+            try {
+                const body = {
+                    name, address, district,
+                    city:  form.elements['city'].value,
+                    phone: form.elements['phone'].value.trim() || null,
+                    hours: form.elements['hours'].value.trim() || '06:00 – 23:00',
+                };
+                if (_editingStoreId) {
+                    await apiPut(`/api/admin/stores/${_editingStoreId}`, body);
+                    showToast('✅ Cập nhật cửa hàng thành công', 'success');
+                } else {
+                    await apiPost('/api/admin/stores', body);
+                    showToast('✅ Tạo cửa hàng thành công', 'success');
+                }
+                closeModal('storesModal');
+                loadStores();
+            } catch(e) {
+                showModalError('storesModalError', e.message);
+            } finally {
+                document.getElementById('storesSubmitBtn').disabled = false;
+            }
+        }
+
+        async function toggleStore(id, newStatus) {
+            try {
+                await apiPatch(`/api/admin/stores/${id}`, { is_active: newStatus });
+                showToast(newStatus ? '🔓 Đã mở cửa hàng' : '🔒 Đã đóng cửa hàng', 'success');
+                loadStores(false);
+            } catch(e) { showToast('Lỗi: ' + e.message, 'error'); }
+        }
+
+        function deleteStore(id, name) {
+            showConfirm(`Xóa cửa hàng "${name}"? Hành động này không thể hoàn tác.`, async () => {
+                try {
+                    await apiDelete(`/api/admin/stores/${id}`);
+                    showToast('✅ Đã xóa cửa hàng', 'success');
+                    loadStores(false);
+                } catch(e) { showToast('Lỗi: ' + e.message, 'error'); }
+            }, 'Xóa', true);
+        }
+
+        // ========== PROMOTIONS ==========
+        const TAG_LABELS = { HOT: '🔥 HOT', SALE: '💸 SALE', NEW: '✨ NEW' };
+
+        async function loadPromotions(resetPage = true) {
+            if (resetPage) pagState.promotions.page = 1;
+            const { page, pageSize } = pagState.promotions;
+            const skip = (page - 1) * pageSize;
+            const search = document.getElementById('promotionsSearch')?.value || '';
+            const tag    = document.getElementById('promotionsTagFilter')?.value || '';
+            const status = document.getElementById('promotionsStatusFilter')?.value || '';
+            const params = new URLSearchParams({ skip, limit: pageSize });
+            if (search) params.append('search', search);
+            if (tag)    params.append('tag', tag);
+            if (status !== '') params.append('is_active', status);
+            try {
+                const data = await apiGet('/api/admin/promotions?' + params);
+                document.getElementById('promotionsTable').innerHTML = (data.items || []).map(p => `
+                    <tr>
+                        <td>#${p.id}</td>
+                        <td>
+                            <strong>${esc(p.title)}</strong>
+                            ${p.description ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${esc(p.description.substring(0,60))}${p.description.length>60?'…':''}</div>` : ''}
+                        </td>
+                        <td><strong style="color:var(--danger);">${esc(p.discount||'—')}</strong></td>
+                        <td><span class="badge" style="background:${p.tag==='HOT'?'#fee2e2;color:#b91c1c':p.tag==='SALE'?'#fef3c7;color:#92400e':'#dcfce7;color:#15803d'}">${TAG_LABELS[p.tag]||p.tag||'—'}</span></td>
+                        <td style="font-size:13px;color:var(--text-muted);">${esc(p.valid_until||'—')}</td>
+                        <td><span class="badge ${p.is_active ? 'badge-active' : 'badge-inactive'}">${p.is_active ? '✅ Hiển Thị' : '⛔ Đã Ẩn'}</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary btn-sm btn-icon" title="Chỉnh Sửa" onclick="editPromotion(${p.id})">✏️</button>
+                                <button class="btn ${p.is_active ? 'btn-warning' : 'btn-success'} btn-sm btn-icon" title="${p.is_active ? 'Ẩn' : 'Hiện'}" onclick="togglePromotion(${p.id}, ${p.is_active ? 0 : 1})">${p.is_active ? '👁' : '🙈'}</button>
+                                <button class="btn btn-danger btn-sm btn-icon" title="Xóa" onclick="deletePromotion(${p.id}, '${esc(p.title)}')">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);">Không có dữ liệu</td></tr>';
+                renderPagination('promotions', data.total || 0);
+            } catch(e) {
+                document.getElementById('promotionsTable').innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--danger);">Lỗi: ${esc(e.message)}</td></tr>`;
+            }
+        }
+
+        // debounce search
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('promotionsSearch')?.addEventListener('input', () => {
+                clearTimeout(window._promoSearchTimer);
+                window._promoSearchTimer = setTimeout(() => loadPromotions(), 350);
+            });
+        });
+
+        let _editingPromoId = null;
+
+        function openPromotionModal(mode = 'create', data = null) {
+            _editingPromoId = data ? data.id : null;
+            document.getElementById('promotionsModalTitle').textContent = mode === 'edit' ? 'Chỉnh Sửa Ưu Đãi' : 'Tạo Ưu Đãi Mới';
+            clearModalError('promotionsModalError');
+            document.getElementById('promoTitleError').textContent = '';
+            const form = document.getElementById('promotionsForm');
+            form.reset();
+            if (data) {
+                form.elements['title'].value       = data.title       || '';
+                form.elements['description'].value = data.description || '';
+                form.elements['discount'].value    = data.discount    || '';
+                form.elements['tag'].value         = data.tag         || 'HOT';
+                form.elements['image_url'].value   = data.image_url   || '';
+                form.elements['valid_until'].value = data.valid_until || '';
+            }
+            document.getElementById('promotionsModal').classList.add('active');
+        }
+
+        async function editPromotion(id) {
+            try {
+                const data = await apiGet(`/api/admin/promotions/${id}`);
+                openPromotionModal('edit', data);
+            } catch(e) { showToast('Không tải được dữ liệu: ' + e.message, 'error'); }
+        }
+
+        async function submitPromotionForm(e) {
+            e.preventDefault();
+            const form = document.getElementById('promotionsForm');
+            const title = form.elements['title'].value.trim();
+            if (!title) { document.getElementById('promoTitleError').textContent = 'Bắt buộc'; return; }
+
+            document.getElementById('promotionsSubmitBtn').disabled = true;
+            clearModalError('promotionsModalError');
+            try {
+                const body = {
+                    title,
+                    description: form.elements['description'].value.trim() || null,
+                    discount:    form.elements['discount'].value.trim()    || null,
+                    tag:         form.elements['tag'].value                || 'HOT',
+                    image_url:   form.elements['image_url'].value.trim()   || null,
+                    valid_until: form.elements['valid_until'].value.trim() || null,
+                };
+                if (_editingPromoId) {
+                    await apiPut(`/api/admin/promotions/${_editingPromoId}`, body);
+                    showToast('✅ Cập nhật ưu đãi thành công', 'success');
+                } else {
+                    await apiPost('/api/admin/promotions', body);
+                    showToast('✅ Tạo ưu đãi thành công', 'success');
+                }
+                closeModal('promotionsModal');
+                loadPromotions();
+            } catch(e) {
+                showModalError('promotionsModalError', e.message);
+            } finally {
+                document.getElementById('promotionsSubmitBtn').disabled = false;
+            }
+        }
+
+        async function togglePromotion(id, newStatus) {
+            try {
+                await apiPatch(`/api/admin/promotions/${id}`, { is_active: newStatus });
+                showToast(newStatus ? '✅ Đã hiện ưu đãi' : '⛔ Đã ẩn ưu đãi', 'success');
+                loadPromotions(false);
+            } catch(e) { showToast('Lỗi: ' + e.message, 'error'); }
+        }
+
+        function deletePromotion(id, title) {
+            showConfirm(`Xóa ưu đãi "${title}"? Hành động này không thể hoàn tác.`, async () => {
+                try {
+                    await apiDelete(`/api/admin/promotions/${id}`);
+                    showToast('✅ Đã xóa ưu đãi', 'success');
+                    loadPromotions(false);
+                } catch(e) { showToast('Lỗi: ' + e.message, 'error'); }
+            }, 'Xóa', true);
+        }
     </script>
 </body>
 </html>
