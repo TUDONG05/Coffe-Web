@@ -226,18 +226,20 @@ async def upload_news_image(
 
     ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else "jpg"
     filename = f"{news_id}_{uuid.uuid4().hex[:8]}.{ext}"
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    dest = os.path.join(UPLOAD_DIR, filename)
-
-    if news.image_url and news.image_url.startswith("/static/images/news/"):
-        old_path = os.path.join(os.path.dirname(__file__), "..", "..", news.image_url.lstrip("/"))
-        if os.path.exists(old_path):
-            os.remove(old_path)
-
-    async with aiofiles.open(dest, "wb") as f:
-        await f.write(content)
-
-    news.image_url = f"/static/images/news/{filename}"
+    try:
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        dest = os.path.join(UPLOAD_DIR, filename)
+        if news.image_url and news.image_url.startswith("/static/images/news/"):
+            old_path = os.path.join(os.path.dirname(__file__), "..", "..", news.image_url.lstrip("/"))
+            if os.path.exists(old_path):
+                os.remove(old_path)
+        async with aiofiles.open(dest, "wb") as f:
+            await f.write(content)
+        news.image_url = f"/static/images/news/{filename}"
+    except OSError:
+        # Vercel: filesystem read-only — write to /tmp, serve via redirect not supported
+        # Return error so frontend knows to use image URL field instead
+        raise HTTPException(status_code=400, detail="Môi trường này không hỗ trợ upload file. Vui lòng dùng URL ảnh.")
     db.commit()
     db.refresh(news)
     return news

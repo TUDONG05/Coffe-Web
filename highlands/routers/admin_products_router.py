@@ -220,19 +220,18 @@ async def upload_product_image(
 
     ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else "jpg"
     filename = f"{product_id}_{uuid.uuid4().hex[:8]}.{ext}"
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    dest = os.path.join(UPLOAD_DIR, filename)
-
-    # Remove old image file if exists
-    if product.image_url:
-        old_path = os.path.join(os.path.dirname(__file__), "..", "..", product.image_url.lstrip("/"))
-        if os.path.exists(old_path):
-            os.remove(old_path)
-
-    async with aiofiles.open(dest, "wb") as f:
-        await f.write(content)
-
-    product.image_url = f"/static/images/products/{filename}"
+    try:
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        dest = os.path.join(UPLOAD_DIR, filename)
+        if product.image_url:
+            old_path = os.path.join(os.path.dirname(__file__), "..", "..", product.image_url.lstrip("/"))
+            if os.path.exists(old_path):
+                os.remove(old_path)
+        async with aiofiles.open(dest, "wb") as f:
+            await f.write(content)
+        product.image_url = f"/static/images/products/{filename}"
+    except OSError:
+        raise HTTPException(status_code=400, detail="Môi trường này không hỗ trợ upload file. Vui lòng dùng URL ảnh.")
     db.commit()
     db.refresh(product)
     return product
