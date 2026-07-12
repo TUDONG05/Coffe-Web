@@ -1,0 +1,2 @@
+[tool.vercel]
+entrypoint = "highlands_app:app"
