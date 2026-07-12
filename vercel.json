@@ -1,0 +1,14 @@
+{
+  "builds": [
+    {
+      "src": "highlands_app.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "highlands_app.py"
+    }
+  ]
+}
