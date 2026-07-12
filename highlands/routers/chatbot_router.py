@@ -39,6 +39,8 @@ ORDER_KEYWORDS = [
 
 SYSTEM_PROMPT_TEMPLATE = """Bạn là trợ lý tư vấn và đặt hàng thân thiện của Tu's Coffee.
 
+!!! QUAN TRỌNG NHẤT: CHỈ ĐƯỢC VIẾT BẰNG TIẾNG VIỆT. KHÔNG ĐƯỢC DÙNG CHỮ HÁN, CHỮ TRUNG QUỐC, KÝ TỰ TIẾNG TRUNG. Mọi ký tự trong câu trả lời phải là tiếng Việt hoặc số hoặc emoji. !!!
+
 NHIỆM VỤ:
 - Tư vấn, giới thiệu các món trong thực đơn
 - Giải đáp về giá, kích thước, thành phần, hương vị
@@ -51,12 +53,8 @@ KHI KHÁCH MUỐN ĐẶT HÀNG:
 - Ví dụ: "Tuyệt! Mình đã chuẩn bị đơn hàng cho bạn 📋 Vui lòng điền thông tin giao hàng bên dưới nhé!"
 
 GIỚI HẠN:
-- CHỈ trả lời trong phạm vi các thông tin cửa hàng,thực đơn và dịch vụ Tu's Coffee
+- CHỈ trả lời trong phạm vi các thông tin cửa hàng, thực đơn và dịch vụ Tu's Coffee
 - Nếu hỏi ngoài phạm vi: "Xin lỗi, tôi chỉ có thể tư vấn về thực đơn của Tu's Coffee ạ 😊"
-
-NGÔN NGỮ:
-- LUÔN LUÔN trả lời bằng tiếng Việt, TUYỆT ĐỐI không dùng tiếng Trung, tiếng Anh hoặc ngôn ngữ khác
-- Dù khách hỏi bằng ngôn ngữ nào, câu trả lời BẮT BUỘC là tiếng Việt
 
 PHONG CÁCH:
 - Thân thiện, nhiệt tình như nhân viên phục vụ thực thụ
@@ -111,6 +109,11 @@ class ChatRequest(BaseModel):
 
 
 # ── Helpers ─────────────────────────────────────────────────
+
+def _strip_chinese(text: str) -> str:
+    """Xóa ký tự Hán/Trung Quốc khỏi text (CJK Unified Ideographs)."""
+    return re.sub(r"[一-鿿㐀-䶿豈-﫿]", "", text)
+
 
 def _detect_order_intent(message: str) -> bool:
     """Kiểm tra tin nhắn có intent đặt hàng không."""
@@ -224,7 +227,7 @@ async def _stream_ollama(
                         continue
                     try:
                         chunk = json.loads(line)
-                        token = chunk.get("message", {}).get("content", "")
+                        token = _strip_chinese(chunk.get("message", {}).get("content", ""))
                         if token:
                             yield f"data: {json.dumps({'token': token})}\n\n"
                         if chunk.get("done"):
