@@ -9,18 +9,17 @@ try:
 except ImportError:
     pass
 
-# ── MySQL ────────────────────────────────────────────────
-MYSQL_HOST     = os.getenv("MYSQL_HOST",     "localhost")
-MYSQL_PORT     = int(os.getenv("MYSQL_PORT", "3306"))
-MYSQL_USER     = os.getenv("MYSQL_USER",     "root")
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "")
-MYSQL_DB       = os.getenv("MYSQL_DB",       "highlands_coffee")
+# ── PostgreSQL ───────────────────────────────────────────
+PG_HOST     = os.getenv("PG_HOST",     "localhost")
+PG_PORT     = os.getenv("PG_PORT",     "5432")
+PG_USER     = os.getenv("PG_USER",     "postgres")
+PG_PASSWORD = os.getenv("PG_PASSWORD", "")
+PG_DB       = os.getenv("PG_DB",       "highlands_coffee")
 
-# URL-encode password to handle special chars like @, #, %
-_pwd_encoded = quote_plus(MYSQL_PASSWORD)
-DATABASE_URL = (
-    f"mysql+pymysql://{MYSQL_USER}:{_pwd_encoded}"
-    f"@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}?charset=utf8mb4"
+# Support full DATABASE_URL override (e.g. from Vercel Postgres / Neon / Supabase)
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    f"postgresql+psycopg2://{PG_USER}:{quote_plus(PG_PASSWORD)}@{PG_HOST}:{PG_PORT}/{PG_DB}"
 )
 
 # ── JWT ──────────────────────────────────────────────────
