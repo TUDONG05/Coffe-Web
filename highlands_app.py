@@ -27,6 +27,7 @@ from highlands.routers import (
     admin_dashboard_router,
     admin_news_router,
     admin_users_router,
+    admin_promotions_router,
     chatbot_router,
 )
 from highlands.database import SessionLocal
@@ -73,6 +74,7 @@ app.include_router(admin_categories_router.router)
 app.include_router(admin_customers_router.router)
 app.include_router(admin_news_router.router)
 app.include_router(admin_users_router.router)
+app.include_router(admin_promotions_router.router)
 app.include_router(admin_dashboard_router.router)
 
 # Chatbot API

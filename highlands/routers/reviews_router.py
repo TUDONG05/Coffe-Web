@@ -94,6 +94,18 @@ def can_review(
     return {"can_review": True, "reason": None}
 
 
+@router.get("/mine")
+def get_my_reviews(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_login),
+):
+    """Return list of product_ids the current user has already reviewed."""
+    reviews = db.query(models.ProductReview).filter(
+        models.ProductReview.user_id == current_user.id
+    ).all()
+    return [{"product_id": r.product_id, "stars": r.stars} for r in reviews]
+
+
 @router.post("", status_code=201)
 def submit_review(
     body: ReviewIn,

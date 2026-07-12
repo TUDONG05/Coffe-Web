@@ -478,6 +478,59 @@ def create_order(
     }
 
 
+@router.get("/{order_id}/reviews")
+def get_order_reviews(
+    order_id: int,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Get all reviews by the order's user for products in this order."""
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    product_ids = [item.product_id for item in (order.items or []) if item.product_id]
+
+    if not product_ids or not order.user_id:
+        return []
+
+    reviews = (
+        db.query(models.ProductReview)
+        .filter(
+            models.ProductReview.product_id.in_(product_ids),
+            models.ProductReview.user_id == order.user_id,
+        )
+        .all()
+    )
+
+    return [
+        {
+            "id": r.id,
+            "product_id": r.product_id,
+            "product_name": r.product.name if r.product else "—",
+            "stars": r.stars,
+            "comment": r.comment,
+            "created_at": r.created_at.strftime("%d/%m/%Y %H:%M") if r.created_at else None,
+        }
+        for r in reviews
+    ]
+
+
+@router.delete("/reviews/{review_id}")
+def delete_review(
+    review_id: int,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Delete a product review."""
+    review = db.query(models.ProductReview).filter(models.ProductReview.id == review_id).first()
+    if not review:
+        raise HTTPException(status_code=404, detail="Đánh giá không tồn tại")
+    db.delete(review)
+    db.commit()
+    return {"detail": "Đã xóa đánh giá"}
+
+
 @router.delete("/{order_id}")
 def delete_order(
     order_id: int,

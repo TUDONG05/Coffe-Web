@@ -145,7 +145,7 @@ def my_orders(
             "payment_status": o.payment_status or "unpaid",
             "note": o.note,
             "created_at": o.created_at.strftime("%d/%m/%Y %H:%M"),
-            "items": [{"name": i.name, "price": i.price, "quantity": i.quantity, "subtotal": i.subtotal} for i in o.items],
+            "items": [{"product_id": i.product_id, "name": i.name, "price": i.price, "quantity": i.quantity, "subtotal": i.subtotal} for i in o.items],
         }
         for o in orders
     ]
