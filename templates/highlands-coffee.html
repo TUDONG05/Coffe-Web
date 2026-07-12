@@ -929,8 +929,6 @@
 
     // ── Submit order to FastAPI ───────────────────────────
     async function submitOrder() {
-      if (!authToken) { closeCart(); toast('Vui lòng đăng nhập để đặt hàng!', false); openAuthModal(); return; }
-
       const name    = document.getElementById('f-name').value.trim();
       const phone   = document.getElementById('f-phone').value.trim();
       const address = document.getElementById('f-address').value.trim();
@@ -976,8 +974,8 @@
           const pts = data.earned_points || 0;
           const ptsTxt = pts > 0 ? ` | +${pts} điểm Rewards` : '';
           toast(`✅ Đặt hàng thành công! Mã đơn #${data.order.id} – tổng ${fmt(data.order.total)}${ptsTxt}`);
-          if (data.order.payment_method === 'qr_transfer') {
-            showQR(data.order.id, data.order.total);
+          if (paymentMethod === 'qr_transfer' || data.order.payment_method === 'qr_transfer') {
+            setTimeout(() => showQR(data.order.id, data.order.total), 400);
           }
         } else {
           toast('Có lỗi xảy ra. Vui lòng thử lại!', false);
@@ -2842,7 +2840,7 @@
           </div>`;
 
         if (data.order.payment_method === 'qr_transfer') {
-          showQR(data.order.id, data.order.total);
+          setTimeout(() => showQR(data.order.id, data.order.total), 400);
         }
       } catch (err) {
         btn.textContent = 'Đặt hàng 🎉';
