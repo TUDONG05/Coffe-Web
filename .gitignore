@@ -40,3 +40,6 @@ htmlcov/
 # Unrelated repos
 msi-ec/
 
+# Deployment docs
+deploy.md
+
