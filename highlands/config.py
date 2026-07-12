@@ -23,17 +23,12 @@ _raw_url = (
     or f"postgresql+psycopg2://{PG_USER}:{quote_plus(PG_PASSWORD)}@{PG_HOST}:{PG_PORT}/{PG_DB}"
 )
 # psycopg2 requires postgresql:// not postgres://
-# also strip channel_binding param which psycopg2 doesn't support
-from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
-_raw_url = _raw_url.replace("postgres://", "postgresql://", 1)
-if "channel_binding" in _raw_url:
-    _parsed = urlparse(_raw_url)
-    _qs = {k: v for k, v in parse_qs(_parsed.query).items() if k != "channel_binding"}
-    _raw_url = urlunparse(_parsed._replace(query=urlencode(_qs, doseq=True)))
-DATABASE_URL = _raw_url
+DATABASE_URL = _raw_url.replace("postgres://", "postgresql://", 1)
 
 # ── JWT ──────────────────────────────────────────────────
-SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY environment variable is not set. Add it to your .env file.")
 ALGORITHM       = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day
 
