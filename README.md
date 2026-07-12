@@ -1,14 +1,31 @@
-# Tu's Coffee — Web Application
+# ☕ Tu's Coffee — Web Application
 
 Ứng dụng web thương mại điện tử cho chuỗi cà phê **Tu's Coffee**, xây dựng bằng **FastAPI** (backend) và **HTML/CSS/Vanilla JavaScript** (frontend SPA). Hệ thống gồm hai giao diện riêng biệt: trang khách hàng và trang quản trị.
 
 ---
 
-## Tính năng
+## 🛠️ Tech Stack
 
-### Giao diện khách hàng (`/`)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-009688?logo=fastapi&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-5.7+-4479A1?logo=mysql&logoColor=white)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-D71F00?logo=sqlalchemy&logoColor=white)
+![Pydantic](https://img.shields.io/badge/Pydantic-v2-E92063?logo=pydantic&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?logo=javascript&logoColor=black)
+![JWT](https://img.shields.io/badge/JWT-HS256-000000?logo=jsonwebtokens&logoColor=white)
+![Google OAuth](https://img.shields.io/badge/Google_OAuth-2.0-4285F4?logo=google&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-TF--IDF-F7931E?logo=scikitlearn&logoColor=white)
+![Uvicorn](https://img.shields.io/badge/Uvicorn-ASGI-499848?logo=gunicorn&logoColor=white)
 
-**Tài khoản & Xác thực**
+---
+
+## ✨ Tính năng
+
+### 👤 Giao diện khách hàng (`/`)
+
+**🔐 Tài khoản & Xác thực**
 - Đăng ký tài khoản với xác thực **OTP qua email** (Gmail SMTP), tặng 50 điểm Rewards
 - Đăng nhập bằng **email/mật khẩu** hoặc **Google OAuth** (Sign in with Google)
 - **Quên mật khẩu** — luồng 3 bước: nhập email → nhận OTP reset → đặt mật khẩu mới
@@ -16,12 +33,12 @@
 - Đổi mật khẩu
 - Validation số điện thoại Việt Nam (10 chữ số, bắt đầu 03/05/07/08/09)
 
-**Menu & Tìm kiếm**
+**☕ Menu & Tìm kiếm**
 - Duyệt 30+ sản phẩm, lọc theo danh mục (Cà phê, Trà, Freeze, Thức ăn, Combo)
 - Tìm kiếm sản phẩm theo tên hoặc danh mục (thanh tìm kiếm menu & nút tìm kiếm navbar)
 - Xem ảnh sản phẩm thực tế
 
-**Giỏ hàng & Đặt hàng**
+**🛒 Giỏ hàng & Đặt hàng**
 - Thêm sản phẩm vào giỏ hàng, điều chỉnh số lượng
 - Đặt hàng online — **yêu cầu đăng nhập** (điểm Rewards được tích ngay sau mỗi đơn)
 - Chọn phương thức thanh toán: **Tiền mặt** hoặc **Chuyển khoản QR** (VietQR)
@@ -30,18 +47,18 @@
 - Xem lịch sử đơn hàng (trạng thái, phương thức thanh toán, chi tiết items)
 - Huỷ đơn hàng đang chờ xử lý
 
-**Đánh giá sản phẩm**
+**⭐ Đánh giá sản phẩm**
 - Gửi đánh giá (1–5 sao + bình luận) cho sản phẩm đã mua
 - Chỉ tài khoản có đơn hàng `done` / `confirmed` chứa sản phẩm mới được đánh giá
 - Xem danh sách đánh giá và điểm trung bình của từng sản phẩm
 
-**Tu's Coffee Rewards**
+**🎁 Tu's Coffee Rewards**
 - Trang Rewards riêng biệt với 3 tầng: Bronze / Silver / Gold
 - Tích điểm khi đặt hàng: 10.000đ = 1 điểm
 - Hiển thị điểm hiện tại, toast thông báo điểm tích sau mỗi đơn
 - Catalog đổi thưởng (đồ uống miễn phí, voucher, quà tặng)
 
-**Nội dung**   
+**📰 Nội dung**
 - Xem khuyến mãi đang áp dụng (kèm ảnh minh hoạ)
 - Đọc tin tức & bài viết mới nhất (kèm ảnh bìa)
 - Tìm kiếm cửa hàng theo thành phố, lọc theo từ khóa
@@ -49,13 +66,13 @@
 
 ---
 
-### Giao diện quản trị (`/admin`)
+### 🛡️ Giao diện quản trị (`/admin`)
 
-**Dashboard**
+**📊 Dashboard**
 - Thống kê tổng quan: tổng sản phẩm, đơn hàng, tài khoản, doanh thu
 - Bảng đơn hàng gần đây
 
-**Quản lý nội dung (CRUD đầy đủ)**
+**📦 Quản lý nội dung (CRUD đầy đủ)**
 - **Sản phẩm** — tìm kiếm, lọc theo danh mục/giá, phân trang, toggle kích hoạt, **upload ảnh sản phẩm** (JPEG/PNG/WebP, tối đa 5MB)
 - **Đơn hàng** — cập nhật trạng thái, xem chi tiết items, cột Thanh Toán (paid/unpaid + phương thức)
 - **Tài khoản** — hiển thị role, điểm Rewards; lọc theo role (`admin` / `user`) và trạng thái
@@ -64,7 +81,7 @@
 - **Danh mục** — quản lý danh mục sản phẩm
 - **Tài khoản Admin** — tạo, phân quyền, khóa/mở tài khoản nội bộ
 
-**Tính năng chung**
+**⚙️ Tính năng chung**
 - Xác thực JWT, phân quyền role `admin`
 - Soft delete — không xoá vật lý
 - Toast thông báo sau mỗi thao tác
@@ -72,7 +89,7 @@
 
 ---
 
-## Giao diện ứng dụng
+## 🖥️ Giao diện ứng dụng
 
 | Trang | URL | Mô tả |
 |-------|-----|-------|
@@ -84,32 +101,32 @@
 
 ---
 
-## Công nghệ sử dụng
+## 📦 Công nghệ sử dụng
 
 | Thành phần | Công nghệ | Phiên bản |
 |------------|-----------|-----------|
-| Backend framework | FastAPI | 0.104.1 |
-| ASGI server | Uvicorn | 0.24.0 |
-| ORM | SQLAlchemy | 2.0.23 |
-| Database | MySQL | 5.7+ |
-| DB driver | PyMySQL | 1.1.0 |
-| Validation | Pydantic | v2.5.0 |
-| Xác thực | JWT (HS256) + Bcrypt | python-jose 3.3.0 / bcrypt 4.1.1 |
-| Google OAuth | google-auth | 2.29.0 |
-| Email OTP | Gmail SMTP (smtplib) | — |
-| File upload | python-multipart | ≥0.0.9 |
-| Config | python-dotenv | 1.0.0 |
-| File tĩnh | aiofiles | ≥23.0.0 |
-| AI / Chatbot | scikit-learn | ≥1.3.0 |
-| HTTP client | httpx | ≥0.27.0 |
-| Export | openpyxl | ≥3.1.0 |
-| Frontend | HTML5, CSS3, Vanilla JavaScript (SPA) | — |
-| Thanh toán QR | VietQR free API | — |
-| Runtime | Python | 3.10+ |
+| ![FastAPI](https://img.shields.io/badge/-FastAPI-009688?logo=fastapi&logoColor=white&style=flat-square) Backend framework | FastAPI | 0.104.1 |
+| ![Uvicorn](https://img.shields.io/badge/-Uvicorn-499848?logo=gunicorn&logoColor=white&style=flat-square) ASGI server | Uvicorn | 0.24.0 |
+| ![SQLAlchemy](https://img.shields.io/badge/-SQLAlchemy-D71F00?logo=sqlalchemy&logoColor=white&style=flat-square) ORM | SQLAlchemy | 2.0.23 |
+| ![MySQL](https://img.shields.io/badge/-MySQL-4479A1?logo=mysql&logoColor=white&style=flat-square) Database | MySQL | 5.7+ |
+| 🔌 DB driver | PyMySQL | 1.1.0 |
+| ![Pydantic](https://img.shields.io/badge/-Pydantic-E92063?logo=pydantic&logoColor=white&style=flat-square) Validation | Pydantic | v2.5.0 |
+| ![JWT](https://img.shields.io/badge/-JWT-000000?logo=jsonwebtokens&logoColor=white&style=flat-square) Xác thực | JWT (HS256) + Bcrypt | python-jose 3.3.0 / bcrypt 4.1.1 |
+| ![Google](https://img.shields.io/badge/-Google_OAuth-4285F4?logo=google&logoColor=white&style=flat-square) Google OAuth | google-auth | 2.29.0 |
+| 📧 Email OTP | Gmail SMTP (smtplib) | — |
+| 📁 File upload | python-multipart | ≥0.0.9 |
+| ⚙️ Config | python-dotenv | 1.0.0 |
+| 🗂️ File tĩnh | aiofiles | ≥23.0.0 |
+| ![scikit-learn](https://img.shields.io/badge/-scikit--learn-F7931E?logo=scikitlearn&logoColor=white&style=flat-square) AI / Chatbot | scikit-learn | ≥1.3.0 |
+| 🌐 HTTP client | httpx | ≥0.27.0 |
+| 📊 Export | openpyxl | ≥3.1.0 |
+| ![HTML5](https://img.shields.io/badge/-HTML5-E34F26?logo=html5&logoColor=white&style=flat-square) ![CSS3](https://img.shields.io/badge/-CSS3-1572B6?logo=css3&logoColor=white&style=flat-square) ![JS](https://img.shields.io/badge/-JavaScript-F7DF1E?logo=javascript&logoColor=black&style=flat-square) Frontend | HTML5, CSS3, Vanilla JavaScript (SPA) | — |
+| 💳 Thanh toán QR | VietQR free API | — |
+| ![Python](https://img.shields.io/badge/-Python-3776AB?logo=python&logoColor=white&style=flat-square) Runtime | Python | 3.10+ |
 
 ---
 
-## Cấu trúc source code
+## 📁 Cấu trúc source code
 
 ```
 Coffe-Web/
@@ -175,7 +192,7 @@ Coffe-Web/
 
 ---
 
-## Schema Database
+## 🗄️ Schema Database
 
 ### Các bảng
 
@@ -320,12 +337,12 @@ product_reviews ─────────── products         (nhiều : 1)
 
 ---
 
-## Cài đặt
+## 🚀 Cài đặt
 
 ### Yêu cầu
 
-- Python **3.10+**
-- MySQL **5.7+** (hoặc 8.x)
+- ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white&style=flat-square)
+- ![MySQL](https://img.shields.io/badge/MySQL-5.7+-4479A1?logo=mysql&logoColor=white&style=flat-square)
 - pip
 
 ### Bước 1 — Tạo môi trường ảo
@@ -391,7 +408,7 @@ OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=qwen2.5:3b
 ```
 
-> Bắt buộc đổi `SECRET_KEY` thành chuỗi ngẫu nhiên trước khi deploy production.
+> ⚠️ Bắt buộc đổi `SECRET_KEY` thành chuỗi ngẫu nhiên trước khi deploy production.
 
 ### Bước 4 — Tạo database MySQL
 
@@ -430,11 +447,11 @@ Tài khoản mặc định:
 - Email: `admin@highlands.com`
 - Mật khẩu: `admin123`
 
-> Đổi mật khẩu ngay sau khi đăng nhập lần đầu.
+> ⚠️ Đổi mật khẩu ngay sau khi đăng nhập lần đầu.
 
 ---
 
-## Chạy ứng dụng
+## ▶️ Chạy ứng dụng
 
 ### Chế độ phát triển (auto-reload)
 
@@ -460,7 +477,7 @@ uvicorn highlands_app:app --host 0.0.0.0 --port 8000 --workers 4
 
 ---
 
-## Dừng ứng dụng
+## ⏹️ Dừng ứng dụng
 
 ```bash
 # Nhấn Ctrl+C nếu chạy foreground
@@ -476,7 +493,7 @@ lsof -i :8000 && kill -9 <PID>
 
 ---
 
-## AI Chatbot
+## 🤖 AI Chatbot
 
 Tu's Coffee tích hợp chatbot AI tư vấn thực đơn và hỗ trợ đặt hàng trực tiếp trên giao diện khách hàng.
 
@@ -535,11 +552,11 @@ Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override q
 
 ---
 
-## API Endpoints
+## 🔌 API Endpoints
 
 ### Public API
 
-#### Xác thực (`/api/auth`)
+#### 🔐 Xác thực (`/api/auth`)
 
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
@@ -553,14 +570,14 @@ Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override q
 | PUT | `/api/auth/profile` | Cập nhật hồ sơ (validate SĐT Việt Nam) |
 | PUT | `/api/auth/change-password` | Đổi mật khẩu |
 
-#### Sản phẩm (`/api/products`)
+#### ☕ Sản phẩm (`/api/products`)
 
 | Method | Endpoint | Query Params |
 |--------|----------|--------------|
 | GET | `/api/products` | `category`, `q` (tìm theo tên / danh mục) |
 | GET | `/api/products/{id}` | — |
 
-#### Đơn hàng (`/api/orders`)
+#### 🛒 Đơn hàng (`/api/orders`)
 
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
@@ -568,7 +585,7 @@ Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override q
 | GET | `/api/orders/mine` | Lịch sử đơn (cần đăng nhập) |
 | PATCH | `/api/orders/{id}/cancel` | Huỷ đơn `pending` |
 
-#### Đánh giá (`/api/reviews`)
+#### ⭐ Đánh giá (`/api/reviews`)
 
 | Method | Endpoint | Mô tả |
 |--------|----------|-------|
@@ -576,7 +593,7 @@ Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override q
 | GET | `/api/reviews/can-review/{id}` | Kiểm tra user có được phép đánh giá không |
 | POST | `/api/reviews` | Gửi đánh giá (cần đăng nhập, phải có đơn `done`/`confirmed`) |
 
-#### Nội dung
+#### 📰 Nội dung
 
 | Method | Endpoint | Query Params |
 |--------|----------|--------------|
@@ -587,7 +604,7 @@ Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override q
 
 ---
 
-### Admin API
+### 🛡️ Admin API
 
 > Header bắt buộc: `Authorization: Bearer <jwt_token>` — role `admin`
 
@@ -606,9 +623,9 @@ Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override q
 
 ---
 
-## Bảo mật
+## 🔒 Bảo mật
 
-**Đã triển khai:**
+**✅ Đã triển khai:**
 - Bcrypt hashing cho mật khẩu
 - JWT HS256 với thời hạn 24 giờ
 - Phân quyền theo role: `admin` / `user`
@@ -622,7 +639,7 @@ Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override q
 - Mật khẩu tối thiểu 6 ký tự
 - Giới hạn loại file upload (JPEG/PNG/WebP) và kích thước (5MB)
 
-**Cần cấu hình trước khi deploy production:**
+**⚠️ Cần cấu hình trước khi deploy production:**
 
 - [ ] Đổi `SECRET_KEY` thành chuỗi ngẫu nhiên (≥32 ký tự)
 - [ ] Đặt mật khẩu MySQL mạnh
@@ -634,6 +651,6 @@ Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override q
 
 ---
 
-## License
+## 📄 License
 
 Proprietary — Tu's Coffee © 2026
