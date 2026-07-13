@@ -522,7 +522,7 @@ def _build_invoice_html(order: models.Order, items: list) -> str:
     )
 
     qr_section = ""
-    if BANK_ACCOUNT and order.payment_method == "qr_transfer" and order.payment_status != "paid":
+    if BANK_ACCOUNT and order.payment_status != "paid":
         acct_enc = urllib.parse.quote(BANK_ACCOUNT_NAME or SHOP_NAME or "")
         qr_url = (
             f"https://img.vietqr.io/image/{BANK_CODE}-{BANK_ACCOUNT}-compact2.png"
