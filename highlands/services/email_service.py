@@ -4,7 +4,8 @@ Email service — gửi OTP xác thực qua Gmail SMTP (Google App Password).
 import smtplib
 import random
 import string
-from datetime import datetime, timedelta
+from datetime import timedelta
+from highlands.models import vn_now
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from highlands.config import GMAIL_USER, GMAIL_APP_PASSWORD
@@ -28,7 +29,7 @@ def create_otp(email: str, purpose: str = "register") -> str:
     otp = _generate_otp()
     _otp_store[_otp_key(email, purpose)] = {
         "otp": otp,
-        "expires_at": datetime.utcnow() + timedelta(minutes=OTP_TTL_MINUTES),
+        "expires_at": vn_now() + timedelta(minutes=OTP_TTL_MINUTES),
         "attempts": 0,
     }
     return otp
@@ -39,7 +40,7 @@ def verify_otp(email: str, otp: str, purpose: str = "register") -> bool:
     record = _otp_store.get(key)
     if not record:
         return False
-    if datetime.utcnow() > record["expires_at"]:
+    if vn_now() > record["expires_at"]:
         _otp_store.pop(key, None)
         return False
     if record["attempts"] >= OTP_MAX_ATTEMPTS:

@@ -10,12 +10,13 @@ from sqlalchemy.orm import Session
 from highlands.database import get_db
 from highlands import models
 from highlands.auth_utils import require_admin
+from highlands.models import vn_now
 
 router = APIRouter(prefix="/api/admin/dashboard", tags=["admin-dashboard"])
 
 
 def _date_range(period: str):
-    now = datetime.utcnow()
+    now = vn_now()
     if period == "week":
         start = (now - timedelta(days=6)).replace(hour=0, minute=0, second=0, microsecond=0)
     elif period == "year":
