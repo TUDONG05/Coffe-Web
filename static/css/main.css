@@ -900,10 +900,10 @@ div.api-card-thumb {
 .read-more { font-size: .75rem; color: var(--red); font-weight: 700; display: flex; align-items: center; gap: 4px; }
 
 /* ─── FOOTER ─────────────────────────────────────── */
-footer { background: var(--brown); color: rgba(255,255,255,.75); padding: 64px 0 0; }
+footer { background: var(--brown); color: rgba(255,255,255,.75); padding: 36px 0 0; }
 .footer-grid {
   max-width: 1280px; margin: 0 auto; padding: 0 24px;
-  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px;
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 28px;
 }
 .footer-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .footer-logo-mark {
@@ -924,8 +924,8 @@ footer { background: var(--brown); color: rgba(255,255,255,.75); padding: 64px 0
 .footer-col a { display: block; font-size: .8rem; margin-bottom: 9px; color: rgba(255,255,255,.6); transition: color var(--transition); }
 .footer-col a:hover { color: var(--gold-light); }
 .footer-bottom {
-  margin-top: 48px; border-top: 1px solid rgba(255,255,255,.08);
-  padding: 20px 24px; max-width: 1280px; margin-left: auto; margin-right: auto;
+  margin-top: 28px; border-top: 1px solid rgba(255,255,255,.08);
+  padding: 14px 24px; max-width: 1280px; margin-left: auto; margin-right: auto;
   display: flex; justify-content: space-between; align-items: center; font-size: .75rem;
 }
 .footer-bottom-copy { color: rgba(255,255,255,.4); }
