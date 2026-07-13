@@ -43,3 +43,10 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
 # ── Gmail SMTP (Google App Password) ─────────────────────
 GMAIL_USER         = os.getenv("GMAIL_USER", "")
 GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD", "")
+
+# ── Bank / VietQR (for invoice QR codes) ─────────────────
+BANK_CODE         = os.getenv("BANK_CODE", "")           # e.g. MB, VCB, TCB
+BANK_ACCOUNT      = os.getenv("BANK_ACCOUNT", "")        # account number
+BANK_ACCOUNT_NAME = os.getenv("BANK_ACCOUNT_NAME", "")   # holder name
+SHOP_NAME         = os.getenv("SHOP_NAME", "Tu's Coffee")
+SHOP_ADDRESS      = os.getenv("SHOP_ADDRESS", "")

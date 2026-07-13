@@ -36,6 +36,10 @@
                     <span class="nav-icon">📦</span>
                     <span>Đơn Hàng</span>
                 </div>
+                <div class="nav-item" onclick="switchPage('pos', this)">
+                    <span class="nav-icon">🧾</span>
+                    <span>Lập Hóa Đơn</span>
+                </div>
                 <div class="nav-item" onclick="switchPage('products', this)">
                     <span class="nav-icon">🛍️</span>
                     <span>Sản Phẩm</span>
@@ -276,6 +280,44 @@
                         <div id="ordersPagination" class="pagination-bar"></div>
                     </div>
 
+                </section>
+
+                <!-- POS / Lập Hóa Đơn -->
+                <section id="pos">
+                    <div class="pos-layout">
+                        <!-- Products Panel -->
+                        <div class="pos-products-panel">
+                            <input type="text" id="posSearch" placeholder="🔍 Tìm sản phẩm..." oninput="renderPosGrid()" style="width:100%;padding:10px 14px;border:1px solid var(--border-light);border-radius:8px;font-family:inherit;font-size:13px;outline:none;">
+                            <div id="posCategoryTabs" class="pos-category-tabs"></div>
+                            <div id="posProductGrid" class="pos-product-grid">
+                                <div style="text-align:center;padding:32px;color:var(--text-muted);grid-column:1/-1;">Đang tải...</div>
+                            </div>
+                        </div>
+                        <!-- Cart Panel -->
+                        <div class="pos-cart-panel">
+                            <div class="pos-cart-header">🛒 Đơn Hàng</div>
+                            <div id="posCartItems" class="pos-cart-items">
+                                <div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Chưa có sản phẩm</div>
+                            </div>
+                            <div class="pos-cart-total">
+                                Tổng: <strong id="posTotal">0đ</strong>
+                            </div>
+                            <div class="pos-form-fields">
+                                <input type="text" id="posCustomerName" placeholder="Tên khách hàng *">
+                                <input type="tel" id="posPhone" placeholder="Số điện thoại *">
+                                <input type="text" id="posNote" placeholder="Ghi chú (tuỳ chọn)">
+                                <select id="posPaymentMethod">
+                                    <option value="cash">💵 Tiền mặt</option>
+                                    <option value="qr_transfer">📱 Chuyển khoản QR</option>
+                                </select>
+                            </div>
+                            <div class="pos-actions">
+                                <button class="btn btn-secondary" onclick="clearPosCart()" style="flex:1;">🗑️ Xóa</button>
+                                <button class="btn btn-primary" onclick="createAndPrintInvoice()" style="flex:2;">🖨️ Tạo & In Hóa Đơn</button>
+                            </div>
+                            <div id="posError" style="margin-top:8px;"></div>
+                        </div>
+                    </div>
                 </section>
 
                 <!-- PRODUCTS -->
@@ -821,12 +863,13 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(page).classList.add('active');
             if (element) element.classList.add('active');
-            const titles = { dashboard:'Dashboard', news:'Quản Lý Tin Tức', customers:'Quản Lý Tài Khoản', orders:'Quản Lý Đơn Hàng', products:'Quản Lý Sản Phẩm', promotions:'Quản Lý Ưu Đãi', stores:'Quản Lý Cửa Hàng' };
+            const titles = { dashboard:'Dashboard', news:'Quản Lý Tin Tức', customers:'Quản Lý Tài Khoản', orders:'Quản Lý Đơn Hàng', pos:'Lập Hóa Đơn', products:'Quản Lý Sản Phẩm', promotions:'Quản Lý Ưu Đãi', stores:'Quản Lý Cửa Hàng' };
             document.getElementById('pageTitle').textContent = titles[page] || 'Dashboard';
             if (page === 'dashboard') loadDashboard();
             else if (page === 'news') loadNews();
             else if (page === 'customers') loadCustomers();
             else if (page === 'orders') loadOrders();
+            else if (page === 'pos') loadPosProducts();
             else if (page === 'products') loadProducts();
             else if (page === 'promotions') loadPromotions();
             else if (page === 'stores') loadStores();
@@ -1718,6 +1761,7 @@
                         <td>
                             <div class="action-buttons">
                                 <button class="btn btn-secondary btn-sm btn-icon" title="Chi Tiết" onclick="viewOrderDetail(${o.id})">👁</button>
+                                <button class="btn btn-secondary btn-sm btn-icon" title="In Hóa Đơn" onclick="printInvoice(${o.id})">🖨️</button>
                                 <button class="btn btn-secondary btn-sm btn-icon" title="Cập Nhật" onclick="editOrder(${o.id})">✏️</button>
                                 <button class="btn btn-danger btn-sm btn-icon" title="Xóa" onclick="deleteOrder(${o.id})">🗑️</button>
                             </div>
@@ -2187,6 +2231,157 @@
                     loadPromotions(false);
                 } catch(e) { showToast('Lỗi: ' + e.message, 'error'); }
             }, 'Xóa', true);
+        }
+
+        // ========== INVOICE PRINT ==========
+        async function printInvoice(orderId) {
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/orders/${orderId}/invoice`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.detail || 'Lỗi tải hóa đơn'); }
+                const html = await res.text();
+                const blob = new Blob([html], { type: 'text/html; charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const win = window.open(url, '_blank');
+                if (!win) showToast('⚠️ Vui lòng cho phép pop-up để in hóa đơn', 'error');
+                setTimeout(() => URL.revokeObjectURL(url), 60000);
+            } catch(e) {
+                showToast('Lỗi in hóa đơn: ' + e.message, 'error');
+            }
+        }
+
+        // ========== POS ==========
+        let _posProducts = [];
+        let _posCart = {};   // { product_id: quantity }
+        let _posCategoryFilter = null;
+
+        async function loadPosProducts() {
+            if (_posProducts.length) { renderPosGrid(); return; }
+            try {
+                const data = await apiGet('/api/admin/products?skip=0&limit=500');
+                _posProducts = (data.items || []).filter(p => p.is_active);
+                const cats = [...new Set(_posProducts.map(p => p.category).filter(Boolean))];
+                document.getElementById('posCategoryTabs').innerHTML =
+                    `<span class="pos-cat-tab active" onclick="setPosCat(null,this)">Tất cả</span>` +
+                    cats.map(c => `<span class="pos-cat-tab" onclick="setPosCat('${esc(c)}',this)">${esc(c)}</span>`).join('');
+                renderPosGrid();
+            } catch(e) {
+                document.getElementById('posProductGrid').innerHTML =
+                    `<div style="text-align:center;padding:32px;color:var(--danger);grid-column:1/-1;">Lỗi tải sản phẩm: ${esc(e.message)}</div>`;
+            }
+        }
+
+        function setPosCat(cat, el) {
+            _posCategoryFilter = cat;
+            document.querySelectorAll('.pos-cat-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            renderPosGrid();
+        }
+
+        function renderPosGrid() {
+            const search = (document.getElementById('posSearch')?.value || '').toLowerCase();
+            const filtered = _posProducts.filter(p => {
+                if (_posCategoryFilter && p.category !== _posCategoryFilter) return false;
+                if (search && !p.name.toLowerCase().includes(search)) return false;
+                return true;
+            });
+            document.getElementById('posProductGrid').innerHTML = filtered.map(p => {
+                const qty = _posCart[p.id] || 0;
+                const imgHtml = p.image_url
+                    ? `<img src="${esc(p.image_url)}" alt="" onerror="this.style.display='none'">`
+                    : '☕';
+                return `<div class="pos-product-card${qty ? ' in-cart' : ''}" onclick="addToCart(${p.id})">
+                    <div class="pos-product-img">${imgHtml}</div>
+                    <div class="pos-product-name">${esc(p.name)}</div>
+                    <div class="pos-product-price">${(p.price||0).toLocaleString('vi-VN')}đ</div>
+                    ${qty ? `<div class="pos-cart-badge">${qty}</div>` : ''}
+                </div>`;
+            }).join('') || '<div style="text-align:center;padding:32px;color:var(--text-muted);grid-column:1/-1;">Không tìm thấy sản phẩm</div>';
+        }
+
+        function addToCart(productId) {
+            _posCart[productId] = (_posCart[productId] || 0) + 1;
+            renderPosCart();
+            renderPosGrid();
+        }
+
+        function removeFromCart(productId) {
+            if (!_posCart[productId]) return;
+            _posCart[productId]--;
+            if (_posCart[productId] <= 0) delete _posCart[productId];
+            renderPosCart();
+            renderPosGrid();
+        }
+
+        function renderPosCart() {
+            const entries = Object.entries(_posCart).filter(([, qty]) => qty > 0);
+            if (!entries.length) {
+                document.getElementById('posCartItems').innerHTML =
+                    '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">Chưa có sản phẩm</div>';
+                document.getElementById('posTotal').textContent = '0đ';
+                return;
+            }
+            let total = 0;
+            document.getElementById('posCartItems').innerHTML = entries.map(([id, qty]) => {
+                const p = _posProducts.find(p => p.id === parseInt(id));
+                if (!p) return '';
+                const sub = p.price * qty;
+                total += sub;
+                return `<div class="pos-cart-item">
+                    <div class="pos-cart-item-name" title="${esc(p.name)}">${esc(p.name)}</div>
+                    <div class="pos-qty-controls">
+                        <button class="pos-qty-btn" onclick="removeFromCart(${p.id})">−</button>
+                        <span class="pos-qty-num">${qty}</span>
+                        <button class="pos-qty-btn" onclick="addToCart(${p.id})">+</button>
+                    </div>
+                    <div class="pos-cart-item-price">${sub.toLocaleString('vi-VN')}đ</div>
+                </div>`;
+            }).join('');
+            document.getElementById('posTotal').textContent = total.toLocaleString('vi-VN') + 'đ';
+        }
+
+        function clearPosCart() {
+            _posCart = {};
+            renderPosCart();
+            renderPosGrid();
+            document.getElementById('posCustomerName').value = '';
+            document.getElementById('posPhone').value = '';
+            document.getElementById('posNote').value = '';
+            document.getElementById('posPaymentMethod').value = 'cash';
+            document.getElementById('posError').innerHTML = '';
+        }
+
+        async function createAndPrintInvoice() {
+            const customerName = document.getElementById('posCustomerName').value.trim();
+            const phone = document.getElementById('posPhone').value.trim();
+            const note = document.getElementById('posNote').value.trim();
+            const paymentMethod = document.getElementById('posPaymentMethod').value;
+            const errEl = document.getElementById('posError');
+            errEl.innerHTML = '';
+
+            if (!customerName) { errEl.innerHTML = '<div class="error-msg">Vui lòng nhập tên khách hàng</div>'; return; }
+            if (!phone) { errEl.innerHTML = '<div class="error-msg">Vui lòng nhập số điện thoại</div>'; return; }
+
+            const items = Object.entries(_posCart)
+                .filter(([, qty]) => qty > 0)
+                .map(([id, qty]) => ({ product_id: parseInt(id), quantity: qty }));
+            if (!items.length) { errEl.innerHTML = '<div class="error-msg">Vui lòng chọn ít nhất một sản phẩm</div>'; return; }
+
+            try {
+                const order = await apiPost('/api/admin/orders', {
+                    customer_name: customerName,
+                    phone,
+                    note: note || null,
+                    payment_method: paymentMethod,
+                    items,
+                });
+                showToast(`✅ Tạo đơn #${order.id} thành công`, 'success');
+                await printInvoice(order.id);
+                clearPosCart();
+            } catch(e) {
+                errEl.innerHTML = `<div class="error-msg">Lỗi: ${esc(e.message)}</div>`;
+            }
         }
     </script>
 </body>

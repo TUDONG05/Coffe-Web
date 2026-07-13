@@ -1,6 +1,8 @@
 """Admin order management endpoints."""
+import html as _html
+import urllib.parse
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, HTMLResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from highlands.database import get_db
@@ -56,6 +58,7 @@ class OrderCreate(BaseModel):
     phone: str
     address: str | None = None
     note: str | None = None
+    payment_method: str = "cash"   # cash / qr_transfer
     items: list[OrderItemCreate]
 
 
@@ -437,6 +440,7 @@ def create_order(
         total=total,
         note=body.note,
         status="pending",
+        payment_method=body.payment_method,
         is_active=1,
     )
     db.add(order)
@@ -476,6 +480,144 @@ def create_order(
             for item in (order.items or [])
         ],
     }
+
+
+def _build_invoice_html(order: models.Order, items: list) -> str:
+    from highlands.config import BANK_CODE, BANK_ACCOUNT, BANK_ACCOUNT_NAME, SHOP_NAME, SHOP_ADDRESS
+
+    shop_name = _html.escape(SHOP_NAME or "Tu's Coffee")
+    shop_address = _html.escape(SHOP_ADDRESS or "")
+    customer_name = _html.escape(order.customer_name or "")
+    phone = _html.escape(order.phone or "")
+    address = _html.escape(order.address or "")
+    note = _html.escape(order.note or "")
+    created_str = order.created_at.strftime("%H:%M %d/%m/%Y") if order.created_at else "—"
+
+    def fmt(n: int) -> str:
+        return f"{n:,}".replace(",", ".") + "đ"
+
+    rows = ""
+    for i, item in enumerate(items):
+        bg = "#fafafa" if i % 2 == 0 else "#fff"
+        rows += (
+            f'<tr style="background:{bg}">'
+            f'<td style="padding:6px 8px;">{_html.escape(item.name or "")}</td>'
+            f'<td style="text-align:center;padding:6px 4px;">{item.quantity}</td>'
+            f'<td style="text-align:right;padding:6px 8px;">{fmt(item.price)}</td>'
+            f'<td style="text-align:right;padding:6px 8px;font-weight:600;">{fmt(item.subtotal)}</td>'
+            f"</tr>"
+        )
+
+    pm_label = "💵 Tiền mặt" if order.payment_method == "cash" else "📱 Chuyển khoản QR"
+    ps_label = "✅ Đã thanh toán" if order.payment_status == "paid" else "⏳ Chưa thanh toán"
+
+    addr_html = f'<div class="shop-sub">{shop_address}</div>' if shop_address else ""
+    address_html = (
+        f'<div style="grid-column:1/-1"><span class="lbl">Địa chỉ:</span> {address}</div>'
+        if address else ""
+    )
+    note_html = (
+        f'<div style="grid-column:1/-1"><span class="lbl">Ghi chú:</span> {note}</div>'
+        if note else ""
+    )
+
+    qr_section = ""
+    if BANK_ACCOUNT and order.payment_method == "qr_transfer" and order.payment_status != "paid":
+        acct_enc = urllib.parse.quote(BANK_ACCOUNT_NAME or SHOP_NAME or "")
+        qr_url = (
+            f"https://img.vietqr.io/image/{BANK_CODE}-{BANK_ACCOUNT}-compact2.png"
+            f"?amount={order.total}&addInfo=DH{order.id}&accountName={acct_enc}"
+        )
+        bk = _html.escape(BANK_CODE or "")
+        acct = _html.escape(BANK_ACCOUNT or "")
+        qr_section = (
+            f'<div style="margin-top:16px;text-align:center;">'
+            f'<div style="font-size:12px;font-weight:600;color:#555;margin-bottom:10px;">📱 Quét mã QR để thanh toán</div>'
+            f'<img src="{qr_url}" alt="QR Code" style="width:180px;height:180px;border-radius:8px;border:1px solid #eee;" '
+            f'onerror="this.parentElement.innerHTML=\'<p style=&quot;color:#999;font-size:12px&quot;>Không tải được QR. Kiểm tra kết nối mạng.</p>\'">'
+            f'<div style="margin-top:10px;font-size:11px;color:#777;line-height:1.9;">'
+            f"<div>Ngân hàng: <strong>{bk}</strong></div>"
+            f"<div>Số tài khoản: <strong>{acct}</strong></div>"
+            f"<div>Số tiền: <strong>{fmt(order.total)}</strong></div>"
+            f"<div>Nội dung CK: <strong>DH{order.id}</strong></div>"
+            f"</div></div>"
+        )
+
+    css = (
+        "* { margin:0; padding:0; box-sizing:border-box; }"
+        "body { font-family:'Inter',sans-serif; max-width:420px; margin:0 auto; padding:20px; font-size:13px; color:#333; background:#fff; }"
+        ".shop-name { font-size:22px; font-weight:700; color:#C8102E; text-align:center; }"
+        ".shop-sub { font-size:11px; color:#888; text-align:center; margin-top:3px; }"
+        ".divider { border:none; border-top:1px dashed #ddd; margin:12px 0; }"
+        ".info-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; font-size:12px; margin:8px 0; }"
+        ".lbl { color:#888; }"
+        "table { width:100%; border-collapse:collapse; font-size:12px; }"
+        "th { background:#fef2f2; color:#C8102E; padding:7px 8px; text-align:left; font-size:11px; font-weight:600; }"
+        ".total-row { display:flex; justify-content:space-between; font-size:15px; font-weight:700; color:#C8102E; margin-top:8px; }"
+        ".status-row { display:flex; justify-content:space-between; font-size:12px; color:#666; margin-top:4px; }"
+        ".footer { text-align:center; color:#aaa; font-size:11px; margin-top:16px; }"
+        ".print-btn { display:block; margin:20px auto 0; padding:10px 28px; background:#C8102E; color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; font-family:inherit; }"
+        ".print-btn:hover { background:#9B0C22; }"
+        "@media print { .no-print { display:none!important; } body { padding:10px; max-width:100%; } }"
+    )
+
+    return f"""<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Hóa Đơn #{order.id}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>{css}</style>
+</head>
+<body>
+    <div class="shop-name">{shop_name}</div>
+    {addr_html}
+    <div class="shop-sub" style="margin-top:2px;">HÓA ĐƠN BÁN HÀNG</div>
+    <hr class="divider">
+    <div class="info-grid">
+        <div><span class="lbl">Mã đơn:</span> <strong>#{order.id}</strong></div>
+        <div><span class="lbl">Ngày:</span> {created_str}</div>
+        <div><span class="lbl">Khách hàng:</span> {customer_name}</div>
+        <div><span class="lbl">SĐT:</span> {phone}</div>
+        {address_html}
+        {note_html}
+    </div>
+    <hr class="divider">
+    <table>
+        <thead>
+            <tr>
+                <th>Sản phẩm</th>
+                <th style="text-align:center">SL</th>
+                <th style="text-align:right">Đơn giá</th>
+                <th style="text-align:right">Thành tiền</th>
+            </tr>
+        </thead>
+        <tbody>{rows}</tbody>
+    </table>
+    <hr class="divider">
+    <div class="total-row"><span>TỔNG CỘNG</span><span>{fmt(order.total)}</span></div>
+    <div class="status-row"><span>{pm_label}</span><span>{ps_label}</span></div>
+    {qr_section}
+    <hr class="divider">
+    <div class="footer">☕ Cảm ơn quý khách! Hẹn gặp lại.</div>
+    <button class="print-btn no-print" onclick="window.print()">🖨️ In Hóa Đơn</button>
+    <script>window.addEventListener('load', () => setTimeout(() => window.print(), 1000));</script>
+</body>
+</html>"""
+
+
+@router.get("/{order_id}/invoice", response_class=HTMLResponse)
+def get_order_invoice(
+    order_id: int,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Return a printable HTML invoice for an order."""
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Không tìm thấy đơn hàng")
+    return HTMLResponse(content=_build_invoice_html(order, order.items or []))
 
 
 @router.get("/{order_id}/reviews")
