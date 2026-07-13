@@ -303,8 +303,8 @@
                                 Tổng: <strong id="posTotal">0đ</strong>
                             </div>
                             <div class="pos-form-fields">
-                                <input type="text" id="posCustomerName" placeholder="Tên khách hàng *">
-                                <input type="tel" id="posPhone" placeholder="Số điện thoại *">
+                                <input type="text" id="posCustomerName" placeholder="Tên khách (tuỳ chọn)">
+                                <input type="tel" id="posPhone" placeholder="Số điện thoại (tuỳ chọn)">
                                 <input type="text" id="posNote" placeholder="Ghi chú (tuỳ chọn)">
                                 <select id="posPaymentMethod">
                                     <option value="cash">💵 Tiền mặt</option>
@@ -2359,9 +2359,6 @@
             const paymentMethod = document.getElementById('posPaymentMethod').value;
             const errEl = document.getElementById('posError');
             errEl.innerHTML = '';
-
-            if (!customerName) { errEl.innerHTML = '<div class="error-msg">Vui lòng nhập tên khách hàng</div>'; return; }
-            if (!phone) { errEl.innerHTML = '<div class="error-msg">Vui lòng nhập số điện thoại</div>'; return; }
 
             const items = Object.entries(_posCart)
                 .filter(([, qty]) => qty > 0)

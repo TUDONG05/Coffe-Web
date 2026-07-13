@@ -54,8 +54,8 @@ class OrderItemCreate(BaseModel):
 
 
 class OrderCreate(BaseModel):
-    customer_name: str
-    phone: str
+    customer_name: str = "Khách lẻ"
+    phone: str = "—"
     address: str | None = None
     note: str | None = None
     payment_method: str = "cash"   # cash / qr_transfer
