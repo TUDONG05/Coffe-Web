@@ -13,10 +13,10 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
 from highlands.database import get_db
 from highlands import models
 from highlands.auth_utils import require_admin
+from highlands.models import vn_now
 from highlands.services.blob_service import upload_image
 
 router = APIRouter(prefix="/api/admin/news", tags=["admin-news"])
@@ -115,7 +115,7 @@ def create_news(
         tag=body.tag or "Tin Tuc",
         image_url=body.image_url,
         video_url=body.video_url,
-        published_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        published_at=vn_now().strftime("%Y-%m-%d %H:%M:%S"),
         is_active=1
     )
     db.add(news)

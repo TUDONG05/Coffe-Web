@@ -2,9 +2,17 @@
 SQLAlchemy ORM models: User, Product, Order, OrderItem.
 """
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text
 from sqlalchemy.orm import relationship
 from highlands.database import Base
+
+_VN_TZ = ZoneInfo("Asia/Ho_Chi_Minh")
+
+
+def vn_now() -> datetime:
+    """Return current time as naive datetime in Vietnam timezone (UTC+7)."""
+    return datetime.now(_VN_TZ).replace(tzinfo=None)
 
 
 class User(Base):
@@ -19,7 +27,7 @@ class User(Base):
     address    = Column(String(300), nullable=True)
     points     = Column(Integer, default=0, nullable=False)
     is_active  = Column(Integer, default=1)  # for block/unblock
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=vn_now)
 
     orders = relationship("Order", back_populates="user")
 
@@ -58,7 +66,7 @@ class Order(Base):
     payment_status = Column(String(20), default="unpaid")     # unpaid / paid
     cancel_token   = Column(String(32), nullable=True)        # guest order cancel token
     is_active      = Column(Integer, default=1)  # soft delete
-    created_at    = Column(DateTime, default=datetime.utcnow)
+    created_at    = Column(DateTime, default=vn_now)
 
     user  = relationship("User", back_populates="orders")
     items = relationship("OrderItem", back_populates="order")
@@ -85,7 +93,7 @@ class ProductReview(Base):
     user_id    = Column(Integer, ForeignKey("users.id"), nullable=False)
     stars      = Column(Integer, nullable=False)   # 1-5
     comment    = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=vn_now)
 
     product = relationship("Product")
     user    = relationship("User")
