@@ -1,5 +1,6 @@
 """
-Chatbot router — POST /api/chat (SSE streaming qua Ollama local).
+Chatbot router — POST /api/chat (SSE streaming).
+Backend: Groq API (production) hoặc Ollama local (dev, khi không có GROQ_API_KEY).
 RAG: TF-IDF search trên Product DB, inject context vào system prompt.
 Hỗ trợ đặt hàng: phát hiện intent, trích xuất món song song, inject order_form event.
 """
@@ -27,9 +28,16 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/chat", tags=["chatbot"])
 
-# ── Cấu hình Ollama ─────────────────────────────────────────
+# ── Cấu hình LLM ────────────────────────────────────────────
+GROQ_API_KEY   = os.getenv("GROQ_API_KEY", "")
+GROQ_BASE_URL  = "https://api.groq.com/openai/v1"
+GROQ_MODEL     = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+
+# Fallback Ollama cho dev local
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:3b")
+OLLAMA_MODEL    = os.getenv("OLLAMA_MODEL", "qwen2.5:3b")
+
+USE_GROQ = bool(GROQ_API_KEY)
 
 # Từ khoá nhận diện intent đặt hàng
 ORDER_KEYWORDS = [
@@ -128,6 +136,34 @@ def _build_system_prompt(query: str) -> str:
     return SYSTEM_PROMPT_TEMPLATE.format(menu_context=context)
 
 
+async def _llm_complete(messages: list[dict], temperature: float = 0.1, max_tokens: int = 400) -> str:
+    """Gọi LLM (Groq hoặc Ollama) và trả về nội dung text."""
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            if USE_GROQ:
+                resp = await client.post(
+                    f"{GROQ_BASE_URL}/chat/completions",
+                    headers={"Authorization": f"Bearer {GROQ_API_KEY}"},
+                    json={"model": GROQ_MODEL, "messages": messages,
+                          "temperature": temperature, "max_tokens": max_tokens, "stream": False},
+                )
+                if resp.status_code != 200:
+                    return ""
+                return resp.json()["choices"][0]["message"]["content"]
+            else:
+                resp = await client.post(
+                    f"{OLLAMA_BASE_URL}/api/chat",
+                    json={"model": OLLAMA_MODEL, "stream": False, "messages": messages,
+                          "options": {"temperature": temperature, "num_predict": max_tokens}},
+                )
+                if resp.status_code != 200:
+                    return ""
+                return resp.json().get("message", {}).get("content", "")
+    except Exception as e:
+        logger.warning(f"LLM complete failed: {e}")
+        return ""
+
+
 async def _extract_order_data(message: str, req: ChatRequest) -> dict | None:
     """Dùng LLM trích xuất món + thông tin đặt hàng từ message. Chạy song song với stream."""
     if not menu_rag._items:
@@ -141,19 +177,7 @@ async def _extract_order_data(message: str, req: ChatRequest) -> dict | None:
     prompt = EXTRACT_PROMPT.format(message=message, menu_list=menu_list)
 
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.post(
-                f"{OLLAMA_BASE_URL}/api/chat",
-                json={
-                    "model": OLLAMA_MODEL,
-                    "stream": False,
-                    "messages": [{"role": "user", "content": prompt}],
-                    "options": {"temperature": 0.1, "num_predict": 400},
-                },
-            )
-            if resp.status_code != 200:
-                return None
-            raw = resp.json().get("message", {}).get("content", "")
+        raw = await _llm_complete([{"role": "user", "content": prompt}], temperature=0.1, max_tokens=400)
     except Exception as e:
         logger.warning(f"Order extraction request failed: {e}")
         return None
@@ -199,62 +223,81 @@ async def _extract_order_data(message: str, req: ChatRequest) -> dict | None:
     }
 
 
-async def _stream_ollama(
+async def _stream_llm(
     system: str,
     messages: list[dict],
     order_task: asyncio.Task | None = None,
     product_cards: list[dict] | None = None,
 ) -> AsyncGenerator[str, None]:
-    """Stream Ollama response, inject product_cards + order_form trước [DONE] nếu có."""
-    payload = {
-        "model": OLLAMA_MODEL,
-        "stream": True,
-        "messages": [{"role": "system", "content": system}] + messages,
-        "options": {"temperature": 0.7, "num_predict": 300},
-    }
+    """Stream LLM response (Groq hoặc Ollama), inject product_cards + order_form trước [DONE]."""
+    all_messages = [{"role": "system", "content": system}] + messages
+
+    async def _finish():
+        if product_cards:
+            yield f"data: {json.dumps({'type': 'product_cards', 'products': product_cards})}\n\n"
+        if order_task is not None:
+            try:
+                order_data = await asyncio.wait_for(order_task, timeout=10.0)
+                if order_data:
+                    yield f"data: {json.dumps({'type': 'order_form', 'order': order_data})}\n\n"
+            except asyncio.TimeoutError:
+                logger.warning("Order extraction timed out")
+            except Exception as e:
+                logger.warning(f"Order task error: {e}")
+        yield "data: [DONE]\n\n"
 
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
-            async with client.stream(
-                "POST", f"{OLLAMA_BASE_URL}/api/chat", json=payload
-            ) as resp:
-                if resp.status_code != 200:
-                    yield f"data: {json.dumps({'error': 'Ollama không phản hồi'})}\n\n"
-                    return
-
-                async for line in resp.aiter_lines():
-                    if not line:
-                        continue
-                    try:
-                        chunk = json.loads(line)
-                        token = _strip_chinese(chunk.get("message", {}).get("content", ""))
-                        if token:
-                            yield f"data: {json.dumps({'token': token})}\n\n"
-                        if chunk.get("done"):
-                            # 1. Product cards
-                            if product_cards:
-                                yield f"data: {json.dumps({'type': 'product_cards', 'products': product_cards})}\n\n"
-                            # 2. Order form (chờ extraction task song song)
-                            if order_task is not None:
-                                try:
-                                    order_data = await asyncio.wait_for(
-                                        order_task, timeout=10.0
-                                    )
-                                    if order_data:
-                                        yield f"data: {json.dumps({'type': 'order_form', 'order': order_data})}\n\n"
-                                except asyncio.TimeoutError:
-                                    logger.warning("Order extraction timed out")
-                                except Exception as e:
-                                    logger.warning(f"Order task error: {e}")
-                            yield "data: [DONE]\n\n"
+            if USE_GROQ:
+                payload = {"model": GROQ_MODEL, "messages": all_messages,
+                           "temperature": 0.7, "max_tokens": 300, "stream": True}
+                async with client.stream("POST", f"{GROQ_BASE_URL}/chat/completions",
+                                         headers={"Authorization": f"Bearer {GROQ_API_KEY}"},
+                                         json=payload) as resp:
+                    if resp.status_code != 200:
+                        yield f"data: {json.dumps({'error': 'Groq không phản hồi'})}\n\n"
+                        return
+                    async for line in resp.aiter_lines():
+                        if not line or not line.startswith("data: "):
+                            continue
+                        data = line[6:]
+                        if data.strip() == "[DONE]":
+                            async for chunk in _finish():
+                                yield chunk
                             return
-                    except json.JSONDecodeError:
-                        continue
+                        try:
+                            token = json.loads(data)["choices"][0]["delta"].get("content", "")
+                            if token:
+                                yield f"data: {json.dumps({'token': token})}\n\n"
+                        except (json.JSONDecodeError, KeyError):
+                            continue
+            else:
+                payload = {"model": OLLAMA_MODEL, "stream": True, "messages": all_messages,
+                           "options": {"temperature": 0.7, "num_predict": 300}}
+                async with client.stream("POST", f"{OLLAMA_BASE_URL}/api/chat", json=payload) as resp:
+                    if resp.status_code != 200:
+                        yield f"data: {json.dumps({'error': 'Ollama không phản hồi'})}\n\n"
+                        return
+                    async for line in resp.aiter_lines():
+                        if not line:
+                            continue
+                        try:
+                            chunk = json.loads(line)
+                            token = _strip_chinese(chunk.get("message", {}).get("content", ""))
+                            if token:
+                                yield f"data: {json.dumps({'token': token})}\n\n"
+                            if chunk.get("done"):
+                                async for c in _finish():
+                                    yield c
+                                return
+                        except json.JSONDecodeError:
+                            continue
 
     except httpx.ConnectError:
-        yield f"data: {json.dumps({'error': 'Không kết nối được Ollama. Hãy đảm bảo Ollama đang chạy.'})}\n\n"
+        err = "Groq không kết nối được." if USE_GROQ else "Ollama chưa chạy."
+        yield f"data: {json.dumps({'error': err})}\n\n"
     except Exception as e:
-        logger.error(f"Ollama stream error: {e}")
+        logger.error(f"LLM stream error: {e}")
         yield f"data: {json.dumps({'error': 'Đã xảy ra lỗi, vui lòng thử lại.'})}\n\n"
 
 
@@ -292,7 +335,7 @@ async def chat_stream(req: ChatRequest, request: Request):
         order_task = asyncio.create_task(_extract_order_data(req.message, req))
 
     return StreamingResponse(
-        _stream_ollama(system, messages, order_task, product_cards),
+        _stream_llm(system, messages, order_task, product_cards),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

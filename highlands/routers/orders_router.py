@@ -61,7 +61,7 @@ class OrderOut(BaseModel):
 def create_order(
     body: OrderIn,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(require_login),
+    current_user: Optional[models.User] = Depends(get_current_user),
 ):
     pay_method = body.payment_method if body.payment_method in ("cash", "qr_transfer") else "cash"
 
@@ -82,7 +82,7 @@ def create_order(
         ))
 
     order = models.Order(
-        user_id=current_user.id,
+        user_id=current_user.id if current_user else None,
         customer_name=body.customer_name,
         phone=body.phone,
         address=body.address,
@@ -92,15 +92,15 @@ def create_order(
         payment_status="unpaid",
     )
     db.add(order)
-    db.flush()  # get order.id before committing
+    db.flush()
 
     for row in item_rows:
         row.order_id = order.id
         db.add(row)
 
-    # Cộng điểm: 10.000đ = 1 điểm
+    # Cộng điểm cho user đã đăng nhập: 10.000đ = 1 điểm
     earned_points = total // 10000
-    if earned_points > 0:
+    if earned_points > 0 and current_user:
         current_user.points = (current_user.points or 0) + earned_points
 
     db.commit()

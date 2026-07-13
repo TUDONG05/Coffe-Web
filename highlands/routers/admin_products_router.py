@@ -1,17 +1,14 @@
 """
 Admin endpoints for product management: CRUD operations.
 """
-import os
 import uuid
-import aiofiles
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 from highlands.database import get_db
 from highlands import models
 from highlands.auth_utils import require_admin
-
-UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "static", "images", "products")
+from highlands.services.blob_service import upload_image
 
 router = APIRouter(prefix="/api/admin/products", tags=["admin-products"])
 
@@ -220,19 +217,10 @@ async def upload_product_image(
 
     ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else "jpg"
     filename = f"{product_id}_{uuid.uuid4().hex[:8]}.{ext}"
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    dest = os.path.join(UPLOAD_DIR, filename)
-
-    # Remove old image file if exists
-    if product.image_url:
-        old_path = os.path.join(os.path.dirname(__file__), "..", "..", product.image_url.lstrip("/"))
-        if os.path.exists(old_path):
-            os.remove(old_path)
-
-    async with aiofiles.open(dest, "wb") as f:
-        await f.write(content)
-
-    product.image_url = f"/static/images/products/{filename}"
+    try:
+        product.image_url = await upload_image(content, filename, "products")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi upload ảnh: {e}")
     db.commit()
     db.refresh(product)
     return product

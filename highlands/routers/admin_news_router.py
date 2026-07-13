@@ -9,7 +9,6 @@ Admin News Management endpoints:
 """
 import os
 import uuid
-import aiofiles
 from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -18,8 +17,7 @@ from datetime import datetime
 from highlands.database import get_db
 from highlands import models
 from highlands.auth_utils import require_admin
-
-UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "static", "images", "news")
+from highlands.services.blob_service import upload_image
 
 router = APIRouter(prefix="/api/admin/news", tags=["admin-news"])
 
@@ -226,18 +224,10 @@ async def upload_news_image(
 
     ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else "jpg"
     filename = f"{news_id}_{uuid.uuid4().hex[:8]}.{ext}"
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    dest = os.path.join(UPLOAD_DIR, filename)
-
-    if news.image_url and news.image_url.startswith("/static/images/news/"):
-        old_path = os.path.join(os.path.dirname(__file__), "..", "..", news.image_url.lstrip("/"))
-        if os.path.exists(old_path):
-            os.remove(old_path)
-
-    async with aiofiles.open(dest, "wb") as f:
-        await f.write(content)
-
-    news.image_url = f"/static/images/news/{filename}"
+    try:
+        news.image_url = await upload_image(content, filename, "news")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi upload ảnh: {e}")
     db.commit()
     db.refresh(news)
     return news
