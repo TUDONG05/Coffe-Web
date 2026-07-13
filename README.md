@@ -72,9 +72,22 @@
 - Thống kê tổng quan: tổng sản phẩm, đơn hàng, tài khoản, doanh thu
 - Bảng đơn hàng gần đây
 
+**🧾 Lập Hóa Đơn tại quầy (POS)**
+- Giao diện POS 2 cột: lưới sản phẩm (tìm kiếm + lọc danh mục) và giỏ hàng bên phải
+- Thêm/bớt sản phẩm bằng một click, hiển thị tổng tiền real-time
+- Tạo đơn walk-in không cần nhập thông tin khách (mặc định "Khách lẻ")
+- Chọn hình thức thanh toán: Tiền mặt hoặc Chuyển khoản QR
+- Tạo đơn và in hóa đơn PDF chỉ với một nút bấm
+
+**🖨️ Hóa đơn in được**
+- Hóa đơn HTML tự mở dialog in sau khi tạo đơn
+- Hiển thị đầy đủ: thông tin cửa hàng, mã đơn, ngày giờ, danh sách món, tổng tiền
+- **Tích hợp VietQR** — mã QR thanh toán MB Bank nhúng trực tiếp trên hóa đơn, tự động điền đúng số tiền và nội dung chuyển khoản (`DH{id}`)
+- Nút "In Hóa Đơn" trên mọi đơn trong danh sách đơn hàng
+
 **📦 Quản lý nội dung (CRUD đầy đủ)**
 - **Sản phẩm** — tìm kiếm, lọc theo danh mục/giá, phân trang, toggle kích hoạt, **upload ảnh sản phẩm** (JPEG/PNG/WebP, tối đa 5MB)
-- **Đơn hàng** — cập nhật trạng thái, xem chi tiết items, cột Thanh Toán (paid/unpaid + phương thức)
+- **Đơn hàng** — cập nhật trạng thái, xem chi tiết items, cột Thanh Toán (paid/unpaid + phương thức), in hóa đơn
 - **Tài khoản** — hiển thị role, điểm Rewards; lọc theo role (`admin` / `user`) và trạng thái
 - **Tin tức** — tìm kiếm, lọc theo thẻ, **upload ảnh bìa bài viết**
 - **Cửa hàng** — quản lý địa điểm toàn hệ thống
@@ -403,6 +416,13 @@ GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GMAIL_USER=your-gmail@gmail.com
 GMAIL_APP_PASSWORD=your-16-char-app-password
 
+# Ngân hàng / VietQR — hiện QR thanh toán trên hóa đơn (tuỳ chọn)
+BANK_CODE=MB                    # mã ngân hàng VietQR: MB, VCB, TCB, ACB, BIDV, ...
+BANK_ACCOUNT=010320058686       # số tài khoản
+BANK_ACCOUNT_NAME=NGUYEN VAN A  # tên chủ tài khoản
+SHOP_NAME=Tu's Coffee           # tên hiện trên hóa đơn
+SHOP_ADDRESS=                   # địa chỉ hiện trên hóa đơn (tuỳ chọn)
+
 # Chatbot (tuỳ chọn — bỏ trống nếu không dùng Ollama)
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=qwen2.5:3b
@@ -613,7 +633,8 @@ Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override q
 | Dashboard | `/api/admin/dashboard` | GET |
 | Sản phẩm | `/api/admin/products` | GET (filter: category, search, price), POST, PUT, PATCH, DELETE |
 | Ảnh sản phẩm | `/api/admin/products/{id}/image` | POST (multipart/form-data) |
-| Đơn hàng | `/api/admin/orders` | GET (filter: status, date, price), GET/{id}, PATCH, DELETE |
+| Đơn hàng | `/api/admin/orders` | GET (filter: status, date, price), POST, GET/{id}, PATCH, DELETE |
+| Hóa đơn in | `/api/admin/orders/{id}/invoice` | GET — trả HTML invoice có VietQR, tự mở print dialog |
 | Tài khoản | `/api/admin/customers` | GET (filter: `role`, `status`, `search`), POST, PUT, PATCH, DELETE |
 | Tin tức | `/api/admin/news` | GET (filter: tag), POST, PUT, PATCH, DELETE |
 | Ảnh tin tức | `/api/admin/news/{id}/image` | POST (multipart/form-data) |
