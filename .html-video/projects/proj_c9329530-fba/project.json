@@ -1,0 +1,25 @@
+{
+  "id": "proj_c9329530-fba",
+  "name": "Tu's Coffee Web App",
+  "intent": "Giới thiệu ứng dụng web thương mại điện tử Tu's Coffee với menu, đặt hàng online, rewards, và admin dashboard",
+  "assets": [],
+  "templateId": "tus-coffee-promo",
+  "variables": {},
+  "preferences": {
+    "aspect": "16:9",
+    "commercial": false
+  },
+  "status": "rendered",
+  "createdAt": "2026-07-16T17:28:50.425Z",
+  "updatedAt": "2026-07-16T17:33:59.491Z",
+  "lastPreviewHtmlPath": "/home/tudong/Desktop/Coffe-Web/.html-video/projects/proj_c9329530-fba/preview.html",
+  "lastPreviewPosterPath": "/home/tudong/Desktop/Coffe-Web/.html-video/projects/proj_c9329530-fba/poster.svg",
+  "lastOutputMp4Path": "/home/tudong/Desktop/Coffe-Web/assets/videos/tus-coffee-intro.mp4",
+  "exports": [
+    {
+      "path": "/home/tudong/Desktop/Coffe-Web/assets/videos/tus-coffee-intro.mp4",
+      "filename": "tus-coffee-intro.mp4",
+      "createdAt": "2026-07-16T17:33:59.491Z"
+    }
+  ]
+}
