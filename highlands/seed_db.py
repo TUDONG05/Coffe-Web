@@ -2,9 +2,8 @@
 Create all tables and seed initial data: categories, products, stores, news, promotions.
 Run once: python -m highlands.seed_db
 """
-from sqlalchemy import text
-
 from highlands.database import engine, SessionLocal
+from highlands.vector_schema import ensure_vector_schema
 from highlands.models import Base, Category, Product, Store, News, Promotion
 
 # ── Categories (must match Product.category values exactly) ─
@@ -129,12 +128,7 @@ NEWS = [
 def seed():
     # Phải bật trước create_all vì Product.embedding dùng kiểu `vector`.
     print("Enabling pgvector extension...")
-    try:
-        with engine.connect() as conn:
-            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-            conn.commit()
-    except Exception as e:
-        print(f"[WARN] pgvector unavailable: {e}")
+    ensure_vector_schema(engine, verbose=True)
 
     print("Creating tables...")
     Base.metadata.create_all(bind=engine)

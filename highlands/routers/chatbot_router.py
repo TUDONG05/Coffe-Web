@@ -27,6 +27,7 @@ from highlands.services import embedding_service
 from highlands.services.menu_rag_service import (
     backfill_embeddings,
     compute_hot_items,
+    ensure_index_loaded,
     menu_rag,
 )
 
@@ -323,6 +324,7 @@ async def chat_stream(
 
     # Toàn bộ truy vấn DB nằm ở đây, trước khi StreamingResponse bắt đầu —
     # generator chỉ đọc dữ liệu đã lấy sẵn nên không giữ session qua stream.
+    ensure_index_loaded(db)
     system = await _build_system_prompt(db, req.message)
     messages = [{"role": m.role, "content": m.content} for m in req.history[-6:]]
     messages.append({"role": "user", "content": req.message})
