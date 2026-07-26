@@ -9,8 +9,21 @@ from highlands.database import get_db
 from highlands import models
 from highlands.auth_utils import require_admin
 from highlands.services.blob_service import upload_image
+from highlands.services.menu_rag_service import menu_rag, sync_product_embedding
 
 router = APIRouter(prefix="/api/admin/products", tags=["admin-products"])
+
+
+async def _refresh_chatbot_index(db: Session, product: models.Product | None = None) -> None:
+    """Đồng bộ dữ liệu chatbot sau khi menu thay đổi.
+
+    Vector nằm trong DB nên mọi instance đều thấy ngay; index TF-IDF là
+    in-memory nên chỉ instance đang xử lý request này được làm mới.
+    """
+    if product is not None:
+        await sync_product_embedding(db, product)
+    products = db.query(models.Product).filter(models.Product.is_active == 1).all()
+    menu_rag.build_index(products)
 
 
 # ── Schemas ────────────────────────────────────────────────
@@ -99,7 +112,7 @@ def list_products(
 
 
 @router.post("", response_model=ProductOut, status_code=201)
-def create_product(
+async def create_product(
     body: ProductCreate,
     admin: models.User = Depends(require_admin),
     db: Session = Depends(get_db),
@@ -115,6 +128,7 @@ def create_product(
     db.add(product)
     db.commit()
     db.refresh(product)
+    await _refresh_chatbot_index(db, product)
     return product
 
 
@@ -132,7 +146,7 @@ def get_product(
 
 
 @router.put("/{product_id}", response_model=ProductOut)
-def update_product(
+async def update_product(
     product_id: int,
     body: ProductUpdate,
     admin: models.User = Depends(require_admin),
@@ -156,11 +170,17 @@ def update_product(
 
     db.commit()
     db.refresh(product)
+
+    # Chỉ nhúng lại khi trường tham gia vào text embedding thay đổi.
+    text_changed = any(
+        v is not None for v in (body.name, body.category, body.description)
+    )
+    await _refresh_chatbot_index(db, product if text_changed else None)
     return product
 
 
 @router.patch("/{product_id}", response_model=ProductOut)
-def update_product_status(
+async def update_product_status(
     product_id: int,
     body: ProductUpdate,
     admin: models.User = Depends(require_admin),
@@ -176,11 +196,13 @@ def update_product_status(
 
     db.commit()
     db.refresh(product)
+    # Text không đổi nên vector giữ nguyên, chỉ cần dựng lại tập sản phẩm đang bán.
+    await _refresh_chatbot_index(db)
     return product
 
 
 @router.delete("/{product_id}")
-def delete_product(
+async def delete_product(
     product_id: int,
     admin: models.User = Depends(require_admin),
     db: Session = Depends(get_db),
@@ -192,6 +214,7 @@ def delete_product(
 
     product.is_active = 0
     db.commit()
+    await _refresh_chatbot_index(db)
     return {"success": True, "message": "Sản phẩm đã được xóa"}
 
 

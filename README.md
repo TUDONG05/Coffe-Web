@@ -531,7 +531,8 @@ ChatbotRouter
    │  2. Tìm món liên quan (RAG)
    │  3. Build system prompt với context
    ▼
-MenuRAGService (TF-IDF)          ←── DB sản phẩm
+MenuRAGService (hybrid)          ←── pgvector: products.embedding
+   │  semantic (Gemini) + lexical (TF-IDF)   ←── TF-IDF index in-memory
    │  trả top-4 món phù hợp
    ▼
 Ollama (local LLM)               ←── model qwen2.5:3b
@@ -545,7 +546,16 @@ Frontend render từng token (streaming)
 
 ### Cách hoạt động
 
-1. **RAG**: Câu hỏi được vector hoá bằng **TF-IDF** (char n-gram 2–4, tốt với tiếng Việt), tìm top-4 sản phẩm liên quan nhất qua cosine similarity
+1. **RAG (hybrid search)**: Câu hỏi được tìm song song theo hai nhánh rồi trộn điểm
+   `score = α × semantic + (1 − α) × lexical` (mặc định α = 0.7):
+   - **Semantic** — nhúng câu hỏi bằng Gemini `gemini-embedding-001` (768 chiều), so khớp
+     với vector sản phẩm lưu ở cột `products.embedding` (pgvector, toán tử cosine `<=>`).
+     Bắt được ý nghĩa: *"giải nhiệt ngày nóng"* → Trà Đào, Freeze Trà Xanh.
+   - **Lexical** — TF-IDF char n-gram 2–4 in-memory. Bắt được tên món gõ sai hoặc thiếu
+     dấu: *"ca phe sua"* → Cà Phê Sữa Đá.
+
+   Hai nhánh bù cho nhau: embedding yếu ở lỗi chính tả, TF-IDF mù ngữ nghĩa.
+   Không cấu hình `GOOGLE_API_KEY` thì hệ thống tự chạy thuần TF-IDF, không lỗi.
 2. **Intent đặt hàng**: Nếu phát hiện từ khoá đặt hàng, chatbot song song trích xuất tên món → inject SSE event `order_form` kèm danh sách items vào stream
 3. **Streaming**: Dùng **SSE (Server-Sent Events)** — response hiển thị từng token ngay khi Ollama trả về
 4. **History**: Giữ 6 lượt hội thoại gần nhất để chatbot nhớ ngữ cảnh
@@ -561,6 +571,31 @@ ollama serve
 Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override qua `.env` với `OLLAMA_BASE_URL` và `OLLAMA_MODEL`.
 
 > Nếu không cài Ollama, các tính năng khác vẫn hoạt động bình thường.
+
+### Bật RAG embedding (pgvector)
+
+```bash
+# 1. Lấy API key tại https://aistudio.google.com/apikey
+#    (KHÁC với GOOGLE_CLIENT_ID dùng cho đăng nhập Google)
+echo "GOOGLE_API_KEY=..." >> .env
+
+# 2. Bật extension, thêm cột vector, tạo index HNSW và nhúng toàn bộ menu
+python migrate_embeddings.py
+
+# 3. Kiểm tra độ phủ
+curl localhost:8000/api/chat/status
+```
+
+Script chạy được nhiều lần — mặc định chỉ nhúng sản phẩm còn thiếu vector.
+Dùng `--rebuild` khi đổi model hoặc số chiều.
+
+Sau khi chạy, mỗi lần admin thêm/sửa sản phẩm hệ thống tự nhúng lại món đó, không
+cần thao tác thủ công. Endpoint `POST /api/chat/reload-menu` vẫn dùng được để nhúng
+bù hàng loạt.
+
+> Cần Postgres có extension `vector`. Neon, Vercel Postgres và Supabase hỗ trợ sẵn;
+> Postgres tự host phải cài thêm pgvector. Nếu extension không có, ứng dụng vẫn khởi
+> động và chatbot chạy bằng TF-IDF.
 
 ### API chatbot
 

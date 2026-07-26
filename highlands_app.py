@@ -31,23 +31,41 @@ from highlands.routers import (
     chatbot_router,
     webhooks_router,
 )
+from sqlalchemy import text
+
 from highlands.database import SessionLocal, engine
 from highlands import models
-from highlands.services.menu_rag_service import menu_rag, compute_hot_items
+from highlands.services.menu_rag_service import (
+    backfill_embeddings,
+    compute_hot_items,
+    menu_rag,
+)
 
 app = FastAPI(title="Highlands Coffee", version="2.0.0", docs_url="/docs")
 
 
 @app.on_event("startup")
-def load_menu_index():
-    """Create tables and build TF-IDF chatbot index on startup."""
+async def load_menu_index():
+    """Bật pgvector, tạo bảng, dựng index chatbot và nhúng sản phẩm còn thiếu."""
+    # Phải chạy trước create_all vì cột Product.embedding cần kiểu `vector`.
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+            conn.commit()
+    except Exception as e:
+        print(f"[startup] pgvector extension unavailable: {e}")
+
     try:
         models.Base.metadata.create_all(bind=engine)
     except Exception as e:
         print(f"[startup] create_all failed: {e}")
+
     try:
         db = SessionLocal()
         try:
+            embedded = await backfill_embeddings(db)
+            if embedded:
+                print(f"[startup] embedded {embedded} products")
             products = db.query(models.Product).filter(models.Product.is_active == 1).all()
             menu_rag.build_index(products)
             menu_rag.set_hot_items(compute_hot_items(db))
