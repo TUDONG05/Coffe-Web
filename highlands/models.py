@@ -5,7 +5,9 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Text
 from sqlalchemy.orm import relationship
+from pgvector.sqlalchemy import Vector
 from highlands.database import Base
+from highlands.services.embedding_service import EMBED_DIM
 
 _VN_TZ = ZoneInfo("Asia/Ho_Chi_Minh")
 
@@ -50,6 +52,9 @@ class Product(Base):
     image_url   = Column(String(300), nullable=True)
     video_url   = Column(String(500), nullable=True)
     is_active   = Column(Integer, default=1)
+    # Vector ngữ nghĩa cho tìm kiếm chatbot. NULL nghĩa là chưa nhúng —
+    # sản phẩm đó bị bỏ qua ở nhánh semantic, chỉ còn khớp qua TF-IDF.
+    embedding   = Column(Vector(EMBED_DIM), nullable=True)
 
 
 class Order(Base):

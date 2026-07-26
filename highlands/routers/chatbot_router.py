@@ -1,7 +1,8 @@
 """
 Chatbot router — POST /api/chat (SSE streaming).
 Backend: Groq API (production) hoặc Ollama local (dev, khi không có GROQ_API_KEY).
-RAG: TF-IDF search trên Product DB, inject context vào system prompt.
+RAG: hybrid search (embedding Gemini qua pgvector + TF-IDF) trên Product DB,
+inject context vào system prompt.
 Hỗ trợ đặt hàng: phát hiện intent, trích xuất món song song, inject order_form event.
 """
 import asyncio
@@ -22,7 +23,12 @@ from sqlalchemy.orm import Session
 from highlands import models
 from highlands.auth_utils import require_admin
 from highlands.database import get_db
-from highlands.services.menu_rag_service import menu_rag, compute_hot_items
+from highlands.services import embedding_service
+from highlands.services.menu_rag_service import (
+    backfill_embeddings,
+    compute_hot_items,
+    menu_rag,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -129,10 +135,9 @@ def _detect_order_intent(message: str) -> bool:
     return any(kw in msg_lower for kw in ORDER_KEYWORDS)
 
 
-def _build_system_prompt(query: str) -> str:
-    """RAG: tìm món liên quan, build system prompt với context."""
-    matched = menu_rag.search(query, top_k=6)
-    context = menu_rag.format_context(matched)
+async def _build_system_prompt(db: Session, query: str) -> str:
+    """RAG: hybrid search món liên quan, build system prompt với context."""
+    context = await menu_rag.hybrid_context(db, query, top_k=6)
     return SYSTEM_PROMPT_TEMPLATE.format(menu_context=context)
 
 
@@ -166,13 +171,13 @@ async def _llm_complete(messages: list[dict], temperature: float = 0.1, max_toke
 
 async def _extract_order_data(message: str, req: ChatRequest) -> dict | None:
     """Dùng LLM trích xuất món + thông tin đặt hàng từ message. Chạy song song với stream."""
-    if not menu_rag._items:
+    if not menu_rag.items:
         return None
 
-    products_by_id = {item["id"]: item for item in menu_rag._items}
+    products_by_id = {item["id"]: item for item in menu_rag.items}
     menu_list = "\n".join(
         f"{item['id']}|{item['name']}|{item['price']:,}đ"
-        for item in menu_rag._items
+        for item in menu_rag.items
     )
     prompt = EXTRACT_PROMPT.format(message=message, menu_list=menu_list)
 
@@ -304,7 +309,11 @@ async def _stream_llm(
 # ── Endpoints ────────────────────────────────────────────────
 
 @router.post("/stream")
-async def chat_stream(req: ChatRequest, request: Request):
+async def chat_stream(
+    req: ChatRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
     """Chat với chatbot, trả về SSE stream. Hỗ trợ đặt hàng qua order_form event."""
     _enforce_rate_limit(request)
     if not req.message.strip():
@@ -312,12 +321,14 @@ async def chat_stream(req: ChatRequest, request: Request):
     if len(req.message) > 500:
         raise HTTPException(status_code=400, detail="Tin nhắn quá dài (tối đa 500 ký tự)")
 
-    system = _build_system_prompt(req.message)
+    # Toàn bộ truy vấn DB nằm ở đây, trước khi StreamingResponse bắt đầu —
+    # generator chỉ đọc dữ liệu đã lấy sẵn nên không giữ session qua stream.
+    system = await _build_system_prompt(db, req.message)
     messages = [{"role": m.role, "content": m.content} for m in req.history[-6:]]
     messages.append({"role": "user", "content": req.message})
 
     # Product cards: chỉ hiện khi có kết quả liên quan (không fallback)
-    relevant = menu_rag.search_relevant(req.message, top_k=4)
+    relevant = await menu_rag.hybrid_search(db, req.message, top_k=4)
     product_cards: list[dict] | None = [
         {
             "id":        p["id"],
@@ -346,22 +357,40 @@ async def chat_stream(req: ChatRequest, request: Request):
 
 
 @router.post("/reload-menu")
-def reload_menu(
+async def reload_menu(
     admin: models.User = Depends(require_admin),
     db: Session = Depends(get_db),
+    rebuild_all: bool = False,
 ):
-    """Reload TF-IDF index + hot items từ DB (gọi sau khi admin thêm/sửa sản phẩm)."""
+    """Reload index + hot items từ DB, đồng thời nhúng các sản phẩm còn thiếu vector.
+
+    `rebuild_all=true` nhúng lại toàn bộ menu — dùng khi đổi model hoặc số chiều.
+    """
+    embedded = await backfill_embeddings(db, only_missing=not rebuild_all)
     products = db.query(models.Product).filter(models.Product.is_active == 1).all()
     menu_rag.build_index(products)
     menu_rag.set_hot_items(compute_hot_items(db))
-    return {"message": f"Đã reload {menu_rag.total} sản phẩm vào chatbot index."}
+    return {
+        "message": f"Đã reload {menu_rag.total} sản phẩm vào chatbot index.",
+        "embedded": embedded,
+    }
 
 
 @router.get("/status")
-def chat_status():
-    """Kiểm tra trạng thái chatbot và Ollama."""
+def chat_status(db: Session = Depends(get_db)):
+    """Kiểm tra trạng thái chatbot, LLM backend và độ phủ embedding."""
+    total_active = db.query(models.Product).filter(models.Product.is_active == 1).count()
+    with_vector = (
+        db.query(models.Product)
+        .filter(models.Product.is_active == 1, models.Product.embedding.isnot(None))
+        .count()
+    )
     return {
         "menu_items_indexed": menu_rag.total,
-        "ollama_url": OLLAMA_BASE_URL,
-        "model": OLLAMA_MODEL,
+        "llm_backend": "groq" if USE_GROQ else "ollama",
+        "model": GROQ_MODEL if USE_GROQ else OLLAMA_MODEL,
+        "embedding_enabled": embedding_service.is_enabled(),
+        "embedding_model": embedding_service.GEMINI_EMBED_MODEL,
+        "embedding_dim": embedding_service.EMBED_DIM,
+        "products_with_embedding": f"{with_vector}/{total_active}",
     }
