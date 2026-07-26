@@ -285,6 +285,7 @@ ul { list-style: none; }
 .btn-solid:hover { background: var(--red-dark); border-color: var(--red-dark); transform: translateY(-2px); }
 .btn-solid:active { transform: scale(0.98); }
 .btn-solid:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.fa-solid, .fa-regular, .fa-brands { vertical-align: -0.125em; }
 .icon-btn {
   width: 38px;
   height: 38px;
@@ -293,10 +294,10 @@ ul { list-style: none; }
   justify-content: center;
   border-radius: 50%;
   background: var(--cream-dark);
-  color: var(--brown-mid);   /* icon SVG (Lucide) dùng stroke="currentColor" */
+  color: var(--brown-mid);   /* icon Font Awesome dùng color="currentColor" */
   cursor: pointer;
   transition: background 200ms ease-out, transform 200ms ease-out;
-  font-size: 1rem;
+  font-size: 1.2rem;
   border: none;
 }
 .icon-btn:hover { background: #f0ddd4; color: var(--red); transform: translateY(-2px); }
