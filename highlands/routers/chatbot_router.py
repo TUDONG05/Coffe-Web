@@ -9,8 +9,6 @@ import json
 import logging
 import os
 import re
-import time
-from collections import defaultdict
 from typing import AsyncGenerator, Literal
 
 import httpx
@@ -22,6 +20,7 @@ from sqlalchemy.orm import Session
 from highlands import models
 from highlands.auth_utils import require_admin
 from highlands.database import get_db
+from highlands.rate_limit import enforce_rate_limit
 from highlands.services.menu_rag_service import menu_rag, compute_hot_items
 
 logger = logging.getLogger(__name__)
@@ -88,19 +87,12 @@ Lưu ý: qty mặc định = 1 nếu không nêu rõ. Chỉ lấy các món có 
 
 # ── Schemas ─────────────────────────────────────────────────
 
-# ── Simple in-memory rate limiter ───────────────────────────
-_rate_store: dict[str, list[float]] = defaultdict(list)
-_RATE_WINDOW = 60   # seconds
-_RATE_MAX    = 20   # requests per window per IP
+# ── Rate limit ──────────────────────────────────────────────
+# Logic dùng chung ở highlands/rate_limit.py, chia sẻ với endpoint tìm bằng ảnh.
+_RATE_MAX = 20   # requests / phút / IP
 
 def _enforce_rate_limit(request: Request) -> None:
-    ip = request.client.host if request.client else "unknown"
-    now = time.time()
-    hits = [t for t in _rate_store[ip] if now - t < _RATE_WINDOW]
-    if len(hits) >= _RATE_MAX:
-        raise HTTPException(status_code=429, detail="Quá nhiều yêu cầu, vui lòng thử lại sau 1 phút")
-    hits.append(now)
-    _rate_store[ip] = hits
+    enforce_rate_limit(request, key="chat", max_hits=_RATE_MAX)
 
 
 class ChatMessage(BaseModel):

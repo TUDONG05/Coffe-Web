@@ -1,6 +1,7 @@
 """
 Admin endpoints for product management: CRUD operations.
 """
+import logging
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
@@ -9,6 +10,10 @@ from highlands.database import get_db
 from highlands import models
 from highlands.auth_utils import require_admin
 from highlands.services.blob_service import upload_image
+from highlands.services import image_search_service as img_svc
+from highlands.services.image_search_service import image_search
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin/products", tags=["admin-products"])
 
@@ -221,6 +226,28 @@ async def upload_product_image(
         product.image_url = await upload_image(content, filename, "products")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Lỗi upload ảnh: {e}")
+
+    # Sinh embedding cho tìm kiếm bằng ảnh. Dùng luôn bytes đang có thay vì bắt
+    # Jina đi tải URL — nhanh hơn và né được lúc Blob chưa kịp lan truyền.
+    # Bọc try/except: Jina lỗi thì upload ảnh vẫn phải thành công, embedding
+    # thiếu có thể bù sau bằng scripts/build_image_embeddings.py.
+    if img_svc.is_configured():
+        try:
+            vec = await img_svc.embed_image_bytes(content, task=img_svc.TASK_INDEX)
+            product.image_embedding = img_svc.serialize(vec)
+            product.image_embedding_source = product.image_url
+        except Exception as e:
+            logger.warning("Không sinh được embedding cho sản phẩm %s: %s", product_id, e)
+
     db.commit()
     db.refresh(product)
+
+    # Nạp lại index để ảnh mới tìm được ngay. Instance serverless khác vẫn giữ
+    # index cũ tới cold start kế tiếp.
+    try:
+        products = db.query(models.Product).filter(models.Product.is_active == 1).all()
+        image_search.build_index(products)
+    except Exception as e:
+        logger.warning("Nạp lại index ảnh thất bại: %s", e)
+
     return product

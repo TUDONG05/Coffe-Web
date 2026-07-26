@@ -42,6 +42,7 @@
           </div>
           <div class="nav-search-dropdown" id="nav-search-dropdown"></div>
         </div>
+        <button class="icon-btn" id="nav-image-search" title="Tìm bằng hình ảnh" onclick="openImageSearch()">📷</button>
         <button class="icon-btn" id="cart-btn" title="Giỏ hàng">🛒<span class="cart-badge" id="cart-count" style="display:none">0</span></button>
         <button class="icon-btn" id="orders-btn" title="Đơn hàng" style="display:none">📋</button>
         <button id="auth-nav-btn" onclick="openAuthModal()" class="btn-solid" style="background:transparent;border:2px solid #C8102E;color:#C8102E">Đăng Nhập</button>
@@ -501,6 +502,32 @@
   <div id="pdp-overlay" onclick="closePDP()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000"></div>
   <div id="pdp-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:24px;padding:0;width:500px;max-width:96vw;z-index:1001;box-shadow:0 20px 60px rgba(44,24,16,.25);overflow:hidden">
     <div id="pdp-content"></div>
+  </div>
+
+  <!-- ── IMAGE SEARCH MODAL ────────────────────────────── -->
+  <div id="imgs-overlay" onclick="closeImageSearch()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000"></div>
+  <div id="imgs-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:24px;width:560px;max-width:96vw;max-height:90vh;overflow-y:auto;z-index:1001;box-shadow:0 20px 60px rgba(44,24,16,.25)">
+    <div style="padding:24px 24px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <h3 style="font-family:'Inter',sans-serif;font-size:1.25rem;font-weight:900;color:#2C1810">📷 Tìm bằng hình ảnh</h3>
+        <button onclick="closeImageSearch()" title="Đóng" style="background:none;border:none;font-size:1.2rem;color:#888;cursor:pointer;line-height:1">✕</button>
+      </div>
+      <p style="color:#888;font-size:.82rem;line-height:1.6;margin-bottom:18px">
+        Chụp hoặc chọn ảnh một món, hệ thống sẽ gợi ý những món giống nhất trong thực đơn.
+      </p>
+
+      <!-- Hai input tách riêng: capture="environment" mở thẳng camera sau trên mobile,
+           nhưng một số trình duyệt sẽ mất luôn lựa chọn thư viện nếu dùng chung một input. -->
+      <input type="file" id="imgs-camera"  accept="image/*" capture="environment" hidden onchange="handleImagePicked(this)">
+      <input type="file" id="imgs-gallery" accept="image/*" hidden onchange="handleImagePicked(this)">
+
+      <div id="imgs-pickers" style="display:flex;gap:10px;flex-wrap:wrap">
+        <button id="imgs-btn-camera" onclick="document.getElementById('imgs-camera').click()" class="imgs-pick-btn">📸 Chụp ảnh</button>
+        <button onclick="document.getElementById('imgs-gallery').click()" class="imgs-pick-btn">🖼️ Chọn từ thư viện</button>
+      </div>
+
+      <div id="imgs-body" style="margin-top:18px"></div>
+    </div>
   </div>
 
   <!-- ── AUTH MODAL ───────────────────────────────────── -->
@@ -1295,6 +1322,7 @@
             </div>
           </div>
           <div style="padding:0 24px 24px">
+            <div id="pdp-similar"></div>
             <div style="border-top:2px solid #f5f0eb;padding-top:20px;margin-top:8px">
               <div style="font-weight:700;font-size:.95rem;color:#2C1810;margin-bottom:12px">Đánh giá (${reviewData.count})</div>
               ${reviewsHtml}
@@ -1304,6 +1332,8 @@
           <button onclick="closePDP()" style="position:absolute;top:14px;right:14px;background:rgba(0,0,0,.35);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem">✕</button>`;
         document.getElementById('pdp-modal').style.position = 'fixed';
         window._pdpStars = 0;
+        // Gọi sau khi nội dung chính đã hiện — không chặn PDP chờ request này
+        loadSimilarProducts(p.id);
       } catch(e) { document.getElementById('pdp-content').innerHTML = '<div style="padding:32px;color:#C8102E">Lỗi tải sản phẩm</div>'; }
     }
 
@@ -1338,6 +1368,182 @@
     function closePDP() {
       document.getElementById('pdp-overlay').style.display = 'none';
       document.getElementById('pdp-modal').style.display   = 'none';
+    }
+
+    // ── Image search ──────────────────────────────────────
+    // Ngưỡng gán nhãn độ tin cậy. ĐÂY LÀ SỐ TẠM, chưa phải số đo.
+    // Hiệu chỉnh bằng kết quả `python scripts/eval_image_search.py`
+    // (script in ra score trung bình của khớp đúng vs khớp sai).
+    const IMGS_SCORE_HIGH = 0.75;
+    const IMGS_SCORE_MID  = 0.60;
+
+    let _imgsPreviewUrl = null;
+
+    function openImageSearch() {
+      document.getElementById('imgs-overlay').style.display = 'block';
+      document.getElementById('imgs-modal').style.display   = 'block';
+      document.getElementById('imgs-body').innerHTML = '';
+      // Nút chụp ảnh chỉ có nghĩa trên thiết bị có camera sau
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      document.getElementById('imgs-btn-camera').style.display = isMobile ? '' : 'none';
+    }
+
+    function closeImageSearch() {
+      document.getElementById('imgs-overlay').style.display = 'none';
+      document.getElementById('imgs-modal').style.display   = 'none';
+      if (_imgsPreviewUrl) { URL.revokeObjectURL(_imgsPreviewUrl); _imgsPreviewUrl = null; }
+      document.getElementById('imgs-body').innerHTML = '';
+    }
+
+    function handleImagePicked(input) {
+      const file = input.files && input.files[0];
+      input.value = '';   // reset để chọn lại đúng ảnh vừa rồi vẫn kích hoạt onchange
+      if (file) runImageSearch(file);
+    }
+
+    /**
+     * Thu nhỏ ảnh về cạnh dài nhất `maxEdge` trước khi upload.
+     * Ba lý do: né giới hạn body ~4.5MB của Vercel, giảm payload ~50 lần,
+     * và Jina đằng nào cũng xử lý ảnh ở 512x512.
+     */
+    async function resizeImage(file, maxEdge = 512, quality = 0.85) {
+      let src;
+      try {
+        // imageOrientation: ảnh chụp dọc bằng điện thoại dính EXIF rotation,
+        // không có tuỳ chọn này sẽ bị xoay 90 độ khi vẽ lên canvas.
+        src = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      } catch (e) {
+        src = await new Promise((resolve, reject) => {
+          const url = URL.createObjectURL(file);
+          const img = new Image();
+          img.onload  = () => { URL.revokeObjectURL(url); resolve(img); };
+          img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Không đọc được ảnh')); };
+          img.src = url;
+        });
+      }
+
+      const w = src.width, h = src.height;
+      const scale = Math.min(1, maxEdge / Math.max(w, h));   // không phóng to ảnh nhỏ
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.max(1, Math.round(w * scale));
+      canvas.height = Math.max(1, Math.round(h * scale));
+      canvas.getContext('2d').drawImage(src, 0, 0, canvas.width, canvas.height);
+      if (src.close) src.close();
+
+      return new Promise((resolve, reject) => {
+        canvas.toBlob(
+          b => b ? resolve(b) : reject(new Error('Không nén được ảnh')),
+          'image/jpeg', quality
+        );
+      });
+    }
+
+    function imgsMessage(icon, text, showSearchBtn) {
+      return `<div style="padding:28px 16px;text-align:center;color:#888;font-size:.88rem;line-height:1.7">
+          <div style="font-size:2rem;margin-bottom:8px">${icon}</div>${text}
+          ${showSearchBtn ? `<div style="margin-top:14px"><button onclick="closeImageSearch();openGlobalSearch()" style="padding:9px 20px;background:#C8102E;color:#fff;border:none;border-radius:10px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit">🔍 Tìm bằng tên</button></div>` : ''}
+        </div>`;
+    }
+
+    async function runImageSearch(file) {
+      const body = document.getElementById('imgs-body');
+
+      if (_imgsPreviewUrl) { URL.revokeObjectURL(_imgsPreviewUrl); _imgsPreviewUrl = null; }
+
+      let blob;
+      try {
+        blob = await resizeImage(file);
+      } catch (e) {
+        body.innerHTML = imgsMessage('⚠️', 'Không đọc được ảnh này. Thử chọn ảnh khác nhé.', false);
+        return;
+      }
+
+      _imgsPreviewUrl = URL.createObjectURL(blob);
+      body.innerHTML = `
+        <div style="display:flex;align-items:center;gap:14px;padding:14px;background:#FFF8F0;border-radius:14px">
+          <img src="${_imgsPreviewUrl}" style="width:64px;height:64px;object-fit:cover;border-radius:10px;flex-shrink:0">
+          <div style="color:#5C3D2E;font-size:.88rem;font-weight:600">🔍 Đang nhận diện...</div>
+        </div>`;
+
+      try {
+        const fd = new FormData();
+        fd.append('file', blob, 'query.jpg');
+        const res  = await fetch(`${API}/api/products/search-by-image`, { method: 'POST', body: fd });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.detail || 'Không tìm được, vui lòng thử lại');
+        renderImageResults(Array.isArray(data) ? data : []);
+      } catch (e) {
+        body.innerHTML = imgsMessage('😕', e.message, true);
+      }
+    }
+
+    function renderImageResults(items) {
+      const body = document.getElementById('imgs-body');
+      if (!items.length) {
+        body.innerHTML = imgsMessage('🤷', 'Không nhận ra món này.<br>Thử chụp gần hơn hoặc tìm bằng tên.', true);
+        return;
+      }
+
+      const top = items[0].score;
+      const heading = top >= IMGS_SCORE_HIGH ? '✅ Rất khớp'
+                    : top >= IMGS_SCORE_MID  ? '🤔 Có thể là'
+                    : 'Kết quả gần đúng';
+
+      body.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <img src="${_imgsPreviewUrl}" style="width:52px;height:52px;object-fit:cover;border-radius:10px;flex-shrink:0">
+          <div>
+            <div style="font-weight:700;color:#2C1810;font-size:.92rem">${heading}</div>
+            <div style="color:#888;font-size:.78rem">Chọn món đúng với ảnh của bạn</div>
+          </div>
+        </div>
+        <div class="imgs-results">` +
+        items.map(p => `
+          <div class="imgs-result" onclick="closeImageSearch();openPDP(${p.id})">
+            <div class="imgs-result-thumb">
+              ${p.image_url ? `<img src="${p.image_url}" alt="${p.name}">` : '☕'}
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:700;color:#2C1810;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+              <div style="color:#888;font-size:.76rem;margin-top:2px">${p.category}</div>
+              <div style="color:#C8102E;font-weight:900;font-size:.95rem;margin-top:4px">${p.price.toLocaleString('vi-VN')}đ</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
+              <span class="imgs-score">${Math.round(p.score * 100)}%</span>
+              <button onclick="event.stopPropagation();addToCartById(${p.id})" title="Thêm vào giỏ"
+                style="width:30px;height:30px;border-radius:50%;background:#C8102E;color:#fff;border:none;font-size:1rem;cursor:pointer">+</button>
+            </div>
+          </div>`).join('') +
+        `</div>
+        <div style="text-align:center;margin-top:14px">
+          <button onclick="document.getElementById('imgs-gallery').click()" style="padding:8px 18px;background:none;border:2px solid #e0d8d0;border-radius:10px;color:#5C3D2E;font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit">🔄 Thử ảnh khác</button>
+        </div>`;
+    }
+
+    /** Món nhìn giống nhau, hiện trong trang chi tiết. Không gọi API ngoài. */
+    async function loadSimilarProducts(productId) {
+      try {
+        const res = await fetch(`${API}/api/products/${productId}/similar?limit=4`);
+        if (!res.ok) return;
+        const items = await res.json();
+        const box = document.getElementById('pdp-similar');
+        if (!box || !Array.isArray(items) || !items.length) return;   // rỗng thì không hiện gì
+
+        box.innerHTML = `
+          <div style="border-top:2px solid #f5f0eb;padding-top:18px;margin-top:4px">
+            <div style="font-weight:700;font-size:.95rem;color:#2C1810;margin-bottom:12px">Món nhìn giống</div>
+            <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px">` +
+            items.map(p => `
+              <div onclick="openPDP(${p.id})" style="flex:0 0 96px;cursor:pointer">
+                <div style="width:96px;height:96px;border-radius:12px;overflow:hidden;background:#f5f0eb;display:flex;align-items:center;justify-content:center;font-size:2rem">
+                  ${p.image_url ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover">` : '☕'}
+                </div>
+                <div style="font-size:.75rem;color:#2C1810;font-weight:600;margin-top:6px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.name}</div>
+                <div style="font-size:.72rem;color:#C8102E;font-weight:800">${p.price.toLocaleString('vi-VN')}đ</div>
+              </div>`).join('') +
+            `</div>
+          </div>`;
+      } catch (e) { /* im lặng — đây là tính năng phụ, không nên làm phiền user */ }
     }
 
     // ── Promotions page ───────────────────────────────────

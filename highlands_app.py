@@ -34,13 +34,14 @@ from highlands.routers import (
 from highlands.database import SessionLocal, engine
 from highlands import models
 from highlands.services.menu_rag_service import menu_rag, compute_hot_items
+from highlands.services.image_search_service import image_search
 
 app = FastAPI(title="Highlands Coffee", version="2.0.0", docs_url="/docs")
 
 
 @app.on_event("startup")
 def load_menu_index():
-    """Create tables and build TF-IDF chatbot index on startup."""
+    """Create tables and build TF-IDF chatbot index + image search index on startup."""
     try:
         models.Base.metadata.create_all(bind=engine)
     except Exception as e:
@@ -51,6 +52,8 @@ def load_menu_index():
             products = db.query(models.Product).filter(models.Product.is_active == 1).all()
             menu_rag.build_index(products)
             menu_rag.set_hot_items(compute_hot_items(db))
+            # Dùng lại chính danh sách products ở trên — không query lại DB
+            image_search.build_index(products)
         finally:
             db.close()
     except Exception as e:

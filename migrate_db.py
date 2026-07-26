@@ -36,6 +36,10 @@ add_column_if_missing("news",     "video_url", "VARCHAR(500) NULL")
 add_column_if_missing("news",     "view_count", "INT NOT NULL DEFAULT 0")
 add_column_if_missing("news",     "unique_view_count", "INT NOT NULL DEFAULT 0")
 
+# Image search: CLIP embedding của ảnh sản phẩm + ảnh nguồn đã dùng để sinh embedding
+add_column_if_missing("products", "image_embedding",        "TEXT NULL")
+add_column_if_missing("products", "image_embedding_source", "VARCHAR(300) NULL")
+
 # product_reviews table is created via Base.metadata.create_all above
 
 # Make hashed_pwd nullable for Google-only users

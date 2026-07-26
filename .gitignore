@@ -45,3 +45,7 @@ deploy.md
 
 .vercel
 .env*
+
+# Ảnh test cho eval tìm kiếm bằng hình ảnh — chỉ commit manifest.csv
+tests/image-search-fixtures/*
+!tests/image-search-fixtures/manifest.csv

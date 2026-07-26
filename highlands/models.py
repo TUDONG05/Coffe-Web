@@ -50,6 +50,10 @@ class Product(Base):
     image_url   = Column(String(300), nullable=True)
     video_url   = Column(String(500), nullable=True)
     is_active   = Column(Integer, default=1)
+    # CLIP embedding của ảnh sản phẩm — JSON array 512 float đã chuẩn hoá L2
+    image_embedding        = Column(Text, nullable=True)
+    # image_url tại thời điểm sinh embedding; khác image_url hiện tại = embedding đã cũ
+    image_embedding_source = Column(String(300), nullable=True)
 
 
 class Order(Base):
