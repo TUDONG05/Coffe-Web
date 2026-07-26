@@ -27,8 +27,11 @@ JINA_MODEL   = "jina-clip-v2"
 EMBED_DIM = 512
 TIMEOUT   = 20.0
 
-# Quy ước bất đối xứng của Jina: ảnh đã index là "passage", ảnh truy vấn là "query".
-TASK_INDEX = "retrieval.passage"
+# Endpoint jina-clip-v2 hiện tại CHỈ chấp nhận task="retrieval.query" cho ảnh
+# (xác nhận bằng gọi API thật: "retrieval.passage" và không truyền task đều
+# hợp lệ về response nhưng "retrieval.passage" bị 422 — không có cặp bất đối
+# xứng passage/query cho input ảnh như tài liệu chung của Jina mô tả cho text).
+# Dùng chung một task cho cả ảnh index lẫn ảnh truy vấn.
 TASK_QUERY = "retrieval.query"
 
 
@@ -72,7 +75,7 @@ async def _embed(inputs: list[dict], task: str) -> list[list[float]]:
 
 async def embed_image_urls(urls: list[str]) -> list[list[float]]:
     """Embed nhiều ảnh từ URL công khai (dùng khi index sản phẩm)."""
-    return await _embed([{"image": u} for u in urls], TASK_INDEX)
+    return await _embed([{"image": u} for u in urls], TASK_QUERY)
 
 
 async def embed_image_bytes(data: bytes, task: str = TASK_QUERY) -> list[float]:

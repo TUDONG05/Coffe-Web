@@ -233,7 +233,7 @@ async def upload_product_image(
     # thiếu có thể bù sau bằng scripts/build_image_embeddings.py.
     if img_svc.is_configured():
         try:
-            vec = await img_svc.embed_image_bytes(content, task=img_svc.TASK_INDEX)
+            vec = await img_svc.embed_image_bytes(content)
             product.image_embedding = img_svc.serialize(vec)
             product.image_embedding_source = product.image_url
         except Exception as e:

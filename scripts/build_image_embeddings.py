@@ -45,7 +45,7 @@ async def _embed_product(product) -> list[float]:
     """Embed ảnh của một sản phẩm, tự chọn đường URL hay đường file local."""
     if _is_local_path(product.image_url):
         data = _read_local(product.image_url)
-        return await svc.embed_image_bytes(data, task=svc.TASK_INDEX)
+        return await svc.embed_image_bytes(data)
     vectors = await svc.embed_image_urls([product.image_url])
     return vectors[0]
 
