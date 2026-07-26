@@ -40,6 +40,11 @@ class ProductOut(BaseModel):
         from_attributes = True
 
 
+# Cột nội bộ dùng cho tìm kiếm bằng ảnh — không cần thiết cho frontend,
+# và vector 512 chiều làm phình payload vài KB mỗi sản phẩm một cách vô ích.
+_INTERNAL_ONLY_COLUMNS = {"image_embedding", "image_embedding_source"}
+
+
 def _with_ratings(products: list, db: Session) -> list[dict]:
     if not products:
         return []
@@ -53,7 +58,7 @@ def _with_ratings(products: list, db: Session) -> list[dict]:
     result = []
     for p in products:
         avg, cnt = stats.get(p.id, (0.0, 0))
-        d = {c.name: getattr(p, c.name) for c in p.__table__.columns}
+        d = {c.name: getattr(p, c.name) for c in p.__table__.columns if c.name not in _INTERNAL_ONLY_COLUMNS}
         d["avg_rating"] = avg
         d["review_count"] = cnt
         result.append(d)
