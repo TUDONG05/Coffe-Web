@@ -293,12 +293,13 @@ ul { list-style: none; }
   justify-content: center;
   border-radius: 50%;
   background: var(--cream-dark);
+  color: var(--brown-mid);   /* icon SVG (Lucide) dùng stroke="currentColor" */
   cursor: pointer;
   transition: background 200ms ease-out, transform 200ms ease-out;
   font-size: 1rem;
   border: none;
 }
-.icon-btn:hover { background: #f0ddd4; transform: translateY(-2px); }
+.icon-btn:hover { background: #f0ddd4; color: var(--red); transform: translateY(-2px); }
 .icon-btn:active { transform: scale(0.95); }
 .icon-btn:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
@@ -353,7 +354,6 @@ ul { list-style: none; }
   border-radius: 30px;
   margin-bottom: 24px;
 }
-.hero-badge::before { content: '☕'; font-size: .85rem; }
 .hero-title {
   font-family: 'Inter', sans-serif;
   font-size: clamp(2.4rem, 5vw, 4.2rem);
@@ -630,6 +630,7 @@ ul { list-style: none; }
   padding: 9px 20px; border-radius: 50px; border: 2px solid #e0d8d0;
   background: #fff; cursor: pointer; font-size: .85rem; font-weight: 700;
   font-family: inherit; color: #5C3D2E; transition: all .2s;
+  display: inline-flex; align-items: center; gap: 6px;
 }
 .menu-tab.active, .news-filter-btn.active, .promo-filter-btn.active {
   background: var(--red); color: #fff; border-color: var(--red);
