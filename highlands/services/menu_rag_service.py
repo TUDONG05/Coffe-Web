@@ -267,6 +267,25 @@ def compute_hot_items(db: Session, top_k: int = 8) -> list[dict]:
     ]
 
 
+def ensure_index_loaded(db: Session) -> None:
+    """Dựng index nếu process này chưa có (cold start serverless).
+
+    Trên Vercel mỗi instance là một process riêng và không có gì bảo đảm
+    startup event đã chạy, nên request đầu tiên phải tự lo.
+    """
+    if menu_rag.total > 0:
+        return
+    from highlands import models
+
+    try:
+        products = db.query(models.Product).filter(models.Product.is_active == 1).all()
+        if products:
+            menu_rag.build_index(products)
+            menu_rag.set_hot_items(compute_hot_items(db))
+    except Exception as e:
+        logger.warning(f"Không dựng được menu index: {e}")
+
+
 async def sync_product_embedding(db: Session, product) -> bool:
     """Sinh lại vector cho một sản phẩm và lưu vào DB.
 

@@ -574,24 +574,31 @@ Mặc định Ollama chạy tại `http://localhost:11434`. Có thể override q
 
 ### Bật RAG embedding (pgvector)
 
+Chỉ cần một biến môi trường — schema và vector tự lo phần còn lại:
+
 ```bash
-# 1. Lấy API key tại https://aistudio.google.com/apikey
-#    (KHÁC với GOOGLE_CLIENT_ID dùng cho đăng nhập Google)
-echo "GOOGLE_API_KEY=..." >> .env
-
-# 2. Bật extension, thêm cột vector, tạo index HNSW và nhúng toàn bộ menu
-python migrate_embeddings.py
-
-# 3. Kiểm tra độ phủ
-curl localhost:8000/api/chat/status
+# Lấy API key tại https://aistudio.google.com/apikey
+# (KHÁC với GOOGLE_CLIENT_ID dùng cho đăng nhập Google)
+GOOGLE_API_KEY=...
 ```
 
-Script chạy được nhiều lần — mặc định chỉ nhúng sản phẩm còn thiếu vector.
-Dùng `--rebuild` khi đổi model hoặc số chiều.
+**Deploy Vercel**: thêm `GOOGLE_API_KEY` vào Environment Variables rồi deploy. Lần khởi
+động đầu tiên tự bật extension, thêm cột `embedding`, tạo index HNSW và nhúng toàn bộ
+menu. Không cần chạy lệnh thủ công nào.
 
-Sau khi chạy, mỗi lần admin thêm/sửa sản phẩm hệ thống tự nhúng lại món đó, không
-cần thao tác thủ công. Endpoint `POST /api/chat/reload-menu` vẫn dùng được để nhúng
-bù hàng loạt.
+**Chạy local**: khởi động app là xong, y hệt như trên.
+
+Script `migrate_embeddings.py` là tuỳ chọn, dùng khi muốn migrate trước lúc deploy
+hoặc nhúng lại toàn bộ:
+
+```bash
+python migrate_embeddings.py            # nhúng sản phẩm còn thiếu vector
+python migrate_embeddings.py --rebuild  # nhúng lại tất cả (khi đổi model/số chiều)
+curl localhost:8000/api/chat/status     # xem độ phủ embedding
+```
+
+Mỗi lần admin thêm/sửa sản phẩm, hệ thống tự nhúng lại món đó. Endpoint
+`POST /api/chat/reload-menu` dùng để nhúng bù hàng loạt khi cần.
 
 > Cần Postgres có extension `vector`. Neon, Vercel Postgres và Supabase hỗ trợ sẵn;
 > Postgres tự host phải cài thêm pgvector. Nếu extension không có, ứng dụng vẫn khởi
